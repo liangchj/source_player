@@ -25,7 +25,7 @@
             "statusCodeKey": "code",
             "successStatusCode": "1",
             "resDataKey": "list",
-            "resMsg": "请求成功",
+            "resMsgKey": "msg",
             "resultKeyMap": {"resourceId": "vod_id"}
           },
           "filterCriteriaList": [
@@ -57,7 +57,7 @@
                   "statusCodeKey": "code",
                   "successStatusCode": "1",
                   "resDataKey": "class",
-                  "resMsg": "请求成功",
+                  "resMsgKey": "msg",
                   "resultKeyMap": {
                     "value": "type_id",
                     "label": "type_name",
@@ -84,7 +84,7 @@
                   "statusCodeKey": "code",
                   "successStatusCode": "1",
                   "resDataKey": "class",
-                  "resMsg": "请求成功",
+                  "resMsgKey": "msg",
                   "resultConvertJsFn": "function convertJson(typeJson) { if (!typeJson) { typeJson = {}; } let typeList = typeJson[\"class\"] || []; let newList = []; for (let i in typeList) { let item = typeList[i]; newList.push({\"value\": item[\"type_id\"], \"label\": item[\"type_name\"], \"parentValue\": item[\"type_pid\"]});} typeJson[\"class\"] = newList;  return typeJson; } "
                 }
               }
@@ -102,7 +102,7 @@
             "statusCodeKey": "code",
             "successStatusCode": "200",
             "resDataKey": "list",
-            "resMsg": "请求成功"
+            "resMsgKey": "msg"
           }
         },
         "searchApi": {
@@ -122,7 +122,7 @@
             "statusCodeKey": "code",
             "successStatusCode": "200",
             "resDataKey": "list",
-            "resMsg": "请求成功"
+            "resMsgKey": "msg"
           }
         }
       }
