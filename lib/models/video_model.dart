@@ -1,3 +1,5 @@
+import '../utils/map_data_utils.dart';
+
 class VideoModel {
   // 资源id
   final String id;
@@ -74,25 +76,27 @@ class VideoModel {
       id: (json["id"] ?? "").toString(),
       name: (json["id"] ?? "").toString(),
       enName: json["enName"],
-      typeIdList: _getListFromMap(json, "typeIdList"),
-      typeNameList: _getListFromMap(json, "typeNameList"),
+      typeIdList: MapDataUtils.getListFromMap(json, "typeIdList"),
+      typeNameList: MapDataUtils.getListFromMap(json, "typeNameList"),
       parentTypeId: (json["parentTypeId"] ?? "").toString(),
-      classList:  _getListFromMap(json, "classList"),
+      classList:  MapDataUtils.getListFromMap(json, "classList"),
+      coverUrl: json["coverUrl"],
+      blurb: json["blurb"],
+      detailContent: json["detailContent"],
+      directorList:  MapDataUtils.getListFromMap(json, "directorList"),
+      actorList:  MapDataUtils.getListFromMap(json, "actorList"),
+      // serial:  MapDataUtils.getIntFromMap(json, "serial"),
+      total:  MapDataUtils.getIntFromMap(json, "total"),
+      duration:  MapDataUtils.getDurationFromMap(json, "duration"),
+      score:  MapDataUtils.getDoubleFromMap(json, "score"),
+      area:  json["area"],
+      languageList:  MapDataUtils.getListFromMap(json, "languageList"),
+      year:  json["year"],
+      version:  json["version"],
     );
   }
-  
-  static List<String> _getListFromMap(Map<String, dynamic> map, String key) {
-    var value = map[key];
-    if (value != null) {
-      if (value is List) {
-        return value.map((e) => e.toString()).toList();
-      } else {
-        return value.toString().split(",");
-      }
-    } else {
-      return [];
-    }
-  }
+
+
 
   Map<String, dynamic> toJson() {
     return {'id': id, 'name': name};
