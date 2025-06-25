@@ -1,5 +1,6 @@
 {
     "mate40127": {
+      "apiKeyConfig": "maccms",
       "apiBaseModel": {
         "name": "mate40",
         "enName": "mate40",
@@ -7,27 +8,6 @@
       },
       "netApiMap": {
         "listApi": {
-          "apiDesc": "列表请求",
-          "path": "/vod/list",
-          "requestParams": {
-            "headerParams": {},
-            "staticParams": {"t": "", "ac": "list"},
-            "dynamicParams": {
-              "page": "pg",
-              "pageSize": "limit",
-              "totalPage": "pagecount",
-              "totalCount": "total",
-              "typeIds": "type_id",
-              "parentTypeIds": "type_id_1"
-            }
-          },
-          "responseParams": {
-            "statusCodeKey": "code",
-            "successStatusCode": "1",
-            "resDataKey": "list",
-            "resMsgKey": "msg",
-            "resultKeyMap": {"resourceId": "vod_id"}
-          },
           "filterCriteriaList": [
             {
               "enName": "type",
@@ -65,66 +45,14 @@
                   }
                 }
               }
-            },
-            {
-              "enName": "typeJsFn",
-              "name": "类型解析js方法",
-              "requestKey": "t",
-              "netApi": {
-                "path": "/vod/list",
-                "requestParams": {
-                  "headerParams": {},
-                  "staticParams": {"t": "0", "ac": "list"},
-                  "dynamicParams": {
-                    "typeIds": "type_id",
-                    "parentTypeIds": "type_id_1"
-                  }
-                },
-                "responseParams": {
-                  "statusCodeKey": "code",
-                  "successStatusCode": "1",
-                  "resDataKey": "class",
-                  "resMsgKey": "msg",
-                  "resultConvertJsFn": "function convertJson(typeJson) { if (!typeJson) { typeJson = {}; } let typeList = typeJson[\"class\"] || []; let newList = []; for (let i in typeList) { let item = typeList[i]; newList.push({\"value\": item[\"type_id\"], \"label\": item[\"type_name\"], \"parentValue\": item[\"type_pid\"]});} typeJson[\"class\"] = newList;  return typeJson; } "
-                }
-              }
             }
           ]
         },
         "detailApi": {
-          "path": "/vod/detail",
-          "requestParams": {
-            "headerParams": {},
-            "staticParams": {"t": "vod", "ac": "detail"},
-            "dynamicParams": {"ids": "ids"}
-          },
-          "responseParams": {
-            "statusCodeKey": "code",
-            "successStatusCode": "200",
-            "resDataKey": "list",
-            "resMsgKey": "msg"
-          }
         },
         "searchApi": {
-          "path": "/vod/search",
-          "requestParams": {
-            "headerParams": {},
-            "staticParams": {"t": "vod", "ac": "search"},
-            "dynamicParams": {
-              "page": "pg",
-              "pageSize": "limit",
-              "totalPage": "pagecount",
-              "totalCount": "total",
-              "keyword": "wd"
-            }
-          },
-          "responseParams": {
-            "statusCodeKey": "code",
-            "successStatusCode": "200",
-            "resDataKey": "list",
-            "resMsgKey": "msg"
-          }
-        }
+        },
+        "typeListApi": {}
       }
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter_dynamic_api/utils/json_to_model_utils.dart';
 import '../cache/db/current_configs.dart';
 import '../cache/shared_preferences_cache.dart';
 import '../commons/cache_key_commons.dart';
+import '../commons/net_api_key_common.dart';
 import '../commons/public_commons.dart';
 
 class ApiUtils {
@@ -19,7 +20,9 @@ class ApiUtils {
         .getString(CacheKeyCommons.currentApiKey);
     if (apiJsonStr != null && apiJsonStr.isNotEmpty) {
       try {
-        CurrentConfigs.currentApi = ApiConfigModel.fromJson(json.decode(apiJsonStr));
+        Map<String, dynamic> apiJson = json.decode(apiJsonStr);
+        handleDefaultApiKeyInfo(apiJson);
+        CurrentConfigs.currentApi = ApiConfigModel.fromJson(apiJson);
       } catch (e) {
         msg = "解析当前api出错：$e";
       }
@@ -43,19 +46,29 @@ class ApiUtils {
           return;
         }
         for (var entry in map.entries) {
-          if (entry.value is! Map<String, dynamic>) {
-            PublicCommons.logger.e(
-              "从缓存中获取api解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry.value}",
-            );
-            continue;
+          var value = entry.value;
+          Map<String, dynamic> apiJson = {};
+          if (value is! Map<String, dynamic>) {
+            try {
+              apiJson.addAll(DataTypeConvertUtils.toMapStrDyMap(value));
+            } catch (e2) {
+              PublicCommons.logger.e(
+                "从缓存中获取api解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry
+                    .value}",
+              );
+              continue;
+            }
+          } else {
+            apiJson.addAll(value);
           }
-          CurrentConfigs.enNameToApiJsonMap[entry.key] = entry.value;
+          handleDefaultApiKeyInfo(apiJson);
+          CurrentConfigs.enNameToApiJsonMap[entry.key] = apiJson;
           try {
-            ApiConfigModel apiModel = ApiConfigModel.fromJson(entry.value);
+            ApiConfigModel apiModel = ApiConfigModel.fromJson(apiJson);
             CurrentConfigs.enNameToApiMap[apiModel.apiBaseModel.enName] = apiModel;
           } catch (e1) {
             PublicCommons.logger.e(
-              "从缓存中获取api解析具体内容错误，数据：${entry.value}，报错：$e1",
+              "从缓存中获取api解析具体内容错误，数据（已合并默认内容）：$apiJson，报错：$e1",
             );
           }
         }
@@ -86,29 +99,37 @@ class ApiUtils {
           return;
         }
         for (var entry in resultMap.entries) {
-          if (entry.value is! Map<String, dynamic>) {
-            PublicCommons.logger.e(
-              "读取路径：$filePath的json文件解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry.value}",
-            );
-            continue;
+          var value = entry.value;
+          Map<String, dynamic> apiJson = {};
+          if (value is! Map<String, dynamic>) {
+            try {
+              apiJson.addAll(DataTypeConvertUtils.toMapStrDyMap(value));
+            } catch (e2) {
+              PublicCommons.logger.e(
+                "读取路径：$filePath的json文件解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry.value}",
+              );
+              continue;
+            }
+          } else {
+            apiJson.addAll(value);
           }
-          CurrentConfigs.enNameToApiJsonMap[entry.key] = entry.value;
+          handleDefaultApiKeyInfo(apiJson);
+          CurrentConfigs.enNameToApiJsonMap[entry.key] = apiJson;
           var validateResult = ApiConfigModel.validateField(
-            entry.value,
+            apiJson,
           );
           if (!validateResult.flag) {
-
             PublicCommons.logger.e(
-              "读取路径：$filePath的json文件解析具体内容验证不通过，数据：${entry.value}，验证信息：${JsonToModelUtils.getValidateResultMsg(validateResult)}",
+              "读取路径：$filePath的json文件解析具体内容验证不通过，数据（已合并默认内容）：$apiJson，验证信息：${JsonToModelUtils.getValidateResultMsg(validateResult)}",
             );
             continue;
           }
           try {
-            ApiConfigModel apiModel = ApiConfigModel.fromJson(entry.value);
+            ApiConfigModel apiModel = ApiConfigModel.fromJson(apiJson);
             CurrentConfigs.enNameToApiMap[apiModel.apiBaseModel.enName] = apiModel;
           } catch (e1) {
             PublicCommons.logger.e(
-              "读取路径：$filePath的json文件解析具体内容错误，数据：${entry.value}，报错：$e1",
+              "读取路径：$filePath的json文件解析具体内容错误，数据（已合并默认内容）：$apiJson，报错：$e1",
             );
           }
         }
@@ -121,5 +142,115 @@ class ApiUtils {
     PublicCommons.logger.d(
       "读取路径：$filePath的json文件后api信息：enNameToApiJsonMap：${CurrentConfigs.enNameToApiJsonMap}, enNameToApiMap: ${CurrentConfigs.enNameToApiMap}",
     );
+  }
+
+
+  static handleDefaultApiKeyInfo(Map<String, dynamic> map) {
+    String apiKeyConfig = map["apiKeyConfig"] ?? "";
+    if (apiKeyConfig.isEmpty) {
+      return;
+    }
+    Map<String, dynamic> apiKeyConfigMap = NetApiDefaultKeyCommon.apiKeys[apiKeyConfig] ?? {};
+    if (apiKeyConfigMap.isEmpty) {
+      return;
+    }
+    Map<String ,dynamic> netApiMap = map["netApiMap"] ?? {};
+    if (netApiMap.isEmpty) {
+      return;
+    }
+    for (var entry in netApiMap.entries) {
+      var defaultApi = apiKeyConfigMap[entry.key];
+      Map<String, dynamic>? defaultApiMap;
+      if (defaultApi is Map<String, dynamic>) {
+        defaultApiMap = defaultApi;
+      } else {
+        try {
+          defaultApiMap = DataTypeConvertUtils.toMapStrDyMap(defaultApi);
+        } catch (e) {
+          continue;
+        }
+      }
+      if (defaultApiMap.isEmpty) {
+        continue;
+      }
+      Map<String, dynamic>? dataJson;
+      if (entry.value is Map<String, dynamic>) {
+        dataJson = entry.value;
+      } else {
+        try {
+          dataJson = DataTypeConvertUtils.toMapStrDyMap(entry.value);
+        } catch (e) {
+          PublicCommons.logger.e(
+            "解析api信息中的[${entry.key}]错误，内容不是Map<String, dynamic>类型，无法解析：${entry.value}；报错：$e",
+          );
+          continue;
+        }
+      }
+      dataJson ??= {};
+      netApiMap[entry.key] = dataJson;
+      mergeMapInfo(dataJson, defaultApiMap);
+    }
+
+    /*Map<String, dynamic>? listApi = netApiMap["listApi"];
+    if (listApi != null) {
+      mergeMapInfo(listApi, apiKeyConfigMap);
+    }*/
+  }
+
+
+  static void mergeMapInfo(Map<String, dynamic> targetMap, Map<String, dynamic> sourceMap) {
+    for (var entry in sourceMap.entries) {
+      if (entry.key == "filterCriteriaList") {
+        if (entry.value == null) {
+          continue;
+        }
+        List<Map<String, dynamic>> filterCriteriaList = DataTypeConvertUtils.toListMapStrDyMap(entry.value);
+        if (filterCriteriaList.isEmpty) {
+          continue;
+        }
+        List<Map<String, dynamic>> targetFilterCriteriaList = [];
+        if (targetMap[entry.key] == null) {
+          targetMap[entry.key] = filterCriteriaList;
+          continue;
+        } else {
+          try {
+            targetFilterCriteriaList = DataTypeConvertUtils.toListMapStrDyMap(targetMap[entry.key]);
+          } catch (e) {
+            continue;
+          }
+        }
+        if (targetFilterCriteriaList.isEmpty) {
+          targetMap[entry.key] = filterCriteriaList;
+          continue;
+        }
+        List<String> targetFilterCriteriaKeyList = targetFilterCriteriaList.map((item) => (item["enName"] ?? item["name"] ?? "").toString()).toList();
+        for (var filterCriteria in filterCriteriaList) {
+          if (!targetFilterCriteriaKeyList.contains((filterCriteria["enName"] ?? filterCriteria["name"] ?? "").toString())) {
+            targetFilterCriteriaList.add(filterCriteria);
+          }
+        }
+        targetMap[entry.key] = filterCriteriaList;
+        continue;
+      }
+      if (entry.value is Map) {
+        if (entry.value.isEmpty) {
+          continue;
+        }
+        Map<String, dynamic> config = DataTypeConvertUtils.toMapStrDyMap(entry.value);
+        Map<String, dynamic> map = {};
+        if (targetMap[entry.key] == null) {
+          map = {};
+        } else {
+          map = DataTypeConvertUtils.toMapStrDyMap(targetMap[entry.key]);
+        }
+        targetMap[entry.key] = map;
+        mergeMapInfo(map, config);
+        continue;
+      }
+      var targetValue = targetMap[entry.key];
+      if (targetValue == null) {
+        targetMap[entry.key] = entry.value;
+      }
+    }
   }
 }

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:source_player/models/video_type_model.dart';
 
 import '../cache/db/current_configs.dart';
 import '../http/dio_utils.dart';
@@ -51,12 +52,55 @@ class NetResourceHomeController extends GetxController {
     // await loadCurrentApi();
     if (errorMsg.value.isEmpty) {
       // 加载资源列表
-      await loadNetResourceList();
+      // await loadNetResourceList();
+      await loadVideoType();
       // await loadType();
     }
     loading(false);
 
     super.onInit();
+  }
+
+  loadVideoType() {
+    NetApiModel? typeListApi = CurrentConfigs.currentApi!.netApiMap["typeListApi"];
+    if (typeListApi == null) {
+      return;
+    }
+    String url = CurrentConfigs.currentApi!.apiBaseModel.baseUrl + typeListApi.path;
+    Map<String, dynamic> params = {};
+    Map<String, dynamic>? staticParams = typeListApi.requestParams.staticParams;
+    if (staticParams != null && staticParams.isNotEmpty) {
+      params.addAll({
+        ...staticParams
+      });
+    }
+    Options options = Options(
+      //响应流上前后两次接受到数据的间隔，单位为毫秒。
+      receiveTimeout: const Duration(milliseconds: 60000),
+    );
+    DioUtils().get(url, params: params, options: options).then((res) {
+      logger.d("请求返回数据：$res");
+      Map<String, dynamic> dataMap = {};
+      var data = res.data;
+      logger.d(data.runtimeType);
+      if (data is Map<String, dynamic>) {
+        dataMap = data;
+      } else if (data is String) {
+        try {
+          dataMap = jsonDecode(data);
+        } catch (e) {
+          logger.e("结果转换成json报错：$e");
+        }
+      }
+      PageModel<VideoTypeModel> result;
+      if (typeListApi.responseParams.resultConvertJsFn == null || typeListApi.responseParams.resultConvertJsFn!.isEmpty) {
+        result = DefaultResponseParser(VideoTypeModel.fromJson).listDataParseFromJson(
+            dataMap, typeListApi);
+      } else {
+        result = DefaultResponseParser(VideoTypeModel.fromJson).listDataParseFromJsonAndJsFn(dataMap, typeListApi);
+      }
+      logger.d("数据转换后：${result.toJson()}");
+    });
   }
 
   loadType() {

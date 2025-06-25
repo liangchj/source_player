@@ -7,10 +7,10 @@ class VideoModel {
   final String name;
   // 名称（英文名称或拼音）
   final String? enName;
-  // 类型Id列表
-  final List<String> typeIdList;
-  // 类型名称列表
-  final List<String> typeNameList;
+  // 类型Id
+  final String typeId;
+  // 类型名称
+  final String typeName;
   // 父级类型id
   final String? parentTypeId;
   // 分类列表
@@ -26,7 +26,7 @@ class VideoModel {
   // 主演
   final List<String>? actorList;
   // 连载数量（集数）
-  final int? serial;
+  final String? remark;
   // 数量（集数）
   final int? total;
   // 时长
@@ -50,8 +50,8 @@ class VideoModel {
     required this.id,
     required this.name,
     this.enName,
-    required this.typeIdList,
-    required this.typeNameList,
+    required this.typeId,
+    required this.typeName,
     this.parentTypeId,
     this.classList,
     this.coverUrl,
@@ -59,7 +59,7 @@ class VideoModel {
     this.detailContent,
     this.directorList,
     this.actorList,
-    this.serial,
+    this.remark,
     this.total,
     this.duration,
     this.score,
@@ -74,10 +74,10 @@ class VideoModel {
   factory VideoModel.fromJson(Map<String, dynamic> json) {
     return VideoModel(
       id: (json["id"] ?? "").toString(),
-      name: (json["id"] ?? "").toString(),
+      name: (json["name"] ?? "").toString(),
       enName: json["enName"],
-      typeIdList: MapDataUtils.getListFromMap(json, "typeIdList"),
-      typeNameList: MapDataUtils.getListFromMap(json, "typeNameList"),
+      typeId: (json["typeId"] ?? "").toString(),
+      typeName: (json["typeName"] ?? "").toString(),
       parentTypeId: (json["parentTypeId"] ?? "").toString(),
       classList:  MapDataUtils.getListFromMap(json, "classList"),
       coverUrl: json["coverUrl"],
@@ -85,7 +85,7 @@ class VideoModel {
       detailContent: json["detailContent"],
       directorList:  MapDataUtils.getListFromMap(json, "directorList"),
       actorList:  MapDataUtils.getListFromMap(json, "actorList"),
-      // serial:  MapDataUtils.getIntFromMap(json, "serial"),
+      remark:  json["remark"],
       total:  MapDataUtils.getIntFromMap(json, "total"),
       duration:  MapDataUtils.getDurationFromMap(json, "duration"),
       score:  MapDataUtils.getDoubleFromMap(json, "score"),
@@ -93,12 +93,35 @@ class VideoModel {
       languageList:  MapDataUtils.getListFromMap(json, "languageList"),
       year:  json["year"],
       version:  json["version"],
+      addTime:  MapDataUtils.getDateTimeFromMap(json, "addTime"),
+      modTime:  MapDataUtils.getDateTimeFromMap(json, "modTime"),
     );
   }
 
-
-
   Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name};
+    return {
+      "id": id,
+      "name": name,
+      "enName": enName,
+      "typeId": typeId,
+      "typeName": typeName,
+      "parentTypeId": parentTypeId,
+      "classList": classList,
+      "coverUrl": coverUrl,
+      "blurb": blurb,
+      "detailContent": detailContent,
+      "directorList": directorList,
+      "actorList": actorList,
+      "remark": remark,
+      "total": total,
+      "duration": duration,
+      "score": score,
+      "area": area,
+      "languageList": languageList,
+      "year": year,
+      "version": version,
+      "addTime": addTime,
+      "modTime": modTime,
+    };
   }
 }
