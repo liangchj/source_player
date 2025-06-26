@@ -5,6 +5,7 @@ import 'package:source_player/models/video_type_model.dart';
 import '../cache/db/current_configs.dart';
 import '../models/filter_criteria_item_model.dart';
 import '../models/filter_criteria_list_model.dart';
+import '../utils/net_request_utils.dart';
 
 class NetResourceListController extends GetxController {
   final VideoTypeModel videoType;
@@ -17,6 +18,8 @@ class NetResourceListController extends GetxController {
   /// 过滤条件列表
   var filterCriteriaList = <FilterCriteriaListModel>[].obs;
 
+  var toastList = <String>[].obs;
+
   @override
   void onInit() {
     loadFilterCriteriaList();
@@ -27,9 +30,8 @@ class NetResourceListController extends GetxController {
 
   loadResourceList({VideoTypeModel? parentType}) {}
 
-
-  void loadFilterCriteriaList() {
-
+  /// 加载过滤列表
+  Future<void> loadFilterCriteriaList() async {
     NetApiModel? typeListApi =
         CurrentConfigs.currentApi!.netApiMap["typeListApi"];
     if (typeListApi == null ||
@@ -42,35 +44,56 @@ class NetResourceListController extends GetxController {
       if (filterCriteria.enName == "type") {
         continue;
       }
-      if (filterCriteria.filterCriteriaParamsList != null && filterCriteria.filterCriteriaParamsList!.isNotEmpty) {
-        filterCriteriaList.add(FilterCriteriaListModel(
-          enName: filterCriteria.enName,
-          name: filterCriteria.name,
-          filterCriteriaItemList: [
-            FilterCriteriaItemModel(
-              value: "",
-              label: "全部",
-              activated: true,
-            ),
-            ...filterCriteria.filterCriteriaParamsList!.map((e) => FilterCriteriaItemModel(
-              value: e.value,
-              label: e.label,
-              activated: false,
-            ))
-          ],
-          multiples: filterCriteria.multiples ?? false,
-          requestKey: filterCriteria.requestKey,
-        ));
+      List<FilterCriteriaParamsModel>? filterCriteriaParamsList;
+      if (filterCriteria.netApi != null) {
+        try {
+          var loadPageResource = await NetRequestUtils.loadPageResource(
+            filterCriteria.netApi!,
+            FilterCriteriaParamsModel.fromJson,
+          );
+          filterCriteriaParamsList = loadPageResource.modelList;
+        } catch (e) {
+          toastList.add(e.toString());
+          continue;
+        }
+      } else if (filterCriteria.filterCriteriaParamsList != null &&
+          filterCriteria.filterCriteriaParamsList!.isNotEmpty) {
+        filterCriteriaParamsList = filterCriteria.filterCriteriaParamsList;
+      } else {
+        continue;
+      }
+
+      if (filterCriteriaParamsList != null &&
+          filterCriteriaParamsList.isNotEmpty) {
+        filterCriteriaParamsList = filterCriteriaParamsList;
+        filterCriteriaList.add(
+          FilterCriteriaListModel(
+            enName: filterCriteria.enName,
+            name: filterCriteria.name,
+            filterCriteriaItemList: [
+              FilterCriteriaItemModel(value: "", label: "全部", activated: true),
+              ...filterCriteriaParamsList.map(
+                (e) => FilterCriteriaItemModel(
+                  value: e.value,
+                  label: e.label,
+                  activated: false,
+                ),
+              ),
+            ],
+            multiples: filterCriteria.multiples ?? false,
+            requestKey: filterCriteria.requestKey,
+          ),
+        );
       }
     }
-
   }
+
   /// 添加类型过滤条件
   void addTypeFilterCriteria(NetApiModel typeListApi) {
     var childTypeList = CurrentConfigs.currentApiVideoTypeMap[videoType.id];
     if (childTypeList != null && childTypeList.isNotEmpty) {
       var typeFilterCriteria = typeListApi.filterCriteriaList?.firstWhere(
-            (e) => e.enName == "type",
+        (e) => e.enName == "type",
       );
       if (typeFilterCriteria != null) {
         List<FilterCriteriaItemModel> filterCriteriaItemList = [
@@ -78,13 +101,19 @@ class NetResourceListController extends GetxController {
             value: videoType.id,
             label: "全部",
             activated: true,
-          )
+          ),
         ];
-        filterCriteriaItemList.addAll(childTypeList.map((e) => FilterCriteriaItemModel(
-          value: e.id,
-          label: e.name,
-          activated: false,
-        )).toList());
+        filterCriteriaItemList.addAll(
+          childTypeList
+              .map(
+                (e) => FilterCriteriaItemModel(
+                  value: e.id,
+                  label: e.name,
+                  activated: false,
+                ),
+              )
+              .toList(),
+        );
         FilterCriteriaListModel filterCriteriaModel = FilterCriteriaListModel(
           enName: videoType.enName ?? videoType.name,
           name: videoType.name,
@@ -95,5 +124,15 @@ class NetResourceListController extends GetxController {
         filterCriteriaList.add(filterCriteriaModel);
       }
     }
+  }
+
+  Future<List<FilterCriteriaParamsModel>> getFilterCriteria(
+    NetApiModel netApi,
+  ) async {
+    var loadPageResource = await NetRequestUtils.loadPageResource(
+      netApi,
+      FilterCriteriaParamsModel.fromJson,
+    );
+    return [];
   }
 }
