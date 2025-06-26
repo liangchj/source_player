@@ -6,7 +6,7 @@ class NetApiDefaultKeyCommon {
   static Map<String,  dynamic> maccmsListDynamicRequestParams = {
     "page": "pg",
     "pageSize": "limit",
-    "typeIds": "type_id",
+    "typeId": "type_id",
     "parentTypeId": "type_id_1"
   };
   // 响应结果基本key
@@ -67,6 +67,49 @@ class NetApiDefaultKeyCommon {
           "id": "type_id",
           "name": "type_name",
           "parentId": "type_pid",
+        }
+      },
+      "filterCriteriaList": [
+        {
+          "enName": "type",
+          "name": "类型",
+          "requestKey": "t",
+          // 动态传入
+        },
+        {
+          "enName": "year",
+          "name": "年份",
+          "requestKey": "time",
+          "filterCriteriaParamsList": [
+            {
+              "value": '2022',
+              "label": '2022',
+            },
+            {
+              "value": '2021',
+              "label": '2021',
+            },
+            {
+              "value": '2020',
+              "label": '2020',
+            },
+            {
+              "value": '2019',
+              "label": '2019',
+            },
+            {
+              "value": '2018',
+              "label": '2018',
+            }
+          ]
+        }
+      ],
+      "extendMap": {
+        "typeFilterCriteria":  {
+          "enName": "type",
+          "name": "类型",
+          "requestKey": "t",
+          "multiples": false
         }
       }
     },

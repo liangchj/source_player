@@ -18,20 +18,48 @@ class _NetResourceHomePageState extends State<NetResourceHomePage> {
   );
   @override
   Widget build(BuildContext context) {
+    return Scaffold(body: _loadApiConfig());
+  }
+
+  Widget _loadApiConfig() {
     return Obx(
-      () => Scaffold(
-        body: controller.loading.value
-            ? const Center(child: LoadingWidget(textWidget: Text("资源加载中...")))
-            : _buildContent(),
-      ),
+      () => controller.loading.value
+          ? const Center(child: LoadingWidget(textWidget: Text("加载api配置中...")))
+          : controller.apiConfigLoadSuc.value
+          ? _loadTypeList()
+          : Center(child: Text("加载api配置失败：${controller.errorMsg.value}")),
     );
   }
 
-  Widget _buildContent() {
+  Widget _loadTypeList() {
     return Obx(
-      () => controller.errorMsg.isEmpty
-          ? Center(child: Text("加载api成功，${CurrentConfigs.currentApi?.apiBaseModel.name}"))
-          : Center(child: Text("加载api失败：${controller.errorMsg.value}")),
+      () => DefaultTabController(
+        length: controller.topTypeList.length,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              CurrentConfigs.currentApi?.apiBaseModel.name ?? "未配置api",
+            ),
+            bottom: TabBar(
+              padding: EdgeInsets.only(top: 0),
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              controller: controller.tabController,
+              tabs:
+                  controller.typeLoading.value || !controller.typeLoadSuc.value
+                  ? []
+                  : controller.topTypeList.map((e) => Tab(text: e.name)).toList(),
+            ),
+          ),
+          body: controller.typeLoading.value
+              ? const Center(
+                  child: LoadingWidget(textWidget: Text("加载视频类型中...")),
+                )
+              : controller.typeLoadSuc.value
+              ? TabBarView(children: controller.typeTabBarViews)
+              : Center(child: Text("加载视频类型失败：${controller.errorMsg.value}")),
+        ),
+      ),
     );
   }
 }

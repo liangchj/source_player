@@ -6,9 +6,9 @@ class VideoTypeModel {
 
   VideoTypeModel({
     required this.id,
-    required this.enName,
+    this.enName,
     required this.name,
-    required this.parentId,
+    this.parentId,
   });
   factory VideoTypeModel.fromJson(Map<String, dynamic> json) {
     return VideoTypeModel(

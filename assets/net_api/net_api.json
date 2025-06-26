@@ -52,7 +52,11 @@
         },
         "searchApi": {
         },
-        "typeListApi": {}
+        "typeListApi": {
+          "extendMap": {
+            "topTypeId": "0"
+          }
+        }
       }
   }
 }
