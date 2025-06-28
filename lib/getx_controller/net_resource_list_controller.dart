@@ -1,5 +1,8 @@
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:get/get.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:source_player/models/loading_state_model.dart';
+import 'package:source_player/models/video_model.dart';
 import 'package:source_player/models/video_type_model.dart';
 
 import '../cache/db/current_configs.dart';
@@ -11,24 +14,44 @@ class NetResourceListController extends GetxController {
   final VideoTypeModel videoType;
   NetResourceListController(this.videoType);
 
-  var filterCriteriaLoading = true.obs;
-  var filterCriteriaLoadedSuc = false.obs;
-  var filterCriteriaErrorMsg = "".obs;
+  var isRefreshing = false.obs;
+
+  var filterCriteriaLoadingState = LoadingStateModel().obs;
 
   /// 过滤条件列表
   var filterCriteriaList = <FilterCriteriaListModel>[].obs;
 
   var toastList = <String>[].obs;
 
+  late PagingController<int, VideoModel> pagingController;
+  // 资源列表
+  var resourceListErrorMsg = "".obs;
+
   @override
   void onInit() {
     loadFilterCriteriaList();
-    filterCriteriaLoading(false);
-    filterCriteriaLoadedSuc(true);
+    filterCriteriaLoadingState(LoadingStateModel(
+      loading: false,
+      loadedSuc: true,
+      errorMsg: filterCriteriaLoadingState.value.errorMsg,
+    ));
+
+    pagingController = PagingController<int, VideoModel>(
+      getNextPageKey: (PagingState<int, VideoModel> state) {
+        if (!state.hasNextPage || state.lastPageIsEmpty) return null;
+        return state.nextIntPageKey;
+      },
+      fetchPage: (int pageKey) async {
+        // await Future.delayed(Duration(milliseconds: 3000));
+        return await loadTypeResource(pageKey);
+      },
+    );
     super.onInit();
   }
 
-  loadResourceList({VideoTypeModel? parentType}) {}
+  changeFilterCriteria() {
+    pagingController.refresh();
+  }
 
   /// 加载过滤列表
   Future<void> loadFilterCriteriaList() async {
@@ -92,7 +115,7 @@ class NetResourceListController extends GetxController {
   void addTypeFilterCriteria(NetApiModel typeListApi) {
     var childTypeList = CurrentConfigs.currentApiVideoTypeMap[videoType.id];
     if (childTypeList != null && childTypeList.isNotEmpty) {
-      var typeFilterCriteria = typeListApi.filterCriteriaList?.firstWhere(
+      var typeFilterCriteria = typeListApi.filterCriteriaList?.firstWhereOrNull(
         (e) => e.enName == "type",
       );
       if (typeFilterCriteria != null) {
@@ -115,8 +138,8 @@ class NetResourceListController extends GetxController {
               .toList(),
         );
         FilterCriteriaListModel filterCriteriaModel = FilterCriteriaListModel(
-          enName: videoType.enName ?? videoType.name,
-          name: videoType.name,
+          enName: "typeId",
+          name: "类型",
           filterCriteriaItemList: filterCriteriaItemList,
           multiples: typeFilterCriteria.multiples ?? false,
           requestKey: typeFilterCriteria.requestKey,
@@ -126,13 +149,99 @@ class NetResourceListController extends GetxController {
     }
   }
 
-  Future<List<FilterCriteriaParamsModel>> getFilterCriteria(
-    NetApiModel netApi,
-  ) async {
-    var loadPageResource = await NetRequestUtils.loadPageResource(
-      netApi,
-      FilterCriteriaParamsModel.fromJson,
+  Future<void> onRefresh() async {
+    isRefreshing(true);
+    pagingController.value = pagingController.value.copyWith(
+      isLoading: false,
+      error: null,
     );
-    return [];
+    List<VideoModel> list = await loadTypeResource(1);
+    if (resourceListErrorMsg.isNotEmpty) {
+      pagingController.value = pagingController.value.copyWith(
+        pages: [list],
+        keys: [1],
+        isLoading: false,
+        error: null,
+      );
+    } else {
+      pagingController.value = pagingController.value.copyWith(
+        isLoading: false,
+      );
+    }
+    isRefreshing(false);
+  }
+
+  Future<List<VideoModel>> loadTypeResource(
+    int page, {
+    int limit = 20,
+    String? search,
+  }) async {
+    List<VideoModel> list = [];
+    try {
+      print("加载中：${pagingController.value.keys}");
+      Map<String, dynamic> params = {};
+      var dynamicParams = CurrentConfigs.listApi!.requestParams.dynamicParams;
+      if (dynamicParams == null) {
+        params["page"] = page;
+      } else {
+        for (var entry in dynamicParams.entries) {
+          String value = entry.value;
+          dynamic paramValue;
+          switch (entry.key) {
+            case "page":
+              paramValue = page;
+              break;
+            case "pageSize":
+              paramValue = limit;
+              break;
+            case "parentTypeId":
+              FilterCriteriaListModel? typeFilterCriteria = filterCriteriaList
+                  .firstWhereOrNull((e) => e.enName == "typeId");
+              if (typeFilterCriteria != null) {
+                var childTypeId = typeFilterCriteria.filterCriteriaItemList
+                    .firstWhereOrNull((e) => e.activated)
+                    ?.value;
+                if (childTypeId != null && childTypeId.toString().isNotEmpty) {
+                  break;
+                }
+              }
+              paramValue = videoType.id;
+              break;
+            default:
+              FilterCriteriaListModel? filterCriteria = filterCriteriaList
+                  .firstWhereOrNull((e) => e.enName == entry.key);
+              if (filterCriteria != null) {
+                paramValue = filterCriteria.filterCriteriaItemList
+                    .firstWhereOrNull((e) => e.activated)
+                    ?.value;
+              }
+              break;
+          }
+          if (paramValue != null) {
+            params[value] = paramValue;
+          }
+        }
+      }
+      var res = await NetRequestUtils.loadPageResource<VideoModel>(
+        CurrentConfigs.listApi!,
+        VideoModel.fromJson,
+        params: params,
+      );
+      if (isRefreshing.value) {
+        pagingController.value = pagingController.value.copyWith(
+          pages: null,
+          keys: null,
+          hasNextPage: res.page < res.totalPage,
+        );
+      } else {
+        pagingController.value = pagingController.value.copyWith(
+          hasNextPage: res.page < res.totalPage,
+        );
+      }
+      list = res.modelList ?? [];
+    } catch (e) {
+      resourceListErrorMsg(e.toString());
+    }
+    return list;
   }
 }

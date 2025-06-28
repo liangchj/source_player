@@ -6,8 +6,8 @@ class NetApiDefaultKeyCommon {
   static Map<String,  dynamic> maccmsListDynamicRequestParams = {
     "page": "pg",
     "pageSize": "limit",
-    "typeId": "type_id",
-    "parentTypeId": "type_id_1"
+    "typeId": "t",
+    "parentTypeId": "t"
   };
   // 响应结果基本key
   static Map<String,  dynamic> maccmsResponseBaseKeys = {
@@ -76,7 +76,7 @@ class NetApiDefaultKeyCommon {
           "requestKey": "t",
           // 动态传入
         },
-        {
+        /*{
           "enName": "year",
           "name": "年份",
           "requestKey": "time",
@@ -102,7 +102,7 @@ class NetApiDefaultKeyCommon {
               "label": '2018',
             }
           ]
-        }
+        }*/
       ],
       "extendMap": {
         "typeFilterCriteria":  {
@@ -119,7 +119,7 @@ class NetApiDefaultKeyCommon {
         "headerParams": {},
         // 静态参数
         "staticParams": {
-          "ac": "list",
+          "ac": "detail",
           // 因为不是所有的api都支持wd参数（搜素关键字），所以需要自定义参数
         },
         // 动态参数

@@ -14,7 +14,8 @@ import '../http/dio_utils.dart';
 import '../models/video_model.dart';
 import '../utils/api_utils.dart';
 
-class NetResourceHomeController extends GetxController {
+class NetResourceHomeController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   Logger logger = Logger();
 
   /// 加载中
@@ -23,7 +24,7 @@ class NetResourceHomeController extends GetxController {
   var apiConfigLoadSuc = false.obs;
 
   /// 类型切换controller
-  TabController? tabController;
+  var tabController = Rx<TabController?>(null);
 
   /// 每个类型的列表
   List<Widget> typeTabBarViews = [];
@@ -33,6 +34,7 @@ class NetResourceHomeController extends GetxController {
 
   /// 类型列表
   var typeList = <VideoTypeModel>[].obs;
+
   /// 顶级类型列表
   var topTypeList = <VideoTypeModel>[].obs;
   var typeLoadSuc = false.obs;
@@ -62,6 +64,7 @@ class NetResourceHomeController extends GetxController {
         errorMsg("当前未设置api");
       } else {
         CurrentConfigs.currentApi = CurrentConfigs.enNameToApiMap.values.first;
+        CurrentConfigs.updateCurrentApiInfo();
       }
     } else {
       // 加载其他api
@@ -88,14 +91,12 @@ class NetResourceHomeController extends GetxController {
 
   setFilterCriteria() {
     NetApiModel? typeListApi =
-    CurrentConfigs.currentApi!.netApiMap["typeListApi"];
-    if (typeListApi == null || typeListApi.filterCriteriaList == null || typeListApi.filterCriteriaList!.isEmpty) {
+        CurrentConfigs.currentApi!.netApiMap["typeListApi"];
+    if (typeListApi == null ||
+        typeListApi.filterCriteriaList == null ||
+        typeListApi.filterCriteriaList!.isEmpty) {
       return;
     }
-    /*var typeFilterCriteria = typeListApi.filterCriteriaList?.firstWhere((e) => e.enName == "type");
-    if (typeFilterCriteria != null) {
-      typeFilterCriteria.filterCriteriaParamsList = typeListApi.filterCriteriaList!.firstWhere((e) => e.enName == "type").filterCriteriaParamsList;
-    }*/
   }
 
   /// 视频类型
@@ -103,6 +104,7 @@ class NetResourceHomeController extends GetxController {
     typeList([]);
     typeTabBarViews.clear();
     typeLoadSuc(false);
+    tabController(null);
     CurrentConfigs.currentApiVideoTypeMap = {};
     String desc = "获取视频类型api";
     NetApiModel? typeListApi =
@@ -111,11 +113,10 @@ class NetResourceHomeController extends GetxController {
       errorMsg("当前api未设置$desc");
       return;
     }
-    // CurrentConfigs.currentApiRequestParamKeyMap["type"] = typeListApi.re;
     String url =
         CurrentConfigs.currentApi!.apiBaseModel.baseUrl + typeListApi.path;
     Map<String, dynamic> headers = {
-      ...typeListApi.requestParams.headerParams ?? {}
+      ...typeListApi.requestParams.headerParams ?? {},
     };
     Map<String, dynamic> params = {};
     Map<String, dynamic>? staticParams = typeListApi.requestParams.staticParams;
@@ -127,9 +128,13 @@ class NetResourceHomeController extends GetxController {
       receiveTimeout: PublicCommons.netLoadTimeOutDuration,
     );
     try {
-      var res = await DioUtils().get(url, params: params,
-          options: options,
-          extra: {"customError": ""}, shouldRethrow:  true);
+      var res = await DioUtils().get(
+        url,
+        params: params,
+        options: options,
+        extra: {"customError": ""},
+        shouldRethrow: true,
+      );
       var data = res.data;
       Map<String, dynamic> dataMap = {};
       logger.d(data.runtimeType);
@@ -161,12 +166,16 @@ class NetResourceHomeController extends GetxController {
           topTypeList([]);
         } else {
           String topTypeId = typeListApi.extendMap?["topTypeId"] ?? "0";
-          topTypeList(typeList.where((element) =>
-          element.parentId == topTypeId).toList());
+          topTypeList(
+            typeList.where((element) => element.parentId == topTypeId).toList(),
+          );
+
+          tabController(TabController(length: topTypeList.length, vsync: this));
 
           for (var element in typeList) {
             String parentTypeId = element.parentId ?? "";
-            List<VideoTypeModel> childTypeList = CurrentConfigs.currentApiVideoTypeMap[parentTypeId] ?? [];
+            List<VideoTypeModel> childTypeList =
+                CurrentConfigs.currentApiVideoTypeMap[parentTypeId] ?? [];
             childTypeList.add(element);
             CurrentConfigs.currentApiVideoTypeMap[parentTypeId] = childTypeList;
           }

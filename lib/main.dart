@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,7 +12,6 @@ void main() {
   SharedPreferencesCache();
   // 初始化dio
   DioUtils();
-
   runApp(
     GetMaterialApp(
       // getPages: AppPages.pages,
@@ -27,10 +27,18 @@ class SourceVideoPlayerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '源视频',
+      scrollBehavior: const TouchBehaviour(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const AppHomePage(),
     );
   }
+}
+
+class TouchBehaviour extends ScrollBehavior {
+  const TouchBehaviour();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => PointerDeviceKind.values.toSet();
 }

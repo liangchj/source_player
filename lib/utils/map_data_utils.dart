@@ -47,6 +47,9 @@ class MapDataUtils {
   ];
 
   static final List<String> durationDateTimeFormats = [
+    "dd",
+    "dd日",
+    "dd天",
     "dd HH:mm:ss.SSS",
     "dd HH:mm:ss",
     "dd HH:mm",
@@ -79,6 +82,69 @@ class MapDataUtils {
     "dd天 HH时mm分ss秒",
     "dd天 HH时mm分",
     "dd天 HH时",
+    "dd日 HH时mm分钟ss秒SSS毫秒",
+    "dd日 HH时mm分钟ss秒",
+    "dd日 HH时mm分钟",
+    "dd天 HH时mm分钟ss秒SSS毫秒",
+    "dd天 HH时mm分钟ss秒",
+    "dd天 HH时mm分钟",
+
+    "HH:mm:ss.SSS",
+    "HH:mm:ss",
+    "HH:mm",
+    "HH",
+    "dd",
+    "HH\"h\"mm\"m\"ss\"s\"",
+    "HH\"h\"mm\"m\"",
+    "HH\"h\"",
+    "HH:mm:ss.SSS",
+    "HH:mm:ss",
+    "HH:mm",
+    "HH",
+    "dd日",
+    "HH\"h\"mm\"m\"ss\"s\"",
+    "HH\"h\"mm\"m\"",
+    "HH\"h\"",
+    "HH时mm分ss秒SSS毫秒",
+    "HH时mm分ss秒",
+    "HH时mm分",
+    "HH时",
+    "HH:mm:ss.SSS",
+    "HH:mm:ss",
+    "HH:mm",
+    "HH",
+    "dd天",
+    "HH\"h\"mm\"m\"ss\"s\"",
+    "HH\"h\"mm\"m\"",
+    "HH\"h\"",
+    "HH时mm分ss秒SSS毫秒",
+    "HH时mm分ss秒",
+    "HH时mm分",
+    "HH时",
+    "HH时mm分钟ss秒SSS毫秒",
+    "HH时mm分钟ss秒",
+    "HH时mm分钟",
+    "HH时mm分钟ss秒SSS毫秒",
+    "HH时mm分钟ss秒",
+    "HH时mm分钟",
+
+    "mm:ss.SSS",
+    "mm:ss",
+    "mm",
+    "mm\"m\"ss\"s\"",
+    "mm\"m\"",
+    "mm分ss秒SSS毫秒",
+    "mm分ss秒",
+    "mm分",
+    "mm分钟ss秒SSS毫秒",
+    "mm分钟ss秒",
+    "mm分钟",
+
+    "ss.SSS",
+    "ss",
+    "ss\"s\"",
+    "ss秒SSS毫秒",
+    "ss秒",
   ];
 
   // 提取第一个数值（整数或小数）
@@ -135,7 +201,7 @@ class MapDataUtils {
       dateTime = DateTime.parse(str);
     } catch (e) {
       errorMsg = e.toString();
-      for (var item in dateTimeFormats) {
+      for (var item in durationDateTimeFormats) {
         if (item.length != str.length) {
           continue;
         }

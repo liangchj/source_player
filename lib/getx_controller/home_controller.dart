@@ -5,7 +5,7 @@ import '../pages/media_library_home_page.dart';
 import '../pages/net_resource_home_page.dart';
 import '../pages/personal_home_page.dart';
 
-class HomeController extends GetxController {
+class HomeController extends GetxController with GetSingleTickerProviderStateMixin {
   var appTitle = "网络资源".obs;
   final List<BottomNavigationBarItem> bottomTabList = [
     const BottomNavigationBarItem(label: "网络视频", icon: Icon(Icons.home)),
@@ -19,8 +19,8 @@ class HomeController extends GetxController {
     ),
   ];
   late List<Widget> tabPageList;
-  var currentTabIndex = 0.obs;
-  PageController? tabController;
+  // var currentTabIndex = 0.obs;
+  late TabController tabController;
 
   @override
   void onInit() {
@@ -29,10 +29,12 @@ class HomeController extends GetxController {
       const MediaLibraryHomePage(),
       const PersonalHomePage(),
     ];
-    tabController = PageController(initialPage: currentTabIndex.value);
-    ever(currentTabIndex, (index) {
-      tabController?.jumpToPage(index);
-    });
+    tabController = TabController(length: tabPageList.length, vsync: this);
+    /*ever(currentTabIndex, (index) {
+      tabController.index = index;
+    });*/
+
+
     super.onInit();
   }
 }

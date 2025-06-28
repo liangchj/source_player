@@ -74,11 +74,7 @@ class FilterCriteriaWidget extends StatelessWidget {
                         }
                       }
                       controller.update([updateId]);
-                      controller.loadResourceList(
-                          parentType: VideoTypeModel(
-                        id: e.value,
-                        name: e.label,
-                      ));
+                      controller.changeFilterCriteria();
                     }
                   },
                   child: Container(

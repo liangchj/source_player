@@ -6,6 +6,7 @@ import 'package:source_player/models/video_type_model.dart';
 class CurrentConfigs {
   /// 当前api
   static ApiConfigModel? currentApi;
+  static NetApiModel? listApi;
   static Map<String, Map<String, dynamic>> enNameToApiJsonMap = {};
   // static List<ApiModel> allApiList = [];
   static Map<String, ApiConfigModel> enNameToApiMap = {};
@@ -16,4 +17,13 @@ class CurrentConfigs {
   /*static Map<String, String> currentApiRequestParamKeyMap = {
 
   };*/
+
+
+  static updateCurrentApiInfo() {
+    if (CurrentConfigs.currentApi == null) {
+      listApi = null;
+    } else {
+      listApi = CurrentConfigs.currentApi!.netApiMap["listApi"];
+    }
+  }
 }

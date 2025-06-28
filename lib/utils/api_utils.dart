@@ -23,6 +23,7 @@ class ApiUtils {
         Map<String, dynamic> apiJson = json.decode(apiJsonStr);
         handleDefaultApiKeyInfo(apiJson);
         CurrentConfigs.currentApi = ApiConfigModel.fromJson(apiJson);
+        CurrentConfigs.updateCurrentApiInfo();
       } catch (e) {
         msg = "解析当前api出错：$e";
       }

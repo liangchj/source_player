@@ -32,7 +32,7 @@ class NetRequestUtils {
     try {
       var res = await DioUtils().get(
         url,
-        params: params,
+        params: queryParams,
         options: options,
         extra: {"customError": ""},
         shouldRethrow: true,
@@ -95,7 +95,7 @@ class NetRequestUtils {
     try {
       var res = await DioUtils().get(
         url,
-        params: params,
+        params: queryParams,
         options: options,
         extra: {"customError": ""},
         shouldRethrow: true,
