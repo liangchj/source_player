@@ -21,10 +21,10 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
   Widget build(BuildContext context) {
     super.build(context);
     return Obx(
-      () => controller.loading.value
+      () => controller.apiConfigLoadingState.value.loading
           ? const Center(child: LoadingWidget(textWidget: Text("加载api配置中...")))
-          : !controller.apiConfigLoadSuc.value
-          ? Center(child: Text("加载api配置失败：${controller.errorMsg.value}"))
+          : !controller.apiConfigLoadingState.value.loadedSuc
+          ? Center(child: Text("加载api配置失败：${controller.apiConfigLoadingState.value.errorMsg}"))
           : Column(
               children: [
                 _customAppBar(),
@@ -64,13 +64,13 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
   // 构建类型
   Widget _buildTypeTabBar({Widget? content}) {
     return Obx(() {
-      if (controller.typeLoading.value) {
+      if (controller.typeLoadingState.value.loading) {
         return const Center(
           child: LoadingWidget(textWidget: Text("加载视频类型中...")),
         );
       }
-      if (!controller.typeLoadSuc.value) {
-        return Center(child: Text("加载视频类型失败：${controller.errorMsg.value}"));
+      if (!controller.typeLoadingState.value.loadedSuc) {
+        return Center(child: Text("加载视频类型失败：${controller.typeLoadingState.value.errorMsg}"));
       }
       if (controller.topTypeList.isEmpty) {
         return Center(child: Text("当前api无数据"));

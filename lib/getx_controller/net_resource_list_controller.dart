@@ -14,8 +14,6 @@ class NetResourceListController extends GetxController {
   final VideoTypeModel videoType;
   NetResourceListController(this.videoType);
 
-  var isRefreshing = false.obs;
-
   var filterCriteriaLoadingState = LoadingStateModel().obs;
 
   /// 过滤条件列表
@@ -30,11 +28,13 @@ class NetResourceListController extends GetxController {
   @override
   void onInit() {
     loadFilterCriteriaList();
-    filterCriteriaLoadingState(LoadingStateModel(
-      loading: false,
-      loadedSuc: true,
-      errorMsg: filterCriteriaLoadingState.value.errorMsg,
-    ));
+    filterCriteriaLoadingState(
+      LoadingStateModel(
+        loading: false,
+        loadedSuc: true,
+        errorMsg: filterCriteriaLoadingState.value.errorMsg,
+      ),
+    );
 
     pagingController = PagingController<int, VideoModel>(
       getNextPageKey: (PagingState<int, VideoModel> state) {
@@ -150,35 +150,21 @@ class NetResourceListController extends GetxController {
   }
 
   Future<void> onRefresh() async {
-    isRefreshing(true);
     pagingController.value = pagingController.value.copyWith(
       isLoading: false,
       error: null,
     );
-    List<VideoModel> list = await loadTypeResource(1);
-    if (resourceListErrorMsg.isNotEmpty) {
-      pagingController.value = pagingController.value.copyWith(
-        pages: [list],
-        keys: [1],
-        isLoading: false,
-        error: null,
-      );
-    } else {
-      pagingController.value = pagingController.value.copyWith(
-        isLoading: false,
-      );
-    }
-    isRefreshing(false);
+    await loadTypeResource(1, isRefreshing: true);
   }
 
   Future<List<VideoModel>> loadTypeResource(
     int page, {
     int limit = 20,
     String? search,
+    bool isRefreshing = false,
   }) async {
     List<VideoModel> list = [];
     try {
-      print("加载中：${pagingController.value.keys}");
       Map<String, dynamic> params = {};
       var dynamicParams = CurrentConfigs.listApi!.requestParams.dynamicParams;
       if (dynamicParams == null) {
@@ -227,15 +213,17 @@ class NetResourceListController extends GetxController {
         VideoModel.fromJson,
         params: params,
       );
-      if (isRefreshing.value) {
+      if (isRefreshing) {
         pagingController.value = pagingController.value.copyWith(
-          pages: null,
-          keys: null,
+          pages: [res.modelList ?? []],
+          keys: [page],
           hasNextPage: res.page < res.totalPage,
+          isLoading: false,
         );
       } else {
         pagingController.value = pagingController.value.copyWith(
           hasNextPage: res.page < res.totalPage,
+          isLoading: false,
         );
       }
       list = res.modelList ?? [];

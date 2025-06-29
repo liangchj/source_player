@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:source_player/models/loading_state_model.dart';
 import 'package:source_player/models/video_type_model.dart';
 import 'package:source_player/pages/net_resource_list_page.dart';
 
@@ -18,10 +19,8 @@ class NetResourceHomeController extends GetxController
     with GetSingleTickerProviderStateMixin {
   Logger logger = Logger();
 
-  /// 加载中
-  var loading = true.obs;
-  var errorMsg = "".obs;
-  var apiConfigLoadSuc = false.obs;
+  // 配置加载状态
+  var apiConfigLoadingState = LoadingStateModel().obs;
 
   /// 类型切换controller
   var tabController = Rx<TabController?>(null);
@@ -30,18 +29,19 @@ class NetResourceHomeController extends GetxController
   List<Widget> typeTabBarViews = [];
 
   /// 类型加载中
-  var typeLoading = false.obs;
+  // var typeLoading = false.obs;
+  var typeLoadingState = LoadingStateModel().obs;
 
   /// 类型列表
   var typeList = <VideoTypeModel>[].obs;
 
   /// 顶级类型列表
   var topTypeList = <VideoTypeModel>[].obs;
-  var typeLoadSuc = false.obs;
+  // var typeLoadSuc = false.obs;
 
   @override
   Future<void> onInit() async {
-    loading(true);
+    apiConfigLoadingState(apiConfigLoadingState.value.copyWith(loading: true));
     bool needWaitLoadOtherApi = false;
     // 获取当前api
     var curApiMsg = await ApiUtils.loadCurrentApi();
@@ -49,7 +49,7 @@ class NetResourceHomeController extends GetxController
       if (curApiMsg == "当前未设置api") {
         needWaitLoadOtherApi = true;
       } else {
-        errorMsg(curApiMsg);
+        apiConfigLoadingState(apiConfigLoadingState.value.copyWith(errorMsg: curApiMsg));
       }
     }
     if (needWaitLoadOtherApi) {
@@ -61,7 +61,7 @@ class NetResourceHomeController extends GetxController
         ApiUtils.getAllApiFromCustomJsonFile();
       }
       if (CurrentConfigs.enNameToApiMap.isEmpty) {
-        errorMsg("当前未设置api");
+        apiConfigLoadingState(apiConfigLoadingState.value.copyWith(errorMsg: "当前未设置api"));
       } else {
         CurrentConfigs.currentApi = CurrentConfigs.enNameToApiMap.values.first;
         CurrentConfigs.updateCurrentApiInfo();
@@ -71,9 +71,9 @@ class NetResourceHomeController extends GetxController
       ApiUtils.getAllApiFromCache();
       ApiUtils.getAllApiFromCustomJsonFile();
     }
-    apiConfigLoadSuc(CurrentConfigs.currentApi != null);
-    if (errorMsg.value.isEmpty) {
-      typeLoading(true);
+    apiConfigLoadingState(apiConfigLoadingState.value.copyWith(loadedSuc: CurrentConfigs.currentApi != null));
+    if (apiConfigLoadingState.value.loadedSuc) {
+      typeLoadingState(typeLoadingState.value.copyWith(loading: true));
       // 加载资源列表
       // await loadNetResourceList();
       await loadVideoType();
@@ -84,8 +84,8 @@ class NetResourceHomeController extends GetxController
         createTabBarViews();
       }
     }
-    loading(false);
-    typeLoading(false);
+    apiConfigLoadingState(apiConfigLoadingState.value.copyWith(loading: false));
+    typeLoadingState(typeLoadingState.value.copyWith(loading: false));
     super.onInit();
   }
 
@@ -103,14 +103,14 @@ class NetResourceHomeController extends GetxController
   loadVideoType() async {
     typeList([]);
     typeTabBarViews.clear();
-    typeLoadSuc(false);
+    typeLoadingState(typeLoadingState.value.copyWith(loadedSuc: false));
     tabController(null);
     CurrentConfigs.currentApiVideoTypeMap = {};
     String desc = "获取视频类型api";
     NetApiModel? typeListApi =
         CurrentConfigs.currentApi!.netApiMap["typeListApi"];
     if (typeListApi == null) {
-      errorMsg("当前api未设置$desc");
+      typeLoadingState(typeLoadingState.value.copyWith(errorMsg: "当前api未设置$desc"));
       return;
     }
     String url =
@@ -145,7 +145,7 @@ class NetResourceHomeController extends GetxController
           dataMap = jsonDecode(data);
         } catch (e) {
           logger.e("$desc，结果转换成json报错：$e");
-          errorMsg("结果转换成json报错：\n${e.toString()}");
+          typeLoadingState(typeLoadingState.value.copyWith(errorMsg: "结果转换成json报错：\n${e.toString()}"));
           return;
         }
       }
@@ -180,16 +180,16 @@ class NetResourceHomeController extends GetxController
             CurrentConfigs.currentApiVideoTypeMap[parentTypeId] = childTypeList;
           }
         }
-        typeLoadSuc(true);
+        typeLoadingState(typeLoadingState.value.copyWith(loadedSuc: true));
       }
-      errorMsg(result.msg);
+      typeLoadingState(typeLoadingState.value.copyWith(errorMsg: result.msg));
       // logger.d("$desc，数据转换后：${result.toJson()}");
     } on DioException catch (e) {
       logger.e("$desc，请求报错：\n${e.message}");
-      errorMsg("api连接异常，请检查！\n${e.message}");
+      typeLoadingState(typeLoadingState.value.copyWith(errorMsg: "api连接异常，请检查！\n${e.message}"));
     } catch (e) {
       logger.e("$desc，请求报错：$e");
-      errorMsg("api连接异常，请检查！$e");
+      typeLoadingState(typeLoadingState.value.copyWith(errorMsg: "api连接异常，请检查！$e"));
     }
   }
 
