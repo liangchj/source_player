@@ -104,7 +104,7 @@ class NetResourceListController extends GetxController {
         name: filterCriteria.name,
         filterCriteriaItemList: [],
       );
-      if (classFilterCriteria != null && classFilterCriteria.enName == model.enName) {
+      if (classFilterCriteria != null && classFilterCriteria.enName == model.enName && classFilterCriteria.filterCriteriaItemList.isNotEmpty) {
         continue;
       }
       if (filterCriteria.netApi == null && (filterCriteria.filterCriteriaParamsList == null ||
