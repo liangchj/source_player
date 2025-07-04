@@ -1,4 +1,5 @@
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
+import 'package:flutter_dynamic_api/models/dynamic_params_model.dart';
 import 'package:get/get.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:source_player/models/loading_state_model.dart';
@@ -24,18 +25,19 @@ class NetResourceListController extends GetxController {
   late PagingController<int, VideoModel> pagingController;
   // 资源列表
   var resourceListErrorMsg = "".obs;
+  NetApiModel? listApi;
+
+  List<String> notFilterCriteriaKey = [
+    "page",
+    "pageSize",
+    "totalPage",
+    "totalCount",
+    "keyword",
+  ];
 
   @override
-  void onInit() {
-    loadFilterCriteriaList();
-    filterCriteriaLoadingState(
-      LoadingStateModel(
-        loading: false,
-        loadedSuc: true,
-        errorMsg: filterCriteriaLoadingState.value.errorMsg,
-      ),
-    );
-
+  Future<void> onInit() async {
+    listApi = CurrentConfigs.currentApi!.netApiMap["listApi"];
     pagingController = PagingController<int, VideoModel>(
       getNextPageKey: (PagingState<int, VideoModel> state) {
         if (!state.hasNextPage || state.lastPageIsEmpty) return null;
@@ -46,6 +48,8 @@ class NetResourceListController extends GetxController {
         return await loadTypeResource(pageKey);
       },
     );
+    await loadFilterCriteriaList();
+
     super.onInit();
   }
 
@@ -55,98 +59,130 @@ class NetResourceListController extends GetxController {
 
   /// 加载过滤列表
   Future<void> loadFilterCriteriaList() async {
-    NetApiModel? typeListApi =
-        CurrentConfigs.currentApi!.netApiMap["typeListApi"];
-    if (typeListApi == null ||
-        typeListApi.filterCriteriaList == null ||
-        typeListApi.filterCriteriaList!.isEmpty) {
+    filterCriteriaLoadingState(
+      filterCriteriaLoadingState.value.copyWith(
+        loading: true,
+        loadedSuc: false,
+        errorMsg: null,
+      ),
+    );
+    // 当前视频类型下是否存在子类型
+    FilterCriteriaListModel? classFilterCriteria =
+        CurrentConfigs.currentApiVideoTypeMap[videoType.id];
+    if (classFilterCriteria != null) {
+      filterCriteriaList.add(classFilterCriteria.copyWidth(
+        enName: classFilterCriteria.enName,
+        name: classFilterCriteria.name,
+        filterCriteriaItemList: classFilterCriteria.filterCriteriaItemList,
+      ));
+    }
+    // 获取当前视频类型下的过滤条件
+    if (listApi == null || listApi!.requestParams.dynamicParams == null) {
+      filterCriteriaLoadingState(
+        filterCriteriaLoadingState.value.copyWith(
+          loading: false,
+          loadedSuc: true,
+          errorMsg: null,
+        ),
+      );
       return;
     }
-    addTypeFilterCriteria(typeListApi);
-    for (var filterCriteria in typeListApi.filterCriteriaList!) {
-      if (filterCriteria.enName == "type") {
+    for (var entry in listApi!.requestParams.dynamicParams!.entries) {
+      if (notFilterCriteriaKey.contains(entry.key)) {
         continue;
       }
-      List<FilterCriteriaParamsModel>? filterCriteriaParamsList;
+      if (entry.value.dataSource !=
+          DynamicParamsDataSourceEnum.filterCriteria) {
+        continue;
+      }
+      var filterCriteria = entry.value.filterCriteria;
+      if (filterCriteria == null) {
+        continue;
+      }
+      FilterCriteriaListModel model = FilterCriteriaListModel(
+        enName: filterCriteria.enName,
+        name: filterCriteria.name,
+        filterCriteriaItemList: [],
+      );
+      if (classFilterCriteria != null && classFilterCriteria.enName == model.enName) {
+        continue;
+      }
+      if (filterCriteria.netApi == null && (filterCriteria.filterCriteriaParamsList == null ||
+          filterCriteria.filterCriteriaParamsList!.isEmpty)) {
+        continue;
+      }
       if (filterCriteria.netApi != null) {
-        try {
-          var loadPageResource = await NetRequestUtils.loadPageResource(
-            filterCriteria.netApi!,
-            FilterCriteriaParamsModel.fromJson,
+        PageModel<FilterCriteriaParamsModel> result =
+            await loadFilterCriteriaFromNetApi(filterCriteria.netApi!);
+        if (result.statusCode != ResponseParseStatusCodeEnum.success.code) {
+          filterCriteriaLoadingState(
+            filterCriteriaLoadingState.value.copyWith(
+              loading: false,
+              loadedSuc: false,
+              errorMsg: result.msg ?? "加载过滤条件失败",
+            ),
           );
-          filterCriteriaParamsList = loadPageResource.modelList;
-        } catch (e) {
-          toastList.add(e.toString());
+          break;
+        }
+        if (result.modelList == null || result.modelList!.isEmpty) {
           continue;
         }
-      } else if (filterCriteria.filterCriteriaParamsList != null &&
-          filterCriteria.filterCriteriaParamsList!.isNotEmpty) {
-        filterCriteriaParamsList = filterCriteria.filterCriteriaParamsList;
-      } else {
+        model.filterCriteriaItemList = result.modelList!
+            .map(
+              (e) => FilterCriteriaItemModel(
+                value: e.value,
+                label: e.label,
+                activated: false,
+              ),
+            )
+            .toList();
+
+        model.filterCriteriaItemList.insert(
+          0,
+          FilterCriteriaItemModel(value: "", label: "全部", activated: true),
+        );
+        filterCriteriaList.add(model);
         continue;
       }
 
-      if (filterCriteriaParamsList != null &&
-          filterCriteriaParamsList.isNotEmpty) {
-        filterCriteriaParamsList = filterCriteriaParamsList;
-        filterCriteriaList.add(
-          FilterCriteriaListModel(
-            enName: filterCriteria.enName,
-            name: filterCriteria.name,
-            filterCriteriaItemList: [
-              FilterCriteriaItemModel(value: "", label: "全部", activated: true),
-              ...filterCriteriaParamsList.map(
-                (e) => FilterCriteriaItemModel(
-                  value: e.value,
-                  label: e.label,
-                  activated: false,
-                ),
-              ),
-            ],
-            multiples: filterCriteria.multiples ?? false,
-            requestKey: filterCriteria.requestKey,
-          ),
-        );
-      }
+      model.filterCriteriaItemList = filterCriteria.filterCriteriaParamsList!
+          .map(
+            (e) => FilterCriteriaItemModel(
+              value: e.value,
+              label: e.label,
+              activated: false,
+            ),
+          )
+          .toList();
+
+      model.filterCriteriaItemList.insert(
+        0,
+        FilterCriteriaItemModel(value: "", label: "全部", activated: true),
+      );
+      filterCriteriaList.add(model);
     }
+    filterCriteriaLoadingState(
+      filterCriteriaLoadingState.value.copyWith(
+        loading: false,
+        loadedSuc: true,
+        errorMsg: null,
+      ),
+    );
   }
 
-  /// 添加类型过滤条件
-  void addTypeFilterCriteria(NetApiModel typeListApi) {
-    var childTypeList = CurrentConfigs.currentApiVideoTypeMap[videoType.id];
-    if (childTypeList != null && childTypeList.isNotEmpty) {
-      var typeFilterCriteria = typeListApi.filterCriteriaList?.firstWhereOrNull(
-        (e) => e.enName == "type",
-      );
-      if (typeFilterCriteria != null) {
-        List<FilterCriteriaItemModel> filterCriteriaItemList = [
-          FilterCriteriaItemModel(
-            value: videoType.id,
-            label: "全部",
-            activated: true,
-          ),
-        ];
-        filterCriteriaItemList.addAll(
-          childTypeList
-              .map(
-                (e) => FilterCriteriaItemModel(
-                  value: e.id,
-                  label: e.name,
-                  activated: false,
-                ),
-              )
-              .toList(),
+  /// 从网络中获取过滤条件
+  Future<PageModel<FilterCriteriaParamsModel>> loadFilterCriteriaFromNetApi(
+    NetApiModel api,
+  ) async {
+    Map<String, dynamic> params = {"videoTypeId": videoType.id};
+    PageModel<FilterCriteriaParamsModel> result =
+        await NetRequestUtils.loadPageResource<FilterCriteriaParamsModel>(
+          api,
+          FilterCriteriaParamsModel.fromJson,
+          params: params,
         );
-        FilterCriteriaListModel filterCriteriaModel = FilterCriteriaListModel(
-          enName: "typeId",
-          name: "类型",
-          filterCriteriaItemList: filterCriteriaItemList,
-          multiples: typeFilterCriteria.multiples ?? false,
-          requestKey: typeFilterCriteria.requestKey,
-        );
-        filterCriteriaList.add(filterCriteriaModel);
-      }
-    }
+
+    return result;
   }
 
   Future<void> onRefresh() async {
@@ -171,40 +207,35 @@ class NetResourceListController extends GetxController {
         params["page"] = page;
       } else {
         for (var entry in dynamicParams.entries) {
-          String value = entry.value;
+          // String value = entry.value;
+          String key = entry.value.requestKey;
           dynamic paramValue;
-          switch (entry.key) {
-            case "page":
-              paramValue = page;
-              break;
-            case "pageSize":
-              paramValue = limit;
-              break;
-            case "parentTypeId":
-              FilterCriteriaListModel? typeFilterCriteria = filterCriteriaList
-                  .firstWhereOrNull((e) => e.enName == "typeId");
-              if (typeFilterCriteria != null) {
-                var childTypeId = typeFilterCriteria.filterCriteriaItemList
-                    .firstWhereOrNull((e) => e.activated)
-                    ?.value;
-                if (childTypeId != null && childTypeId.toString().isNotEmpty) {
-                  break;
-                }
-              }
-              paramValue = videoType.id;
-              break;
-            default:
-              FilterCriteriaListModel? filterCriteria = filterCriteriaList
-                  .firstWhereOrNull((e) => e.enName == entry.key);
-              if (filterCriteria != null) {
-                paramValue = filterCriteria.filterCriteriaItemList
-                    .firstWhereOrNull((e) => e.activated)
-                    ?.value;
-              }
-              break;
+          if (entry.value.dataSource == DynamicParamsDataSourceEnum.filterCriteria) {
+            FilterCriteriaListModel? filterCriteria = filterCriteriaList
+                .firstWhereOrNull((e) => e.enName == entry.key);
+            if (filterCriteria != null) {
+              paramValue = filterCriteria.filterCriteriaItemList
+                  .firstWhereOrNull((e) => e.activated)
+                  ?.value;
+            }
+          } else {
+            switch (entry.key) {
+              case "page":
+                paramValue = page;
+                break;
+              case "pageSize":
+                paramValue = limit;
+                break;
+              default:
+                break;
+            }
           }
           if (paramValue != null) {
-            params[value] = paramValue;
+            params[key] = paramValue;
+          } else {
+            if (entry.value.emptyNeedSend) {
+              params[key] = "";
+            }
           }
         }
       }

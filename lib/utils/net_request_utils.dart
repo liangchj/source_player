@@ -48,19 +48,14 @@ class NetRequestUtils {
           throw Exception("结果转换成json报错：\n${e.toString()}");
         }
       }
-
-      PageModel<T> result;
-
-      if (api.responseParams.resultConvertJsFn == null ||
-          api.responseParams.resultConvertJsFn!.isEmpty) {
-        result = DefaultResponseParser(
-          fromJson,
-        ).listDataParseFromJson(dataMap, api);
-      } else {
-        result = DefaultResponseParser(
-          fromJson,
-        ).listDataParseFromJsonAndJsFn(dataMap, api);
+      if (api.extendMap != null) {
+        dataMap.addAll(api.extendMap!);
       }
+
+      PageModel<T> result = DefaultResponseParser(
+        fromJson,
+      ).listDataParse(dataMap, api);
+
       return result;
     } on DioException catch (e) {
       throw Exception("api连接异常，请检查！\n${e.message}");
@@ -71,13 +66,14 @@ class NetRequestUtils {
       throw Exception("api连接异常，请检查！$e");
     }
   }
+
   /// 获取单个
   static Future<DefaultResponseModel<T>> loadResource<T>(
-      NetApiModel api,
-      T Function(Map<String, dynamic>) fromJson, {
-        Map<String, dynamic>? headers,
-        Map<String, dynamic>? params,
-      }) async {
+    NetApiModel api,
+    T Function(Map<String, dynamic>) fromJson, {
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? params,
+  }) async {
     String baseUrl = api.useBaseUrl
         ? CurrentConfigs.currentApi!.apiBaseModel.baseUrl
         : "";
@@ -89,6 +85,7 @@ class NetRequestUtils {
       queryParams.addAll({...staticParams});
     }
     Options options = Options(
+      headers: api.requestParams.headerParams,
       // 响应流上前后两次接受到数据的间隔，单位为毫秒。
       receiveTimeout: PublicCommons.netLoadTimeOutDuration,
     );
@@ -112,18 +109,10 @@ class NetRequestUtils {
         }
       }
 
-      DefaultResponseModel<T> result;
+      DefaultResponseModel<T> result = DefaultResponseParser(
+        fromJson,
+      ).detailParse(dataMap, api);
 
-      if (api.responseParams.resultConvertJsFn == null ||
-          api.responseParams.resultConvertJsFn!.isEmpty) {
-        result = DefaultResponseParser(
-          fromJson,
-        ).detailParseFromJson(dataMap, api);
-      } else {
-        result = DefaultResponseParser(
-          fromJson,
-        ).detailParseFromDynamic(dataMap, api);
-      }
       return result;
     } on DioException catch (e) {
       throw Exception("api连接异常，请检查！\n${e.message}");

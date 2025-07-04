@@ -72,7 +72,7 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
       if (!controller.typeLoadingState.value.loadedSuc) {
         return Center(child: Text("加载视频类型失败：${controller.typeLoadingState.value.errorMsg}"));
       }
-      if (controller.topTypeList.isEmpty) {
+      if (controller.videoTypeList.isEmpty) {
         return Center(child: Text("当前api无数据"));
       }
       if (controller.tabController.value == null) {
@@ -80,7 +80,7 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
       }
 
       return DefaultTabController(
-        length: controller.topTypeList.length,
+        length: controller.videoTypeList.length,
         child: Column(
           children: [
             SizedBox(
@@ -91,7 +91,7 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 controller: controller.tabController.value,
-                tabs: controller.topTypeList
+                tabs: controller.videoTypeList
                     .map((e) => Tab(text: e.name))
                     .toList(),
               ),

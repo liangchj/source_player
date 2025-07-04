@@ -1,6 +1,7 @@
 
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
-import 'package:source_player/models/video_type_model.dart';
+
+import '../../models/filter_criteria_list_model.dart';
 
 /// 当前运行的配置信息
 class CurrentConfigs {
@@ -11,12 +12,12 @@ class CurrentConfigs {
   // static List<ApiModel> allApiList = [];
   static Map<String, ApiConfigModel> enNameToApiMap = {};
   /// 当前api的资源类型
-  static Map<String, List<VideoTypeModel>> currentApiVideoTypeMap = {};
+  static Map<String, FilterCriteriaListModel?> currentApiVideoTypeMap = {};
 
   /// 当前请求参数key
-  /*static Map<String, String> currentApiRequestParamKeyMap = {
 
-  };*/
+  // 通用的过滤条件
+  static Map<String, FilterCriteriaListModel> commonFilterMap = {};
 
 
   static updateCurrentApiInfo() {
@@ -24,6 +25,17 @@ class CurrentConfigs {
       listApi = null;
     } else {
       listApi = CurrentConfigs.currentApi!.netApiMap["listApi"];
+    }
+  }
+
+  static mergeCommonFilterMap(Map<String, dynamic> map) {
+    for (var entry in map.entries) {
+      try {
+        commonFilterMap[entry.key] =
+            FilterCriteriaListModel.fromJson(entry.value);
+      } catch (e) {
+        continue;
+      }
     }
   }
 }

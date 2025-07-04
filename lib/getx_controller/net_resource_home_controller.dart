@@ -10,10 +10,11 @@ import 'package:source_player/models/video_type_model.dart';
 import 'package:source_player/pages/net_resource_list_page.dart';
 
 import '../cache/db/current_configs.dart';
-import '../commons/public_commons.dart';
 import '../http/dio_utils.dart';
+import '../models/filter_criteria_item_model.dart';
 import '../models/video_model.dart';
 import '../utils/api_utils.dart';
+import '../utils/net_request_utils.dart';
 
 class NetResourceHomeController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -29,15 +30,11 @@ class NetResourceHomeController extends GetxController
   List<Widget> typeTabBarViews = [];
 
   /// 类型加载中
-  // var typeLoading = false.obs;
   var typeLoadingState = LoadingStateModel().obs;
 
   /// 类型列表
-  var typeList = <VideoTypeModel>[].obs;
+  var videoTypeList = <VideoTypeModel>[].obs;
 
-  /// 顶级类型列表
-  var topTypeList = <VideoTypeModel>[].obs;
-  // var typeLoadSuc = false.obs;
 
   @override
   Future<void> onInit() async {
@@ -49,7 +46,9 @@ class NetResourceHomeController extends GetxController
       if (curApiMsg == "当前未设置api") {
         needWaitLoadOtherApi = true;
       } else {
-        apiConfigLoadingState(apiConfigLoadingState.value.copyWith(errorMsg: curApiMsg));
+        apiConfigLoadingState(
+          apiConfigLoadingState.value.copyWith(errorMsg: curApiMsg),
+        );
       }
     }
     if (needWaitLoadOtherApi) {
@@ -61,7 +60,9 @@ class NetResourceHomeController extends GetxController
         ApiUtils.getAllApiFromCustomJsonFile();
       }
       if (CurrentConfigs.enNameToApiMap.isEmpty) {
-        apiConfigLoadingState(apiConfigLoadingState.value.copyWith(errorMsg: "当前未设置api"));
+        apiConfigLoadingState(
+          apiConfigLoadingState.value.copyWith(errorMsg: "当前未设置api"),
+        );
       } else {
         CurrentConfigs.currentApi = CurrentConfigs.enNameToApiMap.values.first;
         CurrentConfigs.updateCurrentApiInfo();
@@ -71,132 +72,89 @@ class NetResourceHomeController extends GetxController
       ApiUtils.getAllApiFromCache();
       ApiUtils.getAllApiFromCustomJsonFile();
     }
-    apiConfigLoadingState(apiConfigLoadingState.value.copyWith(loadedSuc: CurrentConfigs.currentApi != null));
+    apiConfigLoadingState(
+      apiConfigLoadingState.value.copyWith(
+        loadedSuc: CurrentConfigs.currentApi != null,
+      ),
+    );
     if (apiConfigLoadingState.value.loadedSuc) {
-      typeLoadingState(typeLoadingState.value.copyWith(loading: true));
-      // 加载资源列表
-      // await loadNetResourceList();
+      // 加载视频类型
       await loadVideoType();
-      // await loadType();
-      if (typeList.isNotEmpty) {
-        // 设置过滤类型
-        // setFilterCriteria();
-        createTabBarViews();
-      }
+    }
+    if (typeLoadingState.value.loadedSuc) {
+      // 设置过滤类型
+      createTabBarViews();
     }
     apiConfigLoadingState(apiConfigLoadingState.value.copyWith(loading: false));
     typeLoadingState(typeLoadingState.value.copyWith(loading: false));
     super.onInit();
   }
 
-  setFilterCriteria() {
-    NetApiModel? typeListApi =
-        CurrentConfigs.currentApi!.netApiMap["typeListApi"];
-    if (typeListApi == null ||
-        typeListApi.filterCriteriaList == null ||
-        typeListApi.filterCriteriaList!.isEmpty) {
-      return;
-    }
-  }
-
   /// 视频类型
   loadVideoType() async {
-    typeList([]);
+    typeLoadingState(
+      typeLoadingState.value.copyWith(loading: true, loadedSuc: false),
+    );
+    videoTypeList([]);
     typeTabBarViews.clear();
-    typeLoadingState(typeLoadingState.value.copyWith(loadedSuc: false));
     tabController(null);
     CurrentConfigs.currentApiVideoTypeMap = {};
     String desc = "获取视频类型api";
     NetApiModel? typeListApi =
         CurrentConfigs.currentApi!.netApiMap["typeListApi"];
     if (typeListApi == null) {
-      typeLoadingState(typeLoadingState.value.copyWith(errorMsg: "当前api未设置$desc"));
+      typeLoadingState(
+        typeLoadingState.value.copyWith(loading: false, loadedSuc: true),
+      );
       return;
     }
-    String url =
-        CurrentConfigs.currentApi!.apiBaseModel.baseUrl + typeListApi.path;
-    Map<String, dynamic> headers = {
-      ...typeListApi.requestParams.headerParams ?? {},
-    };
-    Map<String, dynamic> params = {};
-    Map<String, dynamic>? staticParams = typeListApi.requestParams.staticParams;
-    if (staticParams != null && staticParams.isNotEmpty) {
-      params.addAll({...staticParams});
-    }
-    Options options = Options(
-      // 响应流上前后两次接受到数据的间隔，单位为毫秒。
-      receiveTimeout: PublicCommons.netLoadTimeOutDuration,
-    );
     try {
-      var res = await DioUtils().get(
-        url,
-        params: params,
-        options: options,
-        extra: {"customError": ""},
-        shouldRethrow: true,
-      );
-      var data = res.data;
-      Map<String, dynamic> dataMap = {};
-      logger.d(data.runtimeType);
-      if (data is Map<String, dynamic>) {
-        dataMap = data;
-      } else if (data is String) {
-        try {
-          dataMap = jsonDecode(data);
-        } catch (e) {
-          logger.e("$desc，结果转换成json报错：$e");
-          typeLoadingState(typeLoadingState.value.copyWith(errorMsg: "结果转换成json报错：\n${e.toString()}"));
-          return;
-        }
-      }
-      PageModel<VideoTypeModel> result;
-      if (typeListApi.responseParams.resultConvertJsFn == null ||
-          typeListApi.responseParams.resultConvertJsFn!.isEmpty) {
-        result = DefaultResponseParser(
-          VideoTypeModel.fromJson,
-        ).listDataParseFromJson(dataMap, typeListApi);
-      } else {
-        result = DefaultResponseParser(
-          VideoTypeModel.fromJson,
-        ).listDataParseFromJsonAndJsFn(dataMap, typeListApi);
-      }
-      if (result.statusCode == ResponseParseStatusCodeEnum.success.code) {
-        typeList(result.modelList ?? []);
-        if (typeList.isEmpty) {
-          topTypeList([]);
-        } else {
-          String topTypeId = typeListApi.extendMap?["topTypeId"] ?? "0";
-          topTypeList(
-            typeList.where((element) => element.parentId == topTypeId).toList(),
+      PageModel<VideoTypeModel> result =
+          await NetRequestUtils.loadPageResource<VideoTypeModel>(
+            typeListApi,
+            VideoTypeModel.fromJson,
           );
-
-          tabController(TabController(length: topTypeList.length, vsync: this));
-
-          for (var element in typeList) {
-            String parentTypeId = element.parentId ?? "";
-            List<VideoTypeModel> childTypeList =
-                CurrentConfigs.currentApiVideoTypeMap[parentTypeId] ?? [];
-            childTypeList.add(element);
-            CurrentConfigs.currentApiVideoTypeMap[parentTypeId] = childTypeList;
+      bool suc = result.statusCode == ResponseParseStatusCodeEnum.success.code;
+      String errorMsg = "";
+      if (suc) {
+        videoTypeList(result.modelList ?? []);
+        if (videoTypeList.isNotEmpty) {
+          for (var item in videoTypeList) {
+            if (item.childType != null && item.childType!.filterCriteriaItemList.isNotEmpty) {
+              // item.childType!.filterCriteriaItemList[0].activated = true;
+              item.childType!.filterCriteriaItemList.insert(0, FilterCriteriaItemModel(value: item.id, label: '全部', activated: true));
+            }
+            CurrentConfigs.currentApiVideoTypeMap[item.id] = item.childType;
           }
         }
-        typeLoadingState(typeLoadingState.value.copyWith(loadedSuc: true));
+      } else {
+        errorMsg = result.msg ?? "获取数据失败";
       }
-      typeLoadingState(typeLoadingState.value.copyWith(errorMsg: result.msg));
-      // logger.d("$desc，数据转换后：${result.toJson()}");
-    } on DioException catch (e) {
-      logger.e("$desc，请求报错：\n${e.message}");
-      typeLoadingState(typeLoadingState.value.copyWith(errorMsg: "api连接异常，请检查！\n${e.message}"));
+      typeLoadingState(
+        typeLoadingState.value.copyWith(
+          loading: false,
+          loadedSuc: suc,
+          errorMsg: errorMsg,
+        ),
+      );
     } catch (e) {
-      logger.e("$desc，请求报错：$e");
-      typeLoadingState(typeLoadingState.value.copyWith(errorMsg: "api连接异常，请检查！$e"));
+      logger.e("$desc，$e");
+      typeLoadingState(typeLoadingState.value.copyWith(
+          loading: false,
+          errorMsg: e.toString()));
     }
   }
 
   /// 根据视频类型生成视频列表页面
   createTabBarViews() {
     typeTabBarViews.clear();
-    for (var item in topTypeList) {
+    if (videoTypeList.isEmpty) {
+      tabController(TabController(length: 1, vsync: this));
+      typeTabBarViews.add(NetResourceListPage(videoType: VideoTypeModel(id: "", name: "")));
+      return;
+    }
+    tabController(TabController(length: videoTypeList.length, vsync: this));
+    for (var item in videoTypeList) {
       typeTabBarViews.add(NetResourceListPage(videoType: item));
     }
   }
@@ -230,17 +188,10 @@ class NetResourceHomeController extends GetxController
           logger.e("结果转换成json报错：$e");
         }
       }
-      var listParseFromJson;
-      if (listApi.responseParams.resultConvertJsFn == null ||
-          listApi.responseParams.resultConvertJsFn!.isEmpty) {
-        listParseFromJson = DefaultResponseParser(
-          VideoModel.fromJson,
-        ).listDataParseFromJson(dataMap, listApi);
-      } else {
-        listParseFromJson = DefaultResponseParser(
-          VideoModel.fromJson,
-        ).listDataParseFromJsonAndJsFn(dataMap, listApi);
-      }
+      var listParseFromJson = DefaultResponseParser(
+        VideoModel.fromJson,
+      ).listDataParse(dataMap, listApi);
+
       logger.d("数据转换后：${listParseFromJson.toJson()}");
     });
   }

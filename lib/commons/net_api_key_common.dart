@@ -3,11 +3,12 @@ class NetApiDefaultKeyCommon {
 
   // 苹果maccms默认key
   // 动态请求参数
-  static Map<String,  dynamic> maccmsListDynamicRequestParams = {
-    "page": "pg",
-    "pageSize": "limit",
-    "typeId": "t",
-    "parentTypeId": "t"
+  static Map<String,  Map<String,  dynamic>> maccmsListDynamicRequestParams = {
+    "page": {"requestKey": "pg"},
+    "pageSize": {"requestKey": "limit"},
+    "typeId": {"requestKey": "t", "dataSource": "filterCriteria", "filterCriteria": {
+      "enName": "typeId", "name": "全部"
+    }},
   };
   // 响应结果基本key
   static Map<String,  dynamic> maccmsResponseBaseKeys = {
@@ -58,59 +59,23 @@ class NetApiDefaultKeyCommon {
           "t": "-1"
         },
         // 动态参数
-        "dynamicParams": maccmsListDynamicRequestParams
+        // "dynamicParams": {}
       },
       "responseParams": {
         ...maccmsResponseBaseKeys,
         "resDataKey": "class",
-        "resultKeyMap": {
+        "resultConvertDyFn": {
+          "dynamicFunctionEnum": "js",
+          "fn": 'function convertJson(map){let statusCode=map["code"]+"";if(statusCode!=="1"){return{"statusCode":statusCode,"data":[],"msg":"请求失败"}}let topTypeId=map["topTypeId"]||"";let typeList=[];let classMap={};let list=map["class"]||[];for(let item of list){let parentId=item["type_pid"]+"";let typeId=item["type_id"]+"";let name=item["type_name"]+"";if(parentId===topTypeId){typeList.push({id:typeId,name:name,parentId:parentId});continue}let childList=classMap[parentId]||[];childList.push({value:typeId,label:name,parentValue:parentId});classMap[parentId]=childList}for(let item of typeList){let classList=classMap[item["id"]]||[];item["childType"]={"enName":"typeId","name":"类型","filterCriteriaItemList":classList}}return{"statusCode":statusCode,"data":typeList}}'
+        }
+        /*"resultKeyMap": {
           "id": "type_id",
           "name": "type_name",
           "parentId": "type_pid",
-        }
-      },
-      "filterCriteriaList": [
-        {
-          "enName": "type",
-          "name": "类型",
-          "requestKey": "t",
-          // 动态传入
-        },
-        /*{
-          "enName": "year",
-          "name": "年份",
-          "requestKey": "time",
-          "filterCriteriaParamsList": [
-            {
-              "value": '2022',
-              "label": '2022',
-            },
-            {
-              "value": '2021',
-              "label": '2021',
-            },
-            {
-              "value": '2020',
-              "label": '2020',
-            },
-            {
-              "value": '2019',
-              "label": '2019',
-            },
-            {
-              "value": '2018',
-              "label": '2018',
-            }
-          ]
         }*/
-      ],
+      },
       "extendMap": {
-        "typeFilterCriteria":  {
-          "enName": "type",
-          "name": "类型",
-          "requestKey": "t",
-          "multiples": false
-        }
+        "topTypeId": "0"
       }
     },
     "listApi": {
@@ -123,7 +88,39 @@ class NetApiDefaultKeyCommon {
           // 因为不是所有的api都支持wd参数（搜素关键字），所以需要自定义参数
         },
         // 动态参数
-        "dynamicParams": maccmsListDynamicRequestParams
+        "dynamicParams": {
+          ...maccmsListDynamicRequestParams,
+          "year": {
+            "requestKey": "y",
+            "dataSource": "filterCriteria",
+            "filterCriteria": {
+              "enName": "year",
+              "name": "年份",
+              "filterCriteriaParamsList": [
+                {
+                  "value": '2022',
+                  "label": '2022',
+                },
+                {
+                  "value": '2021',
+                  "label": '2021',
+                },
+                {
+                  "value": '2020',
+                  "label": '2020',
+                },
+                {
+                  "value": '2019',
+                  "label": '2019',
+                },
+                {
+                  "value": '2018',
+                  "label": '2018',
+                }
+              ]
+            }
+          }
+        }
       },
       "responseParams": {
         ...maccmsResponseBaseKeys,
@@ -134,34 +131,12 @@ class NetApiDefaultKeyCommon {
           ...maccmsResponsePageKeys
         }
       },
-      /*"filterCriteriaList": [
-        {
-          "enName": "type",
-          "name": "类型",
-          "requestKey": "t",
-          "netApi": {
-            "path": "",
-            "requestParams": {
-              "headerParams": {},
-              "staticParams": {"ac": "list"},
-              "dynamicParams": {
-                "parentTypeId": "{{VideoModel.id}}"
-              }
-            },
-            "responseParams": {
-              ...maccmsResponseBaseKeys,
-              "resDataKey": "class",
-              "resultConvertJsFn": "function convertJson(typeJson) { if (!typeJson) { typeJson = {}; } let typeList = typeJson[\"class\"] || []; let newList = []; for (let i in typeList) { let item = typeList[i]; newList.push({\"value\": item[\"type_id\"], \"label\": item[\"type_name\"], \"parentValue\": item[\"type_pid\"]});} typeJson[\"class\"] = newList;  return typeJson; } "
-            }
-          }
-        }
-      ]*/
     },
     "detailApi": {
       "path": "",
       "requestParams": {
         "staticParams": {"ac": "detail"},
-        "dynamicParams": {"ids": "ids"}
+        "dynamicParams": {"id": {"requestKey": "id"}}
       },
       "responseParams": {
         "resDataKey": "list",
@@ -174,7 +149,9 @@ class NetApiDefaultKeyCommon {
         "staticParams": {"ac": "detail"},
         "dynamicParams": {
           ...maccmsListDynamicRequestParams,
-          "keyword": "wd"
+          "keyword": {
+            "requestKey": "wd"
+          }
         }
       },
       "responseParams": {
