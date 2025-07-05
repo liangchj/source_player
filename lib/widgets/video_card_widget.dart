@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:source_player/models/video_model.dart';
+
+import '../pages/net_resource_detail_page.dart';
 
 
 class VideoCardWidget extends StatelessWidget {
@@ -24,7 +27,9 @@ class VideoCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-
+        Get.to((() => NetResourceDetailPage(
+          resourceId: videoModel.id,
+        )));
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,

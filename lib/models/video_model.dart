@@ -1,3 +1,6 @@
+import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
+import 'package:source_player/models/play_source_model.dart';
+
 import '../utils/map_data_utils.dart';
 
 class VideoModel {
@@ -46,6 +49,8 @@ class VideoModel {
   // 更新时间
   final DateTime? modTime;
 
+  List<PlaySourceModel>? playSourceList;
+
   VideoModel({
     required this.id,
     required this.name,
@@ -69,9 +74,17 @@ class VideoModel {
     this.version,
     this.addTime,
     this.modTime,
+    this.playSourceList,
   });
 
   factory VideoModel.fromJson(Map<String, dynamic> json) {
+    List<PlaySourceModel>? playSourceList;
+    var playSourceListVar = json['playSourceList'];
+    if (playSourceListVar != null) {
+      List<Map<String, dynamic>> playSources = DataTypeConvertUtils.toListMapStrDyMap(playSourceListVar);
+      playSourceList = playSources.map((e) => PlaySourceModel.fromJson(e))
+          .toList();
+    }
     return VideoModel(
       id: (json["id"] ?? "").toString(),
       name: (json["name"] ?? "").toString(),
@@ -95,6 +108,7 @@ class VideoModel {
       version:  json["version"],
       addTime:  MapDataUtils.getDateTimeFromMap(json, "addTime"),
       modTime:  MapDataUtils.getDateTimeFromMap(json, "modTime"),
+        playSourceList: playSourceList,
     );
   }
 

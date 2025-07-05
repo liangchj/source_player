@@ -74,6 +74,41 @@ class NetRequestUtils {
     Map<String, dynamic>? headers,
     Map<String, dynamic>? params,
   }) async {
+    var data = await netRequest(api, headers: headers, params: params);
+    Map<String, dynamic> dataMap = {};
+    if (data is Map<String, dynamic>) {
+      dataMap = data;
+    } else if (data is List) {
+      try {
+        dataMap = data.isEmpty
+            ? {}
+            : DataTypeConvertUtils.toMapStrDyMap(data[0]);
+      } catch (e) {
+        throw Exception("结果转换成json报错：\n${e.toString()}");
+      }
+    } else if (data is String) {
+      try {
+        dataMap = jsonDecode(data);
+      } catch (e) {
+        throw Exception("结果转换成json报错：\n${e.toString()}");
+      }
+    } else {
+      try {
+        dataMap = DataTypeConvertUtils.toMapStrDyMap(data);
+      } catch (e) {
+        throw Exception("结果转换成json报错：\n${e.toString()}");
+      }
+    }
+
+    return DefaultResponseParser<T>(fromJson).detailParse(dataMap, api);
+  }
+
+  // 网络请求
+  static Future<dynamic> netRequest(
+    NetApiModel api, {
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? params,
+  }) async {
     String baseUrl = api.useBaseUrl
         ? CurrentConfigs.currentApi!.apiBaseModel.baseUrl
         : "";
@@ -85,35 +120,28 @@ class NetRequestUtils {
       queryParams.addAll({...staticParams});
     }
     Options options = Options(
-      headers: api.requestParams.headerParams,
+      headers: {...?headers, ...?api.requestParams.headerParams},
       // 响应流上前后两次接受到数据的间隔，单位为毫秒。
       receiveTimeout: PublicCommons.netLoadTimeOutDuration,
     );
+
     try {
-      var res = await DioUtils().get(
-        url,
-        params: queryParams,
-        options: options,
-        extra: {"customError": ""},
-        shouldRethrow: true,
-      );
-      var data = res.data;
-      Map<String, dynamic> dataMap = {};
-      if (data is Map<String, dynamic>) {
-        dataMap = data;
-      } else if (data is String) {
-        try {
-          dataMap = jsonDecode(data);
-        } catch (e) {
-          throw Exception("结果转换成json报错：\n${e.toString()}");
-        }
-      }
-
-      DefaultResponseModel<T> result = DefaultResponseParser(
-        fromJson,
-      ).detailParse(dataMap, api);
-
-      return result;
+      var res = api.usePost
+          ? await DioUtils().post(
+              url,
+              params: queryParams,
+              options: options,
+              extra: {"customError": ""},
+              shouldRethrow: true,
+            )
+          : await DioUtils().get(
+              url,
+              params: queryParams,
+              options: options,
+              extra: {"customError": ""},
+              shouldRethrow: true,
+            );
+      return res.data;
     } on DioException catch (e) {
       throw Exception("api连接异常，请检查！\n${e.message}");
     } catch (e) {

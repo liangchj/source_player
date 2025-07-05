@@ -15,6 +15,7 @@ class NetResourceListController extends GetxController {
   final VideoTypeModel videoType;
   NetResourceListController(this.videoType);
 
+  // 过滤条件加载状态
   var filterCriteriaLoadingState = LoadingStateModel().obs;
 
   /// 过滤条件列表
@@ -22,9 +23,12 @@ class NetResourceListController extends GetxController {
 
   var toastList = <String>[].obs;
 
+  // 资源列表加载状态
+  var listLoadingState = LoadingStateModel().obs;
+
   late PagingController<int, VideoModel> pagingController;
   // 资源列表
-  var resourceListErrorMsg = "".obs;
+  // var resourceListErrorMsg = "".obs;
   NetApiModel? listApi;
 
   List<String> notFilterCriteriaKey = [
@@ -190,15 +194,16 @@ class NetResourceListController extends GetxController {
       isLoading: false,
       error: null,
     );
-    await loadTypeResource(1, isRefreshing: true);
+    listLoadingState(listLoadingState.value.copyWith(isRefresh: true));
+    await loadTypeResource(1);
   }
 
   Future<List<VideoModel>> loadTypeResource(
     int page, {
     int limit = 20,
     String? search,
-    bool isRefreshing = false,
   }) async {
+    listLoadingState(listLoadingState.value.copyWith(loading: true, loadedSuc: false, errorMsg: null,));
     List<VideoModel> list = [];
     try {
       Map<String, dynamic> params = {};
@@ -244,7 +249,7 @@ class NetResourceListController extends GetxController {
         VideoModel.fromJson,
         params: params,
       );
-      if (isRefreshing) {
+      if (listLoadingState.value.isRefresh) {
         pagingController.value = pagingController.value.copyWith(
           pages: [res.modelList ?? []],
           keys: [page],
@@ -258,8 +263,9 @@ class NetResourceListController extends GetxController {
         );
       }
       list = res.modelList ?? [];
+      listLoadingState(listLoadingState.value.copyWith(loading: false, loadedSuc: true, errorMsg: null,));
     } catch (e) {
-      resourceListErrorMsg(e.toString());
+      listLoadingState(listLoadingState.value.copyWith(loading: false, loadedSuc: false, errorMsg: "加载资源报错：${e.toString()}" ,));
     }
     return list;
   }

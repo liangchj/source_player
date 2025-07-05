@@ -71,9 +71,9 @@ class _NetResourceListPageState extends State<NetResourceListPage> {
 
   Widget _buildResourceList() {
     return Obx(() {
-      if (controller.resourceListErrorMsg.isNotEmpty) {
+      if (controller.listLoadingState.value.errorMsg != null && controller.listLoadingState.value.errorMsg!.isNotEmpty) {
         return Center(
-          child: Text("加载失败：${controller.resourceListErrorMsg.value}"),
+          child: Text("加载失败：${controller.listLoadingState.value.errorMsg}"),
         );
       }
       return Padding(

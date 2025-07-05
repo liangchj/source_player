@@ -136,11 +136,14 @@ class NetApiDefaultKeyCommon {
       "path": "",
       "requestParams": {
         "staticParams": {"ac": "detail"},
-        "dynamicParams": {"id": {"requestKey": "id"}}
+        "dynamicParams": {"id": {"requestKey": "ids"}}
       },
       "responseParams": {
         "resDataKey": "list",
         ...maccmsResponseBaseKeys,
+        "resultKeyMap": {
+          ...maccmsResponseVideoKeys,
+        }
       }
     },
     "searchApi": {
