@@ -1,7 +1,9 @@
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../getx_controller/net_resource_detail_controller.dart';
+import '../getx_controller/player_controller.dart';
 import '../widgets/loading_widget.dart' show LoadingWidget;
 
 /// 网络资源详情页面
@@ -15,7 +17,7 @@ class NetResourceDetailPage extends StatefulWidget {
   State<NetResourceDetailPage> createState() => _NetResourceDetailPageState();
 }
 
-class _NetResourceDetailPageState extends State<NetResourceDetailPage> {
+class _NetResourceDetailPageState extends State<NetResourceDetailPage> with TickerProviderStateMixin {
   /// 横向padding
   final double horizontalPadding = 14.0;
 
@@ -27,10 +29,16 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> {
   final double secondaryTextHorizontalPadding = 8.0;
   late NetResourceDetailController controller;
 
+  final double _playerAspectRatio = 9/ 16.0;
+  final double _minPlayerHeight = 60;
+
+  final PlayerController playerController = PlayerController();
+  late TabController _tabController;
   @override
   void initState() {
     print("entry initState");
     controller = Get.put(NetResourceDetailController(widget.resourceId), tag: widget.resourceId);
+    _tabController = TabController(length: 2, vsync: this);
     super.initState();
   }
 
@@ -45,7 +53,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> {
   Widget build(BuildContext context) {
     print("渲染");
     return Scaffold(
-      appBar: AppBar(leading: BackButton()),
+      // appBar: AppBar(leading: BackButton()),
       body: Obx(
         () => controller.loadingState.value.loading
             ? const Center(
@@ -61,17 +69,68 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> {
             )
             : controller.videoModel.value == null
             ? const Center(child: Text("获取资源为空"))
-            : SizedBox(width: double.infinity, child: _createDetailAndPlay()),
+            // : SizedBox(width: double.infinity, child: _createDetailAndPlay()),
+        : _createDetailScrollView(),
       ),
     );
   }
 
-  Widget _createDetailAndPlay() {
+  Widget _createDetailScrollView() {
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
+    final double pinnedHeaderHeight =
+    //statusBar height
+    statusBarHeight +
+        //pinned SliverAppBar height in header
+        kToolbarHeight;
+    return ExtendedNestedScrollView(
+      headerSliverBuilder: (BuildContext c, bool f) {
+        return [
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            expandedHeight: MediaQuery.of(context).size.width * _playerAspectRatio,
+            collapsedHeight: playerController.playing.value
+                        ? MediaQuery.of(context).size.width * _playerAspectRatio
+                        : _minPlayerHeight,
+            floating: false,
+            pinned: true,
+            flexibleSpace: Stack(
+              children: [
+                Positioned.fill(child: _createPlayer(),),
+              ]
+            ),
+          ),
+        ];
+      },
+      pinnedHeaderSliverHeightBuilder: () {
+        return pinnedHeaderHeight;
+      },
+      body: Column(
+        children: [
+          _createTabBar(),
+          Expanded(child: TabBarView(
+              controller: _tabController,
+              children: [
+                _createDetailView(),
+                _createCommentView(),
+          ])),
+          ]
+      ),
+    );
+  }
+  // 创建tabBar
+  Widget _createTabBar() {
+    return TabBar(
+        controller: _tabController,
+        tabs: [
+      Tab(text: "简介"),
+      Tab(text: "评论"),
+    ]);
+  }
+
+  // 创建详情
+  Widget _createDetailView() {
     return Column(
       children: [
-        // 创建播放器
-        _createPlayer(),
-        // 资源信息
         _createResourceDetailInfo(),
         // 资源播放控件按钮
         _createResourceControlBtn(),
@@ -90,12 +149,77 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> {
             ),*/
           ),
         ),
+        ]
+    );
+  }
+
+  Widget _createCommentView () {
+    return Column(
+      children: [
+        Text("评论信息")
       ],
+    );
+  }
+
+  Widget _createDetailAndPlay() {
+    return DefaultTabController(
+      length: 1,
+      child: Column(
+        children: [
+          TabBar(tabs: [
+            Tab(text: "资源信息")
+          ]),
+          Expanded(child: TabBarView(children: [
+            // 资源信息
+            _createResourceDetailInfo(),
+            // 资源播放控件按钮
+            _createResourceControlBtn(),
+            // 资源播放信息
+            // Expanded(
+            //   child: Padding(
+            //     padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            //     /*child: ResourceFromChapterWidget(controller: controller,
+            //     apiLayout: ResourceFromLayout.select,
+            //       apiModuleLayout: ResourceFromLayout.select,
+            //       chapterScrollDirection: Axis.horizontal,
+            //       chapterTopWidgetList: [
+            //         ChapterSortButton(controller: controller,),
+            //         ChapterTotalAndOpenListIcon(controller: controller,)
+            //       ],
+            //     ),*/
+            //   ),
+            // ),
+          ]))
+        ],
+      ),
     );
   }
 
   /// 创建播放器
   _createPlayer() {
+    /*return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = constraints.maxHeight;
+        return GestureDetector(
+          onTap: () {
+            if (height < MediaQuery.of(context).size.width * _playerAspectRatio) {
+              // 点击缩小窗口时恢复默认尺寸
+              // _scrollController.animateTo(0, duration: 300.ms, curve: Curves.ease);
+            }
+          },
+          child: Stack(
+            children: [
+              Positioned.fill(child: Container(
+                color: Colors.black,
+              )), // 播放器主体
+              if (height <= MediaQuery.of(context).size.width * _playerAspectRatio - 60)
+                Center(child: TextButton(onPressed: (){}, child: Text("立即播放"))), // 最小化时显示播放按钮
+            ],
+          ),
+        );
+      },
+    );*/
+
     var size = MediaQuery.of(context).size;
     double width = size.width;
     return AspectRatio(
@@ -164,7 +288,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              "简介",
+                              "详情",
                               style: TextStyle(fontSize: secondaryTextFontSize),
                             ),
                             Icon(
