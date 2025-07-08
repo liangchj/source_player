@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:flutter_dynamic_api/models/dynamic_params_model.dart';
 import 'package:get/get.dart';
@@ -7,13 +8,26 @@ import '../cache/db/current_configs.dart';
 import '../models/loading_state_model.dart';
 import '../utils/net_request_utils.dart';
 
-class NetResourceDetailController extends GetxController {
+class NetResourceDetailController extends GetxController with GetSingleTickerProviderStateMixin {
   final String resourceId;
   NetResourceDetailController(this.resourceId);
 
   var loadingState = LoadingStateModel().obs;
   var videoModel = Rx<VideoModel?>(null);
   NetApiModel? detailApi;
+
+  // 底部弹出BottomSheet控制器
+  PersistentBottomSheetController? bottomSheetController;
+
+  // 详情页面的子页面的key
+  late GlobalKey<ScaffoldState> childKey;
+  // 详情页的tab控制器
+  late TabController tabController;
+  final List<Widget> tabs = [
+    Tab(text: "详情"),
+    Tab(text: "评论"),
+  ];
+
   @override
   void onInit() {
     loadingState(
@@ -39,6 +53,8 @@ class NetResourceDetailController extends GetxController {
       ));
     }
     else {
+      childKey = GlobalKey<ScaffoldState>();
+      tabController = TabController(length: tabs.length, vsync: this);
       loadResourceDetail();
     }
     super.onInit();
@@ -75,5 +91,21 @@ class NetResourceDetailController extends GetxController {
       loadingState(loadingState.value.copyWith(loading: false, loadedSuc: false, errorMsg: "加载资源报错：${e.toString()}" ,));
     }
     loadingState(loadingState.value.copyWith(loading: false, loadedSuc: true, errorMsg: null,));
+  }
+
+  bool canPopScope() {
+    if (bottomSheetController != null) {
+      bottomSheetController!.close();
+      bottomSheetController = null;
+      return false;
+    }
+    return true;
+  }
+
+  void closeBottomSheet() {
+    if (bottomSheetController != null) {
+      bottomSheetController!.close();
+      bottomSheetController = null;
+    }
   }
 }

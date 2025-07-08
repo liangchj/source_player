@@ -31,4 +31,14 @@ class ResourceChapterModel {
       playUrl: json['playUrl'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "name": name,
+      "activated": activated,
+      "playing": playing,
+      "index": index,
+      "playUrl": playUrl,
+    };
+  }
 }
