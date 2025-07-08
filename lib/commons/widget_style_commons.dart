@@ -16,4 +16,7 @@ class WidgetStyleCommons {
   static const Radius imgRadius = Radius.circular(10);
 
   static const BorderRadius mdRadius = BorderRadius.all(imgRadius);
+
+  // 标题文字大小
+  static const double titleFontSize = 18;
 }

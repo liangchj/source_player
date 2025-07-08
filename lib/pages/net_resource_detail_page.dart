@@ -1,6 +1,7 @@
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:source_player/widgets/resource_detail/resource_detail_info_widget.dart';
 
 import '../getx_controller/net_resource_detail_controller.dart';
 import '../getx_controller/player_controller.dart';
@@ -34,6 +35,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> with Tick
 
   final PlayerController playerController = PlayerController();
   late TabController _tabController;
+  final childKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
     print("entry initState");
@@ -104,16 +106,19 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> with Tick
       pinnedHeaderSliverHeightBuilder: () {
         return pinnedHeaderHeight;
       },
-      body: Column(
-        children: [
-          _createTabBar(),
-          Expanded(child: TabBarView(
-              controller: _tabController,
-              children: [
-                _createDetailView(),
-                _createCommentView(),
-          ])),
-          ]
+      body: Scaffold(
+        key: childKey,
+        body: Column(
+          children: [
+            _createTabBar(),
+            Expanded(child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _createDetailView(),
+                  _createCommentView(),
+            ])),
+            ]
+        ),
       ),
     );
   }
@@ -129,16 +134,15 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> with Tick
 
   // 创建详情
   Widget _createDetailView() {
-    return Column(
+    return ListView(
       children: [
         _createResourceDetailInfo(),
-        // 资源播放控件按钮
+        // 创建资源播放控件按钮
         _createResourceControlBtn(),
-        // 资源播放信息
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            /*child: ResourceFromChapterWidget(controller: controller,
+        // 创建资源详情
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          /*child: ResourceFromChapterWidget(controller: controller,
             apiLayout: ResourceFromLayout.select,
               apiModuleLayout: ResourceFromLayout.select,
               chapterScrollDirection: Axis.horizontal,
@@ -147,9 +151,8 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> with Tick
                 ChapterTotalAndOpenListIcon(controller: controller,)
               ],
             ),*/
-          ),
-        ),
-        ]
+        )
+      ],
     );
   }
 
@@ -266,7 +269,28 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> with Tick
                       )
                     : TextButton(
                         onPressed: () {
-                          double width = MediaQuery.of(context).size.width;
+                          childKey.currentState?.showBottomSheet(
+                            backgroundColor: Colors.transparent,
+                                (context) => Container(
+                              color: Colors.white,
+                              child: ResourceDetailInfoWidget(controller: controller),
+                            ),
+                          );
+                          /*childKey.currentState?.showBottomSheet(
+                            backgroundColor: Colors.transparent,
+                                (context) => Container(
+                                  color: Colors.white,
+                                  child: StreamBuilder<Object>(
+                                    stream: null,
+                                    builder: (context, snapshot) {
+                                      return _createResourceDetailInfo(
+                                        showDetail: true,
+                                      );
+                                    },
+                                  ),
+                                ),
+                          );*/
+                          /*double width = MediaQuery.of(context).size.width;
                           double height = MediaQuery.of(context).size.height;
                           Get.bottomSheet(
                             Container(
@@ -282,7 +306,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage> with Tick
                               ),
                             ),
                             isScrollControlled: true,
-                          );
+                          );*/
                         },
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
