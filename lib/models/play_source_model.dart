@@ -5,16 +5,13 @@ import 'play_source_group_model.dart';
 
 class PlaySourceModel {
   // 来源api
-  final ApiConfigModel api;
+  ApiConfigModel? api;
   // 当前api下有哪些资源列表
   final List<PlaySourceGroupModel> playSourceGroupList;
-  // 是否选择了当前资源
-  final bool activated;
 
   PlaySourceModel({
-    required this.api,
+    this.api,
     required this.playSourceGroupList,
-    required this.activated,
   });
 
   factory PlaySourceModel.fromJson(Map<String, dynamic> json) {
@@ -25,18 +22,20 @@ class PlaySourceModel {
       playSourceGroupList = playSourceGroups.map((e) => PlaySourceGroupModel.fromJson(e))
         .toList();
     }
-    var activated = json['activated'];
+    ApiConfigModel? api;
+    var apiVar = json['api'];
+    if (apiVar != null) {
+      api = ApiConfigModel.fromJson(apiVar);
+    }
     return PlaySourceModel(
-      api: ApiConfigModel.fromJson(json['api']),
+      api: api,
       playSourceGroupList: playSourceGroupList,
-      activated: activated == null ? false : bool.tryParse(activated) ?? false,
     );
   }
   Map<String, dynamic> toJson() {
     return {
-      "api": api.toJson(),
+      "api": api?.toJson(),
       "playSourceGroupList": playSourceGroupList.map((e) => e.toJson()).toList(),
-      "activated": activated,
     };
   }
 }

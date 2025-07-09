@@ -139,10 +139,73 @@ class NetApiDefaultKeyCommon {
         "dynamicParams": {"id": {"requestKey": "ids"}}
       },
       "responseParams": {
-        "resDataKey": "list",
-        ...maccmsResponseBaseKeys,
+        "statusCodeKey": "statusCode",
+        "successStatusCode": "1",
+        "resMsg": "msg",
+        "resDataKey": "data",
+        // ...maccmsResponseBaseKeys,
         "resultKeyMap": {
-          ...maccmsResponseVideoKeys,
+
+          // ...maccmsResponseVideoKeys,
+
+        },
+        "resultConvertDyFn": {
+          "dynamicFunctionEnum": "js",
+          "fn": '''
+            function convertJson(map) {
+    let list = map["list"] ?? [];
+    let firstItem = list[0] ?? {};
+    let playUrls = firstItem["vod_play_url"] ?? "";
+    let arr = playUrls.split("#");
+    let chapterList = [];
+    for (let i = 0; i < arr.length; i++) {
+        let [name, url] = arr[i].split("\$");
+        chapterList.push({
+            "index": i,
+            "name": name,
+            "playUrl": url
+        });
+    }   
+    return {
+        "statusCode": map["code"],
+        "msg": map["msg"],
+        "data": {
+            "id": firstItem["vod_id"]+"",
+            "name": firstItem["vod_name"]+"",
+            "enName": firstItem["vod_en"],
+            "typeId": firstItem["type_id"]+"",
+            "typeName": firstItem["type_name"],
+            "parentTypeId": firstItem["type_id_1"]+"",
+            "classList": (firstItem["vod_class"] ?? "").split(","),
+            "coverUrl": firstItem["vod_pic"],
+            "blurb": firstItem["vod_blurb"],
+            "detailContent": firstItem["vod_content"],
+            "directorList": (firstItem["vod_director"]??"").split(","),
+            "actorList": (firstItem["vod_actor"]??"").split(","),
+            "remark": firstItem["vod_remarks"],
+            "total": firstItem["vod_total"],
+            "duration": firstItem["vod_duration"],
+            "score": firstItem["vod_score"],
+            "area": firstItem["vod_area"],
+            "languageList": (firstItem["vod_lang"] ?? "").split(","),
+            "year": firstItem["vod_year"],
+            "version": firstItem["vod_version"],
+            "addTime": firstItem["vod_time_add"],
+            "modTime": firstItem["vod_time"],
+            "playSourceList": [
+                {
+                    "playSourceGroupList": [
+                        {
+                            "name": "",
+                            "chapterList": chapterList
+                        }
+                    ]
+                }   
+            ]
+        }
+    };
+}
+            '''
         }
       }
     },

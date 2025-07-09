@@ -99,7 +99,6 @@ class NetRequestUtils {
         throw Exception("结果转换成json报错：\n${e.toString()}");
       }
     }
-
     return DefaultResponseParser<T>(fromJson).detailParse(dataMap, api);
   }
 

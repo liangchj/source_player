@@ -7,6 +7,7 @@ import 'package:source_player/models/video_model.dart';
 import '../cache/db/current_configs.dart';
 import '../models/loading_state_model.dart';
 import '../utils/net_request_utils.dart';
+import 'state/source_chapter_state.dart';
 
 class NetResourceDetailController extends GetxController with GetSingleTickerProviderStateMixin {
   final String resourceId;
@@ -28,8 +29,11 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
     Tab(text: "评论"),
   ];
 
+  late SourceChapterState sourceChapterState;
+
   @override
   void onInit() {
+    sourceChapterState = SourceChapterState(this);
     loadingState(
       loadingState.value.copyWith(
         loading: true,
@@ -69,6 +73,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
         errorMsg: null,
       ),
     );
+    videoModel(null);
     Map<String, dynamic> params = {};
     var dynamicParams = detailApi!.requestParams.dynamicParams;
     if (dynamicParams == null || !dynamicParams.keys.contains("id")) {
@@ -83,9 +88,18 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
         VideoModel.fromJson,
         params: params,
       );
-      if (res.model != null && res.model!.id == resourceId) {
-        videoModel(res.model);
+      if (res.statusCode == ResponseParseStatusCodeEnum.success.code) {
+        if (res.model != null && res.model!.id == resourceId) {
+          videoModel(res.model);
+          for (var playSource in res.model!.playSourceList!) {
+            playSource.api ??= CurrentConfigs.currentApi;
+          }
+        }
+      } else {
+        loadingState(loadingState.value.copyWith(loading: false, loadedSuc: false, errorMsg: "加载资源失败：${res.msg}" ,));
+        return;
       }
+
       print("资源信息: ${videoModel.value?.toJson()}");
     } catch (e) {
       loadingState(loadingState.value.copyWith(loading: false, loadedSuc: false, errorMsg: "加载资源报错：${e.toString()}" ,));

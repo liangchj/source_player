@@ -27,7 +27,7 @@ class ResourceChapterModel {
       name: json['name'] ?? "",
       activated: activated == null ? false : bool.tryParse(activated) ?? false,
       playing: playing == null ? false : bool.tryParse(playing) ?? false,
-      index: int.parse(index),
+      index: index == null ? -1 : index.runtimeType == int ? index : int.parse(index.toString()),
       playUrl: json['playUrl'],
     );
   }
