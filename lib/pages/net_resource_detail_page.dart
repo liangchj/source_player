@@ -143,19 +143,6 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
         PlaySourceWidget(controller: controller),
-        // 创建资源详情
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          /*child: ResourceFromChapterWidget(controller: controller,
-            apiLayout: ResourceFromLayout.select,
-              apiModuleLayout: ResourceFromLayout.select,
-              chapterScrollDirection: Axis.horizontal,
-              chapterTopWidgetList: [
-                ChapterSortButton(controller: controller,),
-                ChapterTotalAndOpenListIcon(controller: controller,)
-              ],
-            ),*/
-        ),
       ],
     );
   }

@@ -41,6 +41,8 @@ dependencies:
   pretty_dio_logger: ^1.4.0
   connectivity_plus: ^6.1.4
   cached_network_image: ^3.4.1
+#  flutter_dynamic_api:
+#    path: ../github_pro/flutter_dynamic_api
   flutter_dynamic_api:
     git:
       url: https://github.com/liangchj/flutter_dynamic_api.git
@@ -51,6 +53,7 @@ dependencies:
   easy_debounce: ^2.0.3
   flutter_smart_dialog: ^4.9.8+8
   extended_nested_scroll_view: ^6.2.1
+  scrollview_observer: ^1.26.1
 
 dev_dependencies:
   flutter_test:

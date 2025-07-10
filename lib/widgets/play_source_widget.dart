@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
@@ -27,7 +29,7 @@ class _PlaySourceWidgetState extends State<PlaySourceWidget> {
           //   Container()
           // else
           _createPlaySourceGroup(),
-          ChapterListWidget(controller: widget.controller),
+          ChapterListWidget(controller: widget.controller, singleHorizontalScroll: true,)
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:flutter_dynamic_api/models/dynamic_params_model.dart';
 import 'package:get/get.dart';
+import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:source_player/models/video_model.dart';
 
 import '../cache/db/current_configs.dart';
@@ -31,9 +32,14 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
 
   late SourceChapterState sourceChapterState;
 
+  late ScrollController chapterScrollController;
+  late ListObserverController chapterObserverController;
+
   @override
   void onInit() {
     sourceChapterState = SourceChapterState(this);
+    chapterScrollController = ScrollController();
+    chapterObserverController = ListObserverController(controller: chapterScrollController);
     loadingState(
       loadingState.value.copyWith(
         loading: true,
@@ -62,6 +68,14 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       loadResourceDetail();
     }
     super.onInit();
+  }
+
+  @override
+  void onClose() {
+    bottomSheetController?.close();
+    tabController.dispose();
+    chapterScrollController.dispose();
+    super.onClose();
   }
 
   // 加载资源详情

@@ -19,4 +19,6 @@ class WidgetStyleCommons {
 
   // 标题文字大小
   static const double titleFontSize = 18;
+
+  static const double chapterHeight = 60;
 }
