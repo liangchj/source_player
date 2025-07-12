@@ -78,7 +78,7 @@ class TextButtonWidget extends StatelessWidget {
     }
 
     return MaterialButton(
-      padding: padding ?? const EdgeInsets.all(0),
+      // padding: padding ?? const EdgeInsets.all(0),
       //边框样式
       shape: shape,
       onPressed: () => fn.call(),

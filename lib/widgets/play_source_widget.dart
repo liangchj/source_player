@@ -5,11 +5,12 @@ import 'package:get/get.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
 
 import '../getx_controller/net_resource_detail_controller.dart';
-import 'chapter_list_widget.dart';
+import 'chapter/chapter_list_widget.dart';
 
 class PlaySourceWidget extends StatefulWidget {
-  const PlaySourceWidget({super.key, required this.controller});
+  const PlaySourceWidget({super.key, required this.controller, this.onClose});
   final NetResourceDetailController controller;
+  final VoidCallback? onClose;
 
   @override
   State<PlaySourceWidget> createState() => _PlaySourceWidgetState();
@@ -18,20 +19,18 @@ class PlaySourceWidget extends StatefulWidget {
 class _PlaySourceWidgetState extends State<PlaySourceWidget> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
-      child: Column(
-        children: [
-          _createApiWidget(),
-          // if (widget.controller.videoModel.value == null ||
-          //     widget.controller.videoModel.value!.playSourceList == null ||
-          //     widget.controller.videoModel.value!.playSourceList!.isEmpty)
-          //   Container()
-          // else
-          _createPlaySourceGroup(),
-          ChapterListWidget(controller: widget.controller, singleHorizontalScroll: true,)
-        ],
-      ),
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
+          child: _createApiWidget(),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
+          child: _createPlaySourceGroup(),
+        ),
+        ChapterListWidget(controller: widget.controller, singleHorizontalScroll: true, )
+      ],
     );
   }
 

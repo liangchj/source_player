@@ -156,16 +156,32 @@ class NetApiDefaultKeyCommon {
     let list = map["list"] ?? [];
     let firstItem = list[0] ?? {};
     let playUrls = firstItem["vod_play_url"] ?? "";
-    let arr = playUrls.split("#");
-    let chapterList = [];
-    for (let i = 0; i < arr.length; i++) {
-        let [name, url] = arr[i].split("\$");
-        chapterList.push({
-            "index": i,
-            "name": name,
-            "playUrl": url
+    let playGroupChar = (firstItem["vod_play_note"] ?? "\$\$\$").trim();
+    if (playGroupChar === "") {
+        playGroupChar = "\$\$\$"; 
+    }
+    let playGroupNameStr = firstItem["vod_play_from"] ?? "";
+    let playGroupNameList = playGroupNameStr.split(playGroupChar);
+    let playSourceGroupList = [];
+    let urlGroupList = playUrls.split(playGroupChar);
+    for (let index = 0; index < urlGroupList.length; index++) {
+        let item = urlGroupList[index];
+        let groupName = playGroupNameList.length > index ? playGroupNameList[index] : "资源" + (index + 1);
+        let arr = item.split("#");
+        let chapterList = [];
+        for (let i = 0; i < arr.length; i++) {
+            let [name, url] = arr[i].split("\$");
+            chapterList.push({
+                "index": i,
+                "name": name,
+                "playUrl": url
+            });
+        } 
+        playSourceGroupList.push({
+            "name": groupName,
+            "chapterList": chapterList
         });
-    }   
+    } 
     return {
         "statusCode": map["code"],
         "msg": map["msg"],
@@ -194,12 +210,7 @@ class NetApiDefaultKeyCommon {
             "modTime": firstItem["vod_time"],
             "playSourceList": [
                 {
-                    "playSourceGroupList": [
-                        {
-                            "name": "",
-                            "chapterList": chapterList
-                        }
-                    ]
+                    "playSourceGroupList": playSourceGroupList
                 }   
             ]
         }

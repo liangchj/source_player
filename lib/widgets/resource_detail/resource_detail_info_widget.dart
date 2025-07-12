@@ -109,6 +109,13 @@ class _ResourceDetailInfoWidgetState extends State<ResourceDetailInfoWidget> wit
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: EdgeInsets.only(bottom: WidgetStyleCommons.safeSpace),
+              child: Text(
+                  widget.controller.videoModel.value?.name ?? "",
+                  style: TextStyle(fontSize: WidgetStyleCommons.titleFontSize, fontWeight: FontWeight.bold),
+              ),
+            ),
             // 导演
             Row(
               children: [

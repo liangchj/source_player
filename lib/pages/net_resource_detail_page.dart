@@ -60,7 +60,32 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
     print("渲染");
     return PopScope(
       canPop: controller.canPopScope(),
-      child: Scaffold(
+      child: Obx(() => Scaffold(
+        appBar: controller.loadingState.value.loading || !controller.loadingState.value.loadedSuc
+          || controller.videoModel.value == null ?
+            AppBar(
+              leading: BackButton(),
+            ) : null
+        ,
+        body: controller.loadingState.value.loading
+            ? const Center(
+          child: SizedBox(
+            height: 500,
+            child: LoadingWidget(textWidget: Text("资源加载中...")),
+          ),
+        )
+            : !controller.loadingState.value.loadedSuc
+            ? Center(
+          child: Text(
+            "资源加载失败: ${controller.loadingState.value.errorMsg}",
+          ),
+        )
+            : controller.videoModel.value == null
+            ? const Center(child: Text("获取资源为空"))
+        // : SizedBox(width: double.infinity, child: _createDetailAndPlay()),
+            : _createDetailScrollView(),
+      ))
+      /*child: Scaffold(
         // appBar: AppBar(leading: BackButton()),
         body: Obx(
           () => controller.loadingState.value.loading
@@ -81,7 +106,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
               // : SizedBox(width: double.infinity, child: _createDetailAndPlay()),
               : _createDetailScrollView(),
         ),
-      ),
+      ),*/
     );
   }
 
@@ -142,7 +167,9 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         _createResourceDetailInfo(),
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
-        PlaySourceWidget(controller: controller),
+        PlaySourceWidget(controller: controller,  onClose: () {
+          controller.bottomSheetController?.close();
+        },),
       ],
     );
   }
