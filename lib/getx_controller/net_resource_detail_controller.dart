@@ -32,12 +32,18 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
 
   late SourceChapterState sourceChapterState;
 
+  late ScrollController playSourceApiScrollController;
+  late ScrollController playSourceGroupScrollController;
   late ScrollController chapterScrollController;
   late ListObserverController chapterObserverController;
+
+  var showBottomSheet = false.obs;
 
   @override
   void onInit() {
     sourceChapterState = SourceChapterState(this);
+    playSourceApiScrollController = ScrollController();
+    playSourceGroupScrollController = ScrollController();
     chapterScrollController = ScrollController();
     chapterObserverController = ListObserverController(controller: chapterScrollController);
     loadingState(
@@ -74,6 +80,8 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   void onClose() {
     bottomSheetController?.close();
     tabController.dispose();
+    playSourceApiScrollController.dispose();
+    playSourceGroupScrollController.dispose();
     chapterScrollController.dispose();
     super.onClose();
   }
@@ -125,6 +133,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
     if (bottomSheetController != null) {
       bottomSheetController!.close();
       bottomSheetController = null;
+      showBottomSheet( false);
       return false;
     }
     return true;
@@ -134,6 +143,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
     if (bottomSheetController != null) {
       bottomSheetController!.close();
       bottomSheetController = null;
+      showBottomSheet( false);
     }
   }
 }

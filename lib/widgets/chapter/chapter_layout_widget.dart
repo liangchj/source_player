@@ -1,0 +1,309 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:scrollview_observer/scrollview_observer.dart';
+
+import '../../commons/widget_style_commons.dart';
+import '../../getx_controller/net_resource_detail_controller.dart';
+import '../../utils/auto_compute_sliver_grid_count.dart';
+import 'chapter_widget.dart';
+
+class ChapterLayoutWidget extends StatelessWidget {
+  const ChapterLayoutWidget({
+    super.key,
+    required this.controller,
+    this.onClose,
+    this.singleHorizontalScroll = false,
+    this.listVerticalScroll = true,
+    this.isGrid = false,
+    this.bottomSheet = false,
+  });
+  final NetResourceDetailController controller;
+  final VoidCallback? onClose;
+  final bool singleHorizontalScroll;
+  final bool listVerticalScroll;
+  final bool isGrid;
+  final bool bottomSheet;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _createHeader(context),
+        bottomSheet
+            ? _bottomSheetList(context)
+            : singleHorizontalScroll
+            ? _horizontalScroll(context)
+            : _list(context)
+      ]
+    );
+  }
+
+  Widget _createHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    List<Widget> lefts = [
+      Text("章节"),
+      IconButton(
+        tooltip: '跳至顶部',
+        icon: Icon(Icons.vertical_align_top),
+        style: ButtonStyle(
+          padding: WidgetStateProperty.all(EdgeInsets.zero),
+        ),
+        onPressed: () {},
+      ),
+      IconButton(
+        tooltip: '跳至底部',
+        icon: Icon(Icons.vertical_align_bottom),
+        style: ButtonStyle(
+          padding: WidgetStateProperty.all(EdgeInsets.zero),
+        ),
+        onPressed: () {},
+      ),
+      IconButton(
+        tooltip: '跳至当前',
+        icon: Icon(Icons.my_location),
+        style: ButtonStyle(
+          padding: WidgetStateProperty.all(EdgeInsets.zero),
+        ),
+        onPressed: () {},
+      )
+    ];
+    List<Widget> rights = [
+      IconButton(
+        tooltip: controller.sourceChapterState.chapterAsc.value
+            ? "正序"
+            : "倒叙",
+        icon: controller.sourceChapterState.chapterAsc.value
+            ? Icon(Icons.upgrade_rounded)
+            : Icon(Icons.download_rounded),
+        style: ButtonStyle(
+          padding: WidgetStateProperty.all(EdgeInsets.zero),
+        ),
+        onPressed: () {
+          controller.sourceChapterState.chapterAsc(
+            !controller.sourceChapterState.chapterAsc.value,
+          );
+        },
+      ),
+      if (singleHorizontalScroll)
+        TextButton(
+          onPressed: () {
+            controller.bottomSheetController = controller
+                .childKey
+                .currentState
+                ?.showBottomSheet(
+              backgroundColor: Colors.transparent,
+                  (context) => Container(
+                color: Colors.white,
+                child: Center(
+                  child: ChapterLayoutWidget(
+                    controller: controller,
+                    onClose: () {
+                      controller.bottomSheetController?.close();
+                    },
+                    bottomSheet: true,
+                    isGrid: true,
+                  ),
+                ),
+              ),
+            );
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    "${controller.sourceChapterState.currentPlayedChapterList.length}集",
+                  ),
+                  Icon(Icons.keyboard_arrow_right_rounded),
+                ],
+              ),
+            ],
+          ),
+        ),
+        if (onClose != null)
+          IconButton(
+            tooltip: '关闭',
+            icon: Icon(Icons.close),
+            style: ButtonStyle(
+              padding: WidgetStateProperty.all(EdgeInsets.zero),
+            ),
+            onPressed: onClose,
+          ),
+    ];
+    return Container(
+      height: WidgetStyleCommons.bottomSheetHeaderHeight,
+      padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
+      decoration: BoxDecoration(
+        border: singleHorizontalScroll ? null : Border(
+          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
+        ),
+      ),
+      child: Row(
+        children: [
+          ...lefts,
+          const Spacer(),
+          ...rights,
+        ],
+      ),
+    );
+  }
+
+  Widget _list(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsetsGeometry.symmetric(
+          vertical: WidgetStyleCommons.safeSpace,
+          horizontal: WidgetStyleCommons.safeSpace,
+        ),
+        child: isGrid ? _gridView(context) : _listView(context),
+      ),
+    );
+  }
+
+  // bottomSheet弹出内容
+  Widget _bottomSheetList(BuildContext context) {
+    return Expanded(child: isGrid ? _gridView(context) : _listView(context));
+  }
+
+  // 列表方式
+  Widget _listView(BuildContext context) {
+    return ListView.builder(
+      controller: ScrollController(),
+      padding: EdgeInsets.symmetric(
+        horizontal: WidgetStyleCommons.safeSpace,
+        vertical: WidgetStyleCommons.safeSpace,
+      ),
+      itemCount: controller.sourceChapterState.currentPlayedChapterList.length,
+      itemBuilder: (context, index) {
+        var list = controller.sourceChapterState.chapterAsc.value
+            ? controller.sourceChapterState.currentPlayedChapterList
+            : controller.sourceChapterState.currentPlayedChapterList.reversed
+                  .toList();
+        var item = list[index];
+        return Obx(
+          () => Container(
+            padding: EdgeInsets.symmetric(vertical: WidgetStyleCommons.safeSpace / 2),
+            height: WidgetStyleCommons.chapterHeight,
+            child: ChapterWidget(
+              chapter: item,
+              activated:
+                  item.index ==
+                  controller.sourceChapterState.chapterIndex.value,
+              isCard: true,
+              onClick: () {
+                controller.sourceChapterState.chapterIndex(item.index);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 列表方式
+  Widget _gridView(BuildContext context) {
+    return Obx(() {
+      return GridView.builder(
+        padding: EdgeInsets.symmetric(
+          horizontal: WidgetStyleCommons.safeSpace,
+          vertical: WidgetStyleCommons.safeSpace,
+        ),
+        controller: ScrollController(),
+        itemCount:
+            controller.sourceChapterState.currentPlayedChapterList.length,
+        gridDelegate: SliverGridDelegateWithExtentAndRatio(
+          crossAxisSpacing: WidgetStyleCommons.safeSpace,
+          mainAxisSpacing: WidgetStyleCommons.safeSpace,
+          maxCrossAxisExtent: WidgetStyleCommons.chapterGridMaxWidth,
+          childAspectRatio: WidgetStyleCommons.chapterGridRatio,
+        ),
+        itemBuilder: (context, index) {
+          return Obx(() {
+            var list = controller.sourceChapterState.chapterAsc.value
+                ? controller.sourceChapterState.currentPlayedChapterList
+                : controller
+                      .sourceChapterState
+                      .currentPlayedChapterList
+                      .reversed
+                      .toList();
+            var item = list[index];
+            return ChapterWidget(
+              chapter: item,
+              activated:
+                  item.index ==
+                  controller.sourceChapterState.chapterIndex.value,
+              isCard: true,
+              onClick: () {
+                controller.sourceChapterState.chapterIndex(item.index);
+              },
+            );
+          });
+        },
+      );
+    });
+  }
+
+  // 横向滚动
+  Widget _horizontalScroll(BuildContext context) {
+    return Container(
+      padding: EdgeInsetsGeometry.symmetric(
+        vertical: WidgetStyleCommons.safeSpace / 2,
+        horizontal: WidgetStyleCommons.safeSpace,
+      ),
+      width: double.infinity,
+      height: WidgetStyleCommons.chapterHeight,
+      // height: 40,
+      child: ListViewObserver(
+        controller: controller.chapterObserverController,
+        child: Scrollbar(
+          controller: controller.chapterScrollController,
+          child: ListView.builder(
+            controller: controller.chapterScrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            scrollDirection: Axis.horizontal,
+            itemCount: controller
+                .sourceChapterState
+                .currentPlayedChapterList
+                .length,
+            itemBuilder: (context, index) {
+              var list = controller.sourceChapterState.chapterAsc.value
+                  ? controller.sourceChapterState.currentPlayedChapterList
+                  : controller
+                  .sourceChapterState
+                  .currentPlayedChapterList
+                  .reversed
+                  .toList();
+              var item = list[index];
+              return Obx(() {
+                return Container(
+                  margin: EdgeInsets.only(
+                    right: WidgetStyleCommons.safeSpace,
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: WidgetStyleCommons.chapterGridRatio,
+                    child: ChapterWidget(
+                      chapter: item,
+                      activated:
+                      item.index ==
+                          controller
+                              .sourceChapterState
+                              .chapterIndex
+                              .value,
+                      isCard: true,
+                      onClick: () {
+                        controller.sourceChapterState.chapterIndex(
+                          item.index,
+                        );
+                      },
+                    ),
+                  ),
+                );
+              });
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}

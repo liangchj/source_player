@@ -1,6 +1,9 @@
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:source_player/widgets/chapter/chapter_layout_widget.dart';
+import 'package:source_player/widgets/play_source/play_source_api_widget.dart';
+import 'package:source_player/widgets/play_source/play_source_group_widget.dart';
 import 'package:source_player/widgets/resource_detail/resource_detail_info_widget.dart';
 
 import '../getx_controller/net_resource_detail_controller.dart';
@@ -118,15 +121,20 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         //pinned SliverAppBar height in header
         kToolbarHeight;
     return ExtendedNestedScrollView(
+      onlyOneScrollInBody: true,
+        // physics: const NeverScrollableScrollPhysics(),
+      /*physics: const NeverScrollableScrollPhysics(
+        parent: ClampingScrollPhysics(),
+      ),*/
       headerSliverBuilder: (BuildContext c, bool f) {
         return [
           SliverAppBar(
             // automaticallyImplyLeading: false,
             expandedHeight:
                 MediaQuery.of(context).size.width * _playerAspectRatio,
-            collapsedHeight: playerController.playing.value
+ /*           collapsedHeight: playerController.playing.value
                 ? MediaQuery.of(context).size.width * _playerAspectRatio
-                : _minPlayerHeight,
+                : _minPlayerHeight,*/
             floating: false,
             pinned: true,
             flexibleSpace: Stack(
@@ -136,6 +144,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         ];
       },
       pinnedHeaderSliverHeightBuilder: () {
+        print("pinnedHeaderHeight:$pinnedHeaderHeight");
         return pinnedHeaderHeight;
       },
       body: Scaffold(
@@ -167,9 +176,22 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         _createResourceDetailInfo(),
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
-        PlaySourceWidget(controller: controller,  onClose: () {
-          controller.bottomSheetController?.close();
-        },),
+        PlaySourceApiWidget(controller: controller,
+          singleHorizontalScroll:  true,
+          // isSelect:  true,
+        ),
+        PlaySourceGroupWidget(controller: controller, singleHorizontalScroll:  true,),
+
+        ChapterLayoutWidget(controller: controller, singleHorizontalScroll:  true,),
+        Container(
+          height: 800,
+          color: Colors.red,
+        ),
+        Container(
+          height: 500,
+          color: Colors.amber,
+        ),
+
       ],
     );
   }

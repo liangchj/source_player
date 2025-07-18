@@ -6,7 +6,6 @@ import 'package:source_player/widgets/chapter/chapter_widget.dart';
 
 import '../../getx_controller/net_resource_detail_controller.dart';
 import '../../utils/auto_compute_sliver_grid_count.dart';
-import '../text_button_widget.dart';
 
 class ChapterListWidget extends StatelessWidget {
   const ChapterListWidget({
@@ -117,16 +116,16 @@ class ChapterListWidget extends StatelessWidget {
                     ?.showBottomSheet(
                   backgroundColor: Colors.transparent,
                       (context) => Container(
-                    color: Colors.white,
-                    child: Center(
+                                          color: Colors.white,
+                                          child: Center(
                       child: ChapterListWidget(
                         controller: controller,
                         onClose: () {
                           controller.bottomSheetController?.close();
                         },
                       ),
-                    ),
-                  ),
+                                          ),
+                                        ),
                 );
               },
               child: Row(
@@ -172,39 +171,43 @@ class ChapterListWidget extends StatelessWidget {
           height: WidgetStyleCommons.chapterHeight,
           child: ListViewObserver(
             controller: controller.chapterObserverController,
-            child: ListView.builder(
+            child: Scrollbar(
               controller: controller.chapterScrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              itemCount:
-                  controller.sourceChapterState.currentPlayedChapterList.length,
-              itemBuilder: (context, index) {
-                return Obx(() {
-                  var list = controller.sourceChapterState.chapterAsc.value
-                      ? controller.sourceChapterState.currentPlayedChapterList
-                      : controller
-                      .sourceChapterState
-                      .currentPlayedChapterList
-                      .reversed
-                      .toList();
-                  var item = list[index];
-                  return Container(
-                    margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
-                    child: AspectRatio(
-                      aspectRatio: WidgetStyleCommons.chapterGridRatio,
-                      child: ChapterWidget(
-                        chapter: item,
-                        activated: item.index ==
-                            controller.sourceChapterState.chapterIndex.value,
-                        isCard: true,
-                        onClick: () {
-                          controller.sourceChapterState.chapterIndex(item.index);
-                        },
+              child: ListView.builder(
+                controller: controller.chapterScrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                itemCount:
+                    controller.sourceChapterState.currentPlayedChapterList.length,
+                itemBuilder: (context, index) {
+                  return Obx(() {
+                    var list = controller.sourceChapterState.chapterAsc.value
+                        ? controller.sourceChapterState.currentPlayedChapterList
+                        : controller
+                        .sourceChapterState
+                        .currentPlayedChapterList
+                        .reversed
+                        .toList();
+                    var item = list[index];
+                    controller.showBottomSheet(true);
+                    return Container(
+                      margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
+                      child: AspectRatio(
+                        aspectRatio: WidgetStyleCommons.chapterGridRatio,
+                        child: ChapterWidget(
+                          chapter: item,
+                          activated: item.index ==
+                              controller.sourceChapterState.chapterIndex.value,
+                          isCard: true,
+                          onClick: () {
+                            controller.sourceChapterState.chapterIndex(item.index);
+                          },
+                        ),
                       ),
-                    ),
-                  );
-                });
-              },
+                    );
+                  });
+                },
+              ),
             ),
           ),
         ),
@@ -236,6 +239,7 @@ class ChapterListWidget extends StatelessWidget {
                     controller.sourceChapterState.chapterAsc.value;
 
                 return GridView.builder(
+                  controller: ScrollController(),
                   itemCount: len,
                   gridDelegate: SliverGridDelegateWithExtentAndRatio(
                     crossAxisSpacing: WidgetStyleCommons.safeSpace,

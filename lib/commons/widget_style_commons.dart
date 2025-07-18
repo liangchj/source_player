@@ -9,6 +9,8 @@ class WidgetStyleCommons {
   // 视频卡片比例
   static double videoCardAspectRatio = 16 / 10;
 
+  static double bottomSheetHeaderHeight = 45;
+
   // 间距
   static double safeSpace = 12;
   // 卡片间距
@@ -21,6 +23,11 @@ class WidgetStyleCommons {
 
   // 标题文字大小
   static const double titleFontSize = 18;
+
+  // 播放源
+  static const double playSourceGridMaxWidth = 120;
+  static const double playSourceGridRatio = 2 / 1;
+  static const double playSourceHeight = 40;
 
   // 章节信息
   static const double chapterHeight = 60;
