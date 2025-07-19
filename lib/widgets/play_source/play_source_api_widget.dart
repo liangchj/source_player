@@ -107,62 +107,56 @@ class PlaySourceApiWidget extends StatelessWidget {
   }
 
   Widget _selectList(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsGeometry.symmetric(
-        vertical: WidgetStyleCommons.safeSpace,
-        horizontal: WidgetStyleCommons.safeSpace,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Text("播放源(${controller.videoModel.value?.playSourceList?.length ?? 0})："),
-                Expanded(
-                  child: Obx(() {
-                    return Text(
-                      controller
-                              .sourceChapterState
-                              .currentPlayedSource
-                              ?.api!
-                              .apiBaseModel
-                              .name ??
-                          "无",
-                      textAlign: TextAlign.start,
-                      overflow: TextOverflow.ellipsis,
-                    );
-                  }),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              controller.bottomSheetController = controller
-                  .childKey
-                  .currentState
-                  ?.showBottomSheet(
-                    backgroundColor: Colors.transparent,
-                    (context) => Container(
-                      color: Colors.white,
-                      child: PlaySourceApiWidget(
-                        controller: controller,
-                        onClose: () =>
-                            controller.bottomSheetController?.close(),
-                        isSelect: true,
-                        bottomSheet: true,
-                        isGrid: true,
-                      ),
-                    ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Text("播放源(${controller.videoModel.value?.playSourceList?.length ?? 0})："),
+              Expanded(
+                child: Obx(() {
+                  return Text(
+                    controller
+                            .sourceChapterState
+                            .currentPlayedSource
+                            ?.api!
+                            .apiBaseModel
+                            .name ??
+                        "无",
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
                   );
-            },
-            child: Text(
-              "切换播放源(${controller.videoModel.value?.playSourceList?.length ?? 0})",
-            ),
+                }),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        TextButton(
+          onPressed: () {
+            controller.bottomSheetController = controller
+                .childKey
+                .currentState
+                ?.showBottomSheet(
+                  backgroundColor: Colors.transparent,
+                  (context) => Container(
+                    color: Colors.white,
+                    child: PlaySourceApiWidget(
+                      controller: controller,
+                      onClose: () =>
+                          controller.bottomSheetController?.close(),
+                      isSelect: true,
+                      bottomSheet: true,
+                      isGrid: true,
+                    ),
+                  ),
+                );
+          },
+          child: Text(
+            "切换播放源(${controller.videoModel.value?.playSourceList?.length ?? 0})",
+          ),
+        ),
+      ],
     );
   }
 
@@ -238,76 +232,69 @@ class PlaySourceApiWidget extends StatelessWidget {
 
   // 横向滚动
   Widget _horizontalScroll(BuildContext context) {
-    var themeData = Theme.of(context);
-    return Padding(
-      padding: EdgeInsetsGeometry.symmetric(
-        vertical: WidgetStyleCommons.safeSpace,
-        horizontal: WidgetStyleCommons.safeSpace,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Padding(
-                padding: EdgeInsetsGeometry.symmetric(
-                  vertical: WidgetStyleCommons.safeSpace,
-                ),
-                child: Text("播放源(${controller.videoModel.value?.playSourceList?.length ?? 0})："),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Padding(
+              padding: EdgeInsetsGeometry.symmetric(
+                vertical: WidgetStyleCommons.safeSpace,
               ),
-              Expanded(child: Container()),
-            ],
-          ),
-          SizedBox(
-            width: double.infinity,
-            height: WidgetStyleCommons.playSourceHeight,
-            // height: 40,
-            child: Scrollbar(
+              child: Text("播放源(${controller.videoModel.value?.playSourceList?.length ?? 0})："),
+            ),
+            Expanded(child: Container()),
+          ],
+        ),
+        SizedBox(
+          width: double.infinity,
+          height: WidgetStyleCommons.playSourceHeight,
+          // height: 40,
+          child: Scrollbar(
+            controller: controller.playSourceApiScrollController,
+            child: ListView.builder(
               controller: controller.playSourceApiScrollController,
-              child: ListView.builder(
-                controller: controller.playSourceApiScrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemCount:
-                    controller.videoModel.value?.playSourceList?.length ?? 0,
-                itemBuilder: (context, index) {
-                  final item =
-                      controller.videoModel.value?.playSourceList?[index];
-                  return Obx(() {
-                    return Container(
-                      margin: EdgeInsets.only(
-                        right: WidgetStyleCommons.safeSpace,
+              physics: const AlwaysScrollableScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              itemCount:
+                  controller.videoModel.value?.playSourceList?.length ?? 0,
+              itemBuilder: (context, index) {
+                final item =
+                    controller.videoModel.value?.playSourceList?[index];
+                return Obx(() {
+                  return Container(
+                    margin: EdgeInsets.only(
+                      right: WidgetStyleCommons.safeSpace,
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: WidgetStyleCommons.playSourceGridRatio,
+                      child: ClickableButtonWidget(
+                        text: item?.api?.apiBaseModel.name ?? "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        activated:
+                            index ==
+                            controller
+                                .sourceChapterState
+                                .playedSourceApiIndex
+                                .value,
+                        isCard: false,
+                        textAlign: TextAlign.center,
+                        onClick: () {
+                          controller.sourceChapterState.playedSourceApiIndex(
+                            index,
+                          );
+                        },
                       ),
-                      child: AspectRatio(
-                        aspectRatio: WidgetStyleCommons.playSourceGridRatio,
-                        child: ClickableButtonWidget(
-                          text: item?.api?.apiBaseModel.name ?? "",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          activated:
-                              index ==
-                              controller
-                                  .sourceChapterState
-                                  .playedSourceApiIndex
-                                  .value,
-                          isCard: false,
-                          textAlign: TextAlign.center,
-                          onClick: () {
-                            controller.sourceChapterState.playedSourceApiIndex(
-                              index,
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  });
-                },
-              ),
+                    ),
+                  );
+                });
+              },
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

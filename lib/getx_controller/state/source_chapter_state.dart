@@ -1,5 +1,6 @@
 
 import 'package:get/get.dart';
+import 'package:source_player/commons/widget_style_commons.dart';
 
 import '../../models/play_source_group_model.dart';
 import '../../models/play_source_model.dart';
@@ -7,6 +8,10 @@ import '../../models/resource_chapter_model.dart';
 import '../net_resource_detail_controller.dart';
 
 class SourceChapterState {
+  final NetResourceDetailController controller;
+
+  SourceChapterState(this.controller);
+
   // 当前播放
   // 当前播放的网站源索引
   var playedSourceApiIndex = 0.obs;
@@ -23,9 +28,9 @@ class SourceChapterState {
   // 当前选中的资源组索引
   var selectedSourceGroupIndex = 0.obs;
 
-  final NetResourceDetailController controller;
-
-  SourceChapterState(this.controller);
+  // 有多少组章节
+  var chapterGroup = 1.obs;
+  var chapterGroupIndex = 0.obs;
 
 
   // 1. 获取当前播放的网站源
@@ -57,5 +62,41 @@ class SourceChapterState {
   ResourceChapterModel? get currentChapter {
     var list = currentPlayedChapterList;
     return list.length > chapterIndex.value ? currentPlayedChapterList[chapterIndex.value] : null;
+  }
+
+  // 当前播放的章节组名称
+  String get currentChapterGroupName {
+    int start = chapterGroupIndex.value * chapterGroup.value;
+    int end = start + WidgetStyleCommons.chapterGroupCount - 1;
+    return "$start至$end";
+  }
+
+  List<String> get chapterGroupNameList {
+    int count = currentPlayedChapterList.length;
+    List<String> list = [];
+    for (int i = 0; i < chapterGroup.value; i++) {
+      int start = i * WidgetStyleCommons.chapterGroupCount + 1;
+      int end = start + WidgetStyleCommons.chapterGroupCount - 1;
+      if (end > count) {
+        end = count;
+      }
+      String name = "${start.toString()}至${end.toString()}";
+      list.add(name);
+    }
+    return list;
+  }
+
+  // 当前选中的章节组
+  List<ResourceChapterModel> get currentChapterGroupList {
+    var list = currentPlayedChapterList;
+    if (chapterGroup.value <= 1) {
+      return list;
+    }
+    int start = chapterGroupIndex.value * WidgetStyleCommons.chapterGroupCount;
+    int end = start + WidgetStyleCommons.chapterGroupCount;
+    if (end > list.length) {
+      end = list.length;
+    }
+    return list.sublist(start, end);
   }
 }

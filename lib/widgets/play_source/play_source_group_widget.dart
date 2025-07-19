@@ -110,62 +110,56 @@ class PlaySourceGroupWidget extends StatelessWidget {
   }
 
   Widget _selectList(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsGeometry.symmetric(
-        vertical: WidgetStyleCommons.safeSpace,
-        horizontal: WidgetStyleCommons.safeSpace,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Text(
-                  "播放组(${controller.sourceChapterState.currentPlayedSourceGroupList.length})：",
-                ),
-                Expanded(
-                  child: Obx(() {
-                    return Text(
-                      controller
-                              .sourceChapterState
-                              .currentPlayedSourceGroup
-                              ?.name ??
-                          "无",
-                      textAlign: TextAlign.start,
-                      overflow: TextOverflow.ellipsis,
-                    );
-                  }),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              controller.bottomSheetController = controller
-                  .childKey
-                  .currentState
-                  ?.showBottomSheet(
-                    backgroundColor: Colors.transparent,
-                    (context) => Container(
-                      color: Colors.white,
-                      child: PlaySourceGroupWidget(
-                        controller: controller,
-                        onClose: () =>
-                            controller.bottomSheetController?.close(),
-                        isSelect: true,
-                        bottomSheet: true,
-                        isGrid: true,
-                      ),
-                    ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Text(
+                "播放组(${controller.sourceChapterState.currentPlayedSourceGroupList.length})：",
+              ),
+              Expanded(
+                child: Obx(() {
+                  return Text(
+                    controller
+                            .sourceChapterState
+                            .currentPlayedSourceGroup
+                            ?.name ??
+                        "无",
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
                   );
-            },
-            child: Text(
-              "切换播放组(${controller.sourceChapterState.currentPlayedSourceGroupList.length})",
-            ),
+                }),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        TextButton(
+          onPressed: () {
+            controller.bottomSheetController = controller
+                .childKey
+                .currentState
+                ?.showBottomSheet(
+                  backgroundColor: Colors.transparent,
+                  (context) => Container(
+                    color: Colors.white,
+                    child: PlaySourceGroupWidget(
+                      controller: controller,
+                      onClose: () =>
+                          controller.bottomSheetController?.close(),
+                      isSelect: true,
+                      bottomSheet: true,
+                      isGrid: true,
+                    ),
+                  ),
+                );
+          },
+          child: Text(
+            "切换播放组(${controller.sourceChapterState.currentPlayedSourceGroupList.length})",
+          ),
+        ),
+      ],
     );
   }
 
@@ -243,79 +237,72 @@ class PlaySourceGroupWidget extends StatelessWidget {
 
   // 横向滚动
   Widget _horizontalScroll(BuildContext context) {
-    var themeData = Theme.of(context);
-    return Padding(
-      padding: EdgeInsetsGeometry.symmetric(
-        vertical: WidgetStyleCommons.safeSpace,
-        horizontal: WidgetStyleCommons.safeSpace,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Padding(
-                padding: EdgeInsetsGeometry.symmetric(
-                  vertical: WidgetStyleCommons.safeSpace,
-                ),
-                child: Text(
-                  "播放组(${controller.sourceChapterState.currentPlayedSourceGroupList.length})：",
-                ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Padding(
+              padding: EdgeInsetsGeometry.symmetric(
+                vertical: WidgetStyleCommons.safeSpace,
               ),
-              Expanded(child: Container()),
-            ],
-          ),
-          SizedBox(
-            width: double.infinity,
-            height: WidgetStyleCommons.playSourceHeight,
-            // height: 40,
-            child: Scrollbar(
-              controller: controller.playSourceGroupScrollController,
-              child: ListView.builder(
-                controller: controller.playSourceGroupScrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemCount: controller
-                    .sourceChapterState
-                    .currentPlayedSourceGroupList
-                    .length,
-                itemBuilder: (context, index) {
-                  final item = controller.sourceChapterState.currentPlayedSourceGroupList[index];
-                  return Obx(() {
-                    return Container(
-                      margin: EdgeInsets.only(
-                        right: WidgetStyleCommons.safeSpace,
-                      ),
-                      child: AspectRatio(
-                        aspectRatio: WidgetStyleCommons.playSourceGridRatio,
-                        child: ClickableButtonWidget(
-                          text: item.name ?? "",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          activated:
-                              index ==
-                              controller
-                                  .sourceChapterState
-                                  .playedSourceGroupIndex
-                                  .value,
-                          isCard: false,
-                          textAlign: TextAlign.center,
-                          onClick: () {
-                            controller.sourceChapterState.playedSourceGroupIndex(
-                              index,
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  });
-                },
+              child: Text(
+                "播放组(${controller.sourceChapterState.currentPlayedSourceGroupList.length})：",
               ),
             ),
+            Expanded(child: Container()),
+          ],
+        ),
+        SizedBox(
+          width: double.infinity,
+          height: WidgetStyleCommons.playSourceHeight,
+          // height: 40,
+          child: Scrollbar(
+            controller: controller.playSourceGroupScrollController,
+            child: ListView.builder(
+              controller: controller.playSourceGroupScrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              itemCount: controller
+                  .sourceChapterState
+                  .currentPlayedSourceGroupList
+                  .length,
+              itemBuilder: (context, index) {
+                final item = controller.sourceChapterState.currentPlayedSourceGroupList[index];
+                return Obx(() {
+                  return Container(
+                    margin: EdgeInsets.only(
+                      right: WidgetStyleCommons.safeSpace,
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: WidgetStyleCommons.playSourceGridRatio,
+                      child: ClickableButtonWidget(
+                        text: item.name ?? "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        activated:
+                            index ==
+                            controller
+                                .sourceChapterState
+                                .playedSourceGroupIndex
+                                .value,
+                        isCard: false,
+                        textAlign: TextAlign.center,
+                        onClick: () {
+                          controller.sourceChapterState.playedSourceGroupIndex(
+                            index,
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                });
+              },
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:source_player/widgets/play_source/play_source_api_widget.dart';
 import 'package:source_player/widgets/play_source/play_source_group_widget.dart';
 import 'package:source_player/widgets/resource_detail/resource_detail_info_widget.dart';
 
+import '../commons/widget_style_commons.dart';
 import '../getx_controller/net_resource_detail_controller.dart';
 import '../getx_controller/player_controller.dart';
 import '../widgets/loading_widget.dart' show LoadingWidget;
@@ -47,7 +48,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
       NetResourceDetailController(widget.resourceId),
       tag: widget.resourceId,
     );
-
+    controller.nestedScrollController.addListener(listener);
     super.initState();
   }
 
@@ -55,7 +56,20 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   void dispose() {
     // TODO: implement dispose
     controller.disposeId(widget.resourceId);
+    controller.nestedScrollController.removeListener(listener);
     super.dispose();
+  }
+
+  void listener() {
+    print("listener， offset:${controller.nestedScrollController.offset}, "
+        "position：${controller.nestedScrollController.position}, "
+        "initialScrollOffset：${controller.nestedScrollController.initialScrollOffset}"
+        "keepScrollOffset：${controller.nestedScrollController.keepScrollOffset}");
+    /*if (controller.nestedScrollController.position.pixels >= 100) {
+      controller.showBottomSheet(true);
+    } else {
+      controller.showBottomSheet(false);
+    }*/
   }
 
   @override
@@ -121,6 +135,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         //pinned SliverAppBar height in header
         kToolbarHeight;
     return ExtendedNestedScrollView(
+      controller: controller.nestedScrollController,
       onlyOneScrollInBody: true,
         // physics: const NeverScrollableScrollPhysics(),
       /*physics: const NeverScrollableScrollPhysics(
@@ -144,7 +159,11 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         ];
       },
       pinnedHeaderSliverHeightBuilder: () {
-        print("pinnedHeaderHeight:$pinnedHeaderHeight");
+        // print("pinnedHeaderHeight:$pinnedHeaderHeight");
+        if (controller.bottomSheetController != null) {
+          print("进入：${MediaQuery.of(context).size.width * _playerAspectRatio - controller.nestedScrollController.offset}");
+          return MediaQuery.of(context).size.width * _playerAspectRatio - controller.nestedScrollController.offset;
+        }
         return pinnedHeaderHeight;
       },
       body: Scaffold(
@@ -176,13 +195,33 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         _createResourceDetailInfo(),
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
-        PlaySourceApiWidget(controller: controller,
-          singleHorizontalScroll:  true,
-          // isSelect:  true,
+        Padding(
+          padding: EdgeInsetsGeometry.symmetric(
+            // vertical: WidgetStyleCommons.safeSpace / 2,
+            horizontal: WidgetStyleCommons.safeSpace,
+          ),
+          child: PlaySourceApiWidget(controller: controller,
+            isSelect: true,
+            // isGrid:  true,
+            singleHorizontalScroll:  true,
+            // isSelect:  true,
+          ),
         ),
-        PlaySourceGroupWidget(controller: controller, singleHorizontalScroll:  true,),
+        Padding(
+          padding: EdgeInsetsGeometry.symmetric(
+            // vertical: WidgetStyleCommons.safeSpace / 2,
+            horizontal: WidgetStyleCommons.safeSpace,
+          ),
+          child: PlaySourceGroupWidget(controller: controller, singleHorizontalScroll:  true,),
+        ),
 
-        ChapterLayoutWidget(controller: controller, singleHorizontalScroll:  true,),
+        Container(
+          padding: EdgeInsetsGeometry.symmetric(
+            // horizontal: WidgetStyleCommons.safeSpace,
+          ),
+          margin: EdgeInsetsGeometry.only(bottom: WidgetStyleCommons.safeSpace / 2),
+          child: ChapterLayoutWidget(controller: controller, singleHorizontalScroll:  true,),
+        ),
         Container(
           height: 800,
           color: Colors.red,

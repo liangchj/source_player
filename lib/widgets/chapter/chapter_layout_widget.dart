@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
+import 'package:source_player/widgets/clickable_button_widget.dart';
 
 import '../../commons/widget_style_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
@@ -29,12 +30,16 @@ class ChapterLayoutWidget extends StatelessWidget {
     return Column(
       children: [
         _createHeader(context),
+        Padding(
+          padding: EdgeInsets.only(top: bottomSheet ? WidgetStyleCommons.safeSpace : WidgetStyleCommons.safeSpace / 2),
+          child: _chapterGroup(context),
+        ),
         bottomSheet
             ? _bottomSheetList(context)
             : singleHorizontalScroll
             ? _horizontalScroll(context)
-            : _list(context)
-      ]
+            : _list(context),
+      ],
     );
   }
 
@@ -45,39 +50,29 @@ class ChapterLayoutWidget extends StatelessWidget {
       IconButton(
         tooltip: '跳至顶部',
         icon: Icon(Icons.vertical_align_top),
-        style: ButtonStyle(
-          padding: WidgetStateProperty.all(EdgeInsets.zero),
-        ),
+        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
         onPressed: () {},
       ),
       IconButton(
         tooltip: '跳至底部',
         icon: Icon(Icons.vertical_align_bottom),
-        style: ButtonStyle(
-          padding: WidgetStateProperty.all(EdgeInsets.zero),
-        ),
+        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
         onPressed: () {},
       ),
       IconButton(
         tooltip: '跳至当前',
         icon: Icon(Icons.my_location),
-        style: ButtonStyle(
-          padding: WidgetStateProperty.all(EdgeInsets.zero),
-        ),
+        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
         onPressed: () {},
-      )
+      ),
     ];
     List<Widget> rights = [
       IconButton(
-        tooltip: controller.sourceChapterState.chapterAsc.value
-            ? "正序"
-            : "倒叙",
+        tooltip: controller.sourceChapterState.chapterAsc.value ? "正序" : "倒叙",
         icon: controller.sourceChapterState.chapterAsc.value
             ? Icon(Icons.upgrade_rounded)
             : Icon(Icons.download_rounded),
-        style: ButtonStyle(
-          padding: WidgetStateProperty.all(EdgeInsets.zero),
-        ),
+        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
         onPressed: () {
           controller.sourceChapterState.chapterAsc(
             !controller.sourceChapterState.chapterAsc.value,
@@ -87,25 +82,24 @@ class ChapterLayoutWidget extends StatelessWidget {
       if (singleHorizontalScroll)
         TextButton(
           onPressed: () {
-            controller.bottomSheetController = controller
-                .childKey
-                .currentState
+            controller.bottomSheetController = controller.childKey.currentState
                 ?.showBottomSheet(
-              backgroundColor: Colors.transparent,
+                  backgroundColor: Colors.transparent,
                   (context) => Container(
-                color: Colors.white,
-                child: Center(
-                  child: ChapterLayoutWidget(
-                    controller: controller,
-                    onClose: () {
-                      controller.bottomSheetController?.close();
-                    },
-                    bottomSheet: true,
-                    isGrid: true,
+                    color: Colors.white,
+                    child: Center(
+                      child: ChapterLayoutWidget(
+                        controller: controller,
+                        onClose: () {
+                          controller.bottomSheetController?.close();
+                        },
+                        bottomSheet: true,
+                        isGrid: true,
+
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            );
+                );
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -121,31 +115,27 @@ class ChapterLayoutWidget extends StatelessWidget {
             ],
           ),
         ),
-        if (onClose != null)
-          IconButton(
-            tooltip: '关闭',
-            icon: Icon(Icons.close),
-            style: ButtonStyle(
-              padding: WidgetStateProperty.all(EdgeInsets.zero),
-            ),
-            onPressed: onClose,
-          ),
+      if (onClose != null)
+        IconButton(
+          tooltip: '关闭',
+          icon: Icon(Icons.close),
+          style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
+          onPressed: onClose,
+        ),
     ];
     return Container(
       height: WidgetStyleCommons.bottomSheetHeaderHeight,
       padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
       decoration: BoxDecoration(
-        border: singleHorizontalScroll ? null : Border(
-          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
-        ),
+        border: singleHorizontalScroll
+            ? null
+            : Border(
+                bottom: BorderSide(
+                  color: theme.dividerColor.withValues(alpha: 0.1),
+                ),
+              ),
       ),
-      child: Row(
-        children: [
-          ...lefts,
-          const Spacer(),
-          ...rights,
-        ],
-      ),
+      child: Row(children: [...lefts, const Spacer(), ...rights]),
     );
   }
 
@@ -168,50 +158,63 @@ class ChapterLayoutWidget extends StatelessWidget {
 
   // 列表方式
   Widget _listView(BuildContext context) {
-    return ListView.builder(
-      controller: ScrollController(),
-      padding: EdgeInsets.symmetric(
-        horizontal: WidgetStyleCommons.safeSpace,
-        vertical: WidgetStyleCommons.safeSpace,
-      ),
-      itemCount: controller.sourceChapterState.currentPlayedChapterList.length,
-      itemBuilder: (context, index) {
-        var list = controller.sourceChapterState.chapterAsc.value
-            ? controller.sourceChapterState.currentPlayedChapterList
-            : controller.sourceChapterState.currentPlayedChapterList.reversed
-                  .toList();
-        var item = list[index];
-        return Obx(
-          () => Container(
-            padding: EdgeInsets.symmetric(vertical: WidgetStyleCommons.safeSpace / 2),
-            height: WidgetStyleCommons.chapterHeight,
-            child: ChapterWidget(
-              chapter: item,
-              activated:
-                  item.index ==
-                  controller.sourceChapterState.chapterIndex.value,
-              isCard: true,
-              onClick: () {
-                controller.sourceChapterState.chapterIndex(item.index);
-              },
+    return Obx(() {
+      var list = controller.sourceChapterState.chapterAsc.value
+          ? controller.sourceChapterState.currentChapterGroupList
+          : controller
+          .sourceChapterState
+          .currentChapterGroupList
+          .reversed
+          .toList();
+      return ListView.builder(
+        controller: ScrollController(),
+        padding: EdgeInsets.symmetric(
+          horizontal: WidgetStyleCommons.safeSpace,
+          vertical: WidgetStyleCommons.safeSpace,
+        ),
+        itemCount: list.length,
+        itemBuilder: (context, index) {
+          var item = list[index];
+          return Obx(
+                () => Container(
+              padding: EdgeInsets.symmetric(
+                vertical: WidgetStyleCommons.safeSpace / 2,
+              ),
+              height: WidgetStyleCommons.chapterHeight,
+              child: ChapterWidget(
+                chapter: item,
+                activated:
+                item.index ==
+                    controller.sourceChapterState.chapterIndex.value,
+                isCard: true,
+                onClick: () {
+                  controller.sourceChapterState.chapterIndex(item.index);
+                },
+              ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    });
   }
 
   // 列表方式
   Widget _gridView(BuildContext context) {
     return Obx(() {
+      var list = controller.sourceChapterState.chapterAsc.value
+          ? controller.sourceChapterState.currentChapterGroupList
+          : controller
+          .sourceChapterState
+          .currentChapterGroupList
+          .reversed
+          .toList();
       return GridView.builder(
         padding: EdgeInsets.symmetric(
           horizontal: WidgetStyleCommons.safeSpace,
           vertical: WidgetStyleCommons.safeSpace,
         ),
         controller: ScrollController(),
-        itemCount:
-            controller.sourceChapterState.currentPlayedChapterList.length,
+        itemCount: list.length,
         gridDelegate: SliverGridDelegateWithExtentAndRatio(
           crossAxisSpacing: WidgetStyleCommons.safeSpace,
           mainAxisSpacing: WidgetStyleCommons.safeSpace,
@@ -220,13 +223,6 @@ class ChapterLayoutWidget extends StatelessWidget {
         ),
         itemBuilder: (context, index) {
           return Obx(() {
-            var list = controller.sourceChapterState.chapterAsc.value
-                ? controller.sourceChapterState.currentPlayedChapterList
-                : controller
-                      .sourceChapterState
-                      .currentPlayedChapterList
-                      .reversed
-                      .toList();
             var item = list[index];
             return ChapterWidget(
               chapter: item,
@@ -247,54 +243,103 @@ class ChapterLayoutWidget extends StatelessWidget {
   // 横向滚动
   Widget _horizontalScroll(BuildContext context) {
     return Container(
-      padding: EdgeInsetsGeometry.symmetric(
-        vertical: WidgetStyleCommons.safeSpace / 2,
+      padding: EdgeInsets.symmetric(
         horizontal: WidgetStyleCommons.safeSpace,
       ),
       width: double.infinity,
       height: WidgetStyleCommons.chapterHeight,
-      // height: 40,
       child: ListViewObserver(
         controller: controller.chapterObserverController,
         child: Scrollbar(
           controller: controller.chapterScrollController,
+          child: Obx(()  {
+            var list = controller.sourceChapterState.chapterAsc.value
+                ? controller.sourceChapterState.currentChapterGroupList
+                : controller
+                .sourceChapterState
+                .currentChapterGroupList
+                .reversed
+                .toList();
+            return ListView.builder(
+              controller: controller.chapterScrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              itemCount: controller.sourceChapterState.currentChapterGroupList.length,
+              itemBuilder: (context, index) {
+                var item = list[index];
+                return Obx(() {
+                  return Container(
+                    margin: EdgeInsets.only(
+                      right: WidgetStyleCommons.safeSpace,
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: WidgetStyleCommons.chapterGridRatio,
+                      child: ChapterWidget(
+                        chapter: item,
+                        activated:
+                        item.index ==
+                            controller.sourceChapterState.chapterIndex.value,
+                        isCard: true,
+                        onClick: () {
+                          controller.sourceChapterState.chapterIndex(
+                            item.index,
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                });
+              },
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  Widget _chapterGroup(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+          left: WidgetStyleCommons.safeSpace,
+          right: WidgetStyleCommons.safeSpace,
+          bottom: WidgetStyleCommons.safeSpace/ 2
+      ),
+      width: double.infinity,
+      height: WidgetStyleCommons.chapterHeight,
+      child: Obx(() {
+        var list = controller.sourceChapterState.chapterAsc.value
+            ? controller.sourceChapterState.chapterGroupNameList
+            : controller
+            .sourceChapterState
+            .chapterGroupNameList
+            .reversed
+            .toList();
+        return Scrollbar(
+          controller: controller.chapterGroupScrollController,
           child: ListView.builder(
-            controller: controller.chapterScrollController,
+            controller: controller.chapterGroupScrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             scrollDirection: Axis.horizontal,
-            itemCount: controller
-                .sourceChapterState
-                .currentPlayedChapterList
-                .length,
+            itemCount:
+            list.length,
             itemBuilder: (context, index) {
-              var list = controller.sourceChapterState.chapterAsc.value
-                  ? controller.sourceChapterState.currentPlayedChapterList
-                  : controller
-                  .sourceChapterState
-                  .currentPlayedChapterList
-                  .reversed
-                  .toList();
-              var item = list[index];
               return Obx(() {
+
+                var item = list[index];
+                int realIndex = controller.sourceChapterState.chapterAsc.value ? index : list.length - index - 1;
                 return Container(
-                  margin: EdgeInsets.only(
-                    right: WidgetStyleCommons.safeSpace,
-                  ),
+                  margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
                   child: AspectRatio(
                     aspectRatio: WidgetStyleCommons.chapterGridRatio,
-                    child: ChapterWidget(
-                      chapter: item,
+                    child: ClickableButtonWidget(
+                      text: item,
+                      textAlign: TextAlign.center,
                       activated:
-                      item.index ==
-                          controller
-                              .sourceChapterState
-                              .chapterIndex
-                              .value,
+                      realIndex ==
+                          controller.sourceChapterState.chapterGroupIndex.value,
                       isCard: true,
                       onClick: () {
-                        controller.sourceChapterState.chapterIndex(
-                          item.index,
-                        );
+                        controller.sourceChapterState.chapterGroupIndex(realIndex);
                       },
                     ),
                   ),
@@ -302,8 +347,8 @@ class ChapterLayoutWidget extends StatelessWidget {
               });
             },
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

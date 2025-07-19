@@ -30,7 +30,8 @@ class WidgetStyleCommons {
   static const double playSourceHeight = 40;
 
   // 章节信息
-  static const double chapterHeight = 60;
+  static const int chapterGroupCount = 50;
+  static const double chapterHeight = 50;
   static const double chapterGridMaxWidth = 120;
   static const double chapterGridRatio = 2 / 1;
   static const double chapterBorderWidth = 1;

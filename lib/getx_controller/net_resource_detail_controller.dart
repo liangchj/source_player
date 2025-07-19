@@ -3,6 +3,7 @@ import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:flutter_dynamic_api/models/dynamic_params_model.dart';
 import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
+import 'package:source_player/commons/widget_style_commons.dart';
 import 'package:source_player/models/video_model.dart';
 
 import '../cache/db/current_configs.dart';
@@ -32,9 +33,12 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
 
   late SourceChapterState sourceChapterState;
 
+  late ScrollController nestedScrollController;
   late ScrollController playSourceApiScrollController;
   late ScrollController playSourceGroupScrollController;
   late ScrollController chapterScrollController;
+  late ScrollController chapterGroupScrollController;
+
   late ListObserverController chapterObserverController;
 
   var showBottomSheet = false.obs;
@@ -42,9 +46,11 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   @override
   void onInit() {
     sourceChapterState = SourceChapterState(this);
+    nestedScrollController = ScrollController();
     playSourceApiScrollController = ScrollController();
     playSourceGroupScrollController = ScrollController();
     chapterScrollController = ScrollController();
+    chapterGroupScrollController = ScrollController();
     chapterObserverController = ListObserverController(controller: chapterScrollController);
     loadingState(
       loadingState.value.copyWith(
@@ -73,16 +79,27 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       tabController = TabController(length: tabs.length, vsync: this);
       loadResourceDetail();
     }
+    ever(videoModel, (val) {
+      var length = sourceChapterState.currentPlayedChapterList.length;
+      int group = (length / WidgetStyleCommons.chapterGroupCount).ceil();
+      if (group < 1) {
+        group = 1;
+      }
+      sourceChapterState.chapterGroup(group);
+      sourceChapterState.chapterGroupIndex(0);
+    });
     super.onInit();
   }
 
   @override
   void onClose() {
     bottomSheetController?.close();
+    nestedScrollController.dispose();
     tabController.dispose();
     playSourceApiScrollController.dispose();
     playSourceGroupScrollController.dispose();
     chapterScrollController.dispose();
+    chapterGroupScrollController.dispose();
     super.onClose();
   }
 
