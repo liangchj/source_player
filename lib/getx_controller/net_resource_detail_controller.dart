@@ -40,6 +40,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   late ScrollController chapterGroupScrollController;
 
   late ListObserverController chapterObserverController;
+  late GridObserverController chapterGridObserverController;
 
   var showBottomSheet = false.obs;
 
@@ -52,6 +53,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
     chapterScrollController = ScrollController();
     chapterGroupScrollController = ScrollController();
     chapterObserverController = ListObserverController(controller: chapterScrollController);
+    chapterGridObserverController = GridObserverController(controller: chapterScrollController);
     loadingState(
       loadingState.value.copyWith(
         loading: true,
