@@ -33,27 +33,29 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
 
   late SourceChapterState sourceChapterState;
 
-  late ScrollController nestedScrollController;
-  late ScrollController playSourceApiScrollController;
-  late ScrollController playSourceGroupScrollController;
-  late ScrollController chapterScrollController;
-  late ScrollController chapterGroupScrollController;
+  ScrollController? nestedScrollController;
+  // api来源滚动控制器
+  ScrollController? playSourceApiScrollController;
+  ListObserverController? playSourceApiObserverController;
 
-  late ListObserverController chapterObserverController;
-  late GridObserverController chapterGridObserverController;
+  // 来源组滚动控制器
+  ScrollController? playSourceGroupScrollController;
+  ListObserverController? playSourceGroupObserverController;
+
+  // 章节分组滚动控制器
+  ScrollController? chapterGroupScrollController;
+  ListObserverController? chapterGroupObserverController;
+
+  // 章节滚动控制器
+  ScrollController? chapterScrollController;
+  ListObserverController? chapterObserverController;
+
 
   var showBottomSheet = false.obs;
 
   @override
   void onInit() {
     sourceChapterState = SourceChapterState(this);
-    nestedScrollController = ScrollController();
-    playSourceApiScrollController = ScrollController();
-    playSourceGroupScrollController = ScrollController();
-    chapterScrollController = ScrollController();
-    chapterGroupScrollController = ScrollController();
-    chapterObserverController = ListObserverController(controller: chapterScrollController);
-    chapterGridObserverController = GridObserverController(controller: chapterScrollController);
     loadingState(
       loadingState.value.copyWith(
         loading: true,
@@ -93,15 +95,42 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
     super.onInit();
   }
 
+  // 初始化控制器
+  void _initController() {
+    nestedScrollController = ScrollController();
+
+    playSourceApiScrollController = ScrollController();
+    playSourceGroupObserverController = ListObserverController(controller: playSourceApiScrollController);
+
+    if (sourceChapterState.currentPlayedSourceGroupList.length > 1) {
+      playSourceGroupScrollController = ScrollController();
+      playSourceApiObserverController = ListObserverController(controller: playSourceGroupScrollController);
+    }
+
+    if (sourceChapterState.chapterGroup.value > 1) {
+      chapterGroupScrollController = ScrollController();
+      chapterGroupObserverController =
+          ListObserverController(controller: chapterGroupScrollController);
+    }
+
+    chapterScrollController = ScrollController();
+    chapterObserverController = ListObserverController(controller: chapterScrollController);
+  }
+
+  // 销毁控制器
+  void _disposeController() {
+    bottomSheetController?.close();
+    nestedScrollController?.dispose();
+    tabController.dispose();
+    playSourceApiScrollController?.dispose();
+    playSourceGroupScrollController?.dispose();
+    chapterGroupScrollController?.dispose();
+    chapterScrollController?.dispose();
+  }
+
   @override
   void onClose() {
-    bottomSheetController?.close();
-    nestedScrollController.dispose();
-    tabController.dispose();
-    playSourceApiScrollController.dispose();
-    playSourceGroupScrollController.dispose();
-    chapterScrollController.dispose();
-    chapterGroupScrollController.dispose();
+    _disposeController();
     super.onClose();
   }
 
@@ -136,6 +165,8 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
             playSource.api ??= CurrentConfigs.currentApi;
           }
         }
+
+        _initController();
       } else {
         loadingState(loadingState.value.copyWith(loading: false, loadedSuc: false, errorMsg: "加载资源失败：${res.msg}" ,));
         return;

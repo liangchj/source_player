@@ -99,4 +99,14 @@ class SourceChapterState {
     }
     return list.sublist(start, end);
   }
+
+
+  int get chapterGroupActivatedIndex {
+    // chapterGroupIndex从0开始
+    if (chapterGroup.value <= 0) {
+      return chapterIndex.value;
+    }
+    // 因为chapterGroupIndex从0开始，因此不需要先减1再计算
+    return chapterIndex.value - (chapterGroupIndex.value * WidgetStyleCommons.chapterGroupCount);
+  }
 }

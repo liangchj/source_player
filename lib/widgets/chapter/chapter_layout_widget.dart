@@ -7,6 +7,7 @@ import '../../commons/widget_style_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
 import '../../utils/auto_compute_sliver_grid_count.dart';
 import 'chapter_widget.dart';
+
 class ChapterLayoutWidget extends StatefulWidget {
   const ChapterLayoutWidget({
     super.key,
@@ -16,7 +17,8 @@ class ChapterLayoutWidget extends StatefulWidget {
     this.listVerticalScroll = true,
     this.isGrid = false,
     this.bottomSheet = false,
-    this.chapterScrollController,
+    this.createChapterScrollController = false,
+    this.createChapterGroupScrollController = false,
   });
   final NetResourceDetailController controller;
   final VoidCallback? onClose;
@@ -24,7 +26,8 @@ class ChapterLayoutWidget extends StatefulWidget {
   final bool listVerticalScroll;
   final bool isGrid;
   final bool bottomSheet;
-  final ScrollController? chapterScrollController;
+  final bool createChapterScrollController;
+  final bool createChapterGroupScrollController;
 
   @override
   State<ChapterLayoutWidget> createState() => _ChapterLayoutWidgetState();
@@ -32,23 +35,40 @@ class ChapterLayoutWidget extends StatefulWidget {
 
 class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
   NetResourceDetailController get controller => widget.controller;
+  ScrollController? _chapterGroupScrollController;
+  ListObserverController? _chapterGroupObserverController;
+  late int _chapterGroupIndex;
+
+  ScrollController? _chapterScrollController;
   ListObserverController? _chapterObserverController;
   GridObserverController? _chapterGridObserverController;
   late int _currentChapterIndex;
   @override
   void initState() {
+    _chapterGroupIndex = controller.sourceChapterState.chapterGroupIndex.value;
+    if (widget.createChapterGroupScrollController) {
+      _chapterGroupScrollController = ScrollController();
+      _chapterGroupObserverController = ListObserverController(
+        controller: _chapterGroupScrollController,
+      )..initialIndex = _chapterGroupIndex;
+    }
+
     _currentChapterIndex = controller.sourceChapterState.chapterIndex.value;
-    if (widget.chapterScrollController != null) {
+    if (widget.createChapterScrollController || widget.isGrid) {
+      _chapterScrollController = ScrollController();
+      int activatedIndex =
+          controller.sourceChapterState.chapterGroupActivatedIndex;
+      if (activatedIndex < 0) {
+        activatedIndex = 0;
+      }
       if (widget.isGrid) {
         _chapterGridObserverController = GridObserverController(
-          controller: widget.chapterScrollController,
-        )
-        ..initialIndex = controller.sourceChapterState.chapterIndex.value;
+          controller: _chapterScrollController,
+        )..initialIndex = activatedIndex;
       } else {
         _chapterObserverController = ListObserverController(
-          controller: widget.chapterScrollController,
-        )
-        ..initialIndex = controller.sourceChapterState.chapterIndex.value;
+          controller: _chapterScrollController,
+        )..initialIndex = activatedIndex;
       }
     }
     super.initState();
@@ -56,14 +76,26 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
 
   @override
   void dispose() {
-    if ((_chapterGridObserverController != null || _chapterObserverController != null)
-      && _currentChapterIndex != controller.sourceChapterState.chapterIndex.value
-    ) {
-      controller.chapterObserverController.jumpTo(
-          index: controller.sourceChapterState.chapterIndex.value,
-          isFixedHeight: true,);
+    if (_chapterGroupScrollController != null && _chapterGroupIndex != controller.sourceChapterState.chapterGroupIndex.value) {
+      controller.chapterGroupObserverController?.jumpTo(index: controller.sourceChapterState.chapterGroupIndex.value, isFixedHeight: true);
     }
-    widget.chapterScrollController?.dispose();
+
+    if ((_chapterGridObserverController != null ||
+            _chapterObserverController != null) &&
+        _currentChapterIndex !=
+            controller.sourceChapterState.chapterIndex.value) {
+      int activatedIndex =
+          controller.sourceChapterState.chapterGroupActivatedIndex;
+      if (activatedIndex < 0) {
+        activatedIndex = 0;
+      }
+      controller.chapterObserverController?.jumpTo(
+        index: activatedIndex,
+        isFixedHeight: true,
+      );
+    }
+    _chapterGroupScrollController?.dispose();
+    _chapterScrollController?.dispose();
     super.dispose();
   }
 
@@ -73,8 +105,16 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
       children: [
         _createHeader(context),
         Padding(
-          padding: EdgeInsets.only(top: widget.bottomSheet ? WidgetStyleCommons.safeSpace : WidgetStyleCommons.safeSpace / 2),
-          child: _chapterGroup(context),
+          padding: EdgeInsets.only(
+            top: widget.bottomSheet
+                ? WidgetStyleCommons.safeSpace
+                : WidgetStyleCommons.safeSpace / 2,
+          ),
+          child: Obx(
+            () => controller.sourceChapterState.chapterGroup.value > 1
+                ? _chapterGroup(context)
+                : Container(),
+          ),
         ),
         widget.bottomSheet
             ? _bottomSheetList(context)
@@ -88,7 +128,7 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
   Widget _createHeader(BuildContext context) {
     final theme = Theme.of(context);
     List<Widget> lefts = [
-      Text("章节"),
+      Text("章节："),
       IconButton(
         tooltip: '跳至顶部',
         icon: Icon(Icons.vertical_align_top),
@@ -106,7 +146,10 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
         icon: Icon(Icons.my_location),
         style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
         onPressed: () {
-          controller.chapterObserverController.jumpTo(index: controller.sourceChapterState.chapterIndex.value, isFixedHeight: true);
+          controller.chapterObserverController?.jumpTo(
+            index: controller.sourceChapterState.chapterIndex.value,
+            isFixedHeight: true,
+          );
         },
       ),
     ];
@@ -139,7 +182,7 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
                         },
                         bottomSheet: true,
                         isGrid: true,
-                        chapterScrollController: ScrollController(),
+                        createChapterScrollController: true,
                       ),
                     ),
                   ),
@@ -197,7 +240,9 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
 
   // bottomSheet弹出内容
   Widget _bottomSheetList(BuildContext context) {
-    return Expanded(child: widget.isGrid ? _gridView(context) : _listView(context));
+    return Expanded(
+      child: widget.isGrid ? _gridView(context) : _listView(context),
+    );
   }
 
   // 列表方式
@@ -205,15 +250,15 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
     return Obx(() {
       var list = controller.sourceChapterState.chapterAsc.value
           ? controller.sourceChapterState.currentChapterGroupList
-          : controller
-          .sourceChapterState
-          .currentChapterGroupList
-          .reversed
-          .toList();
+          : controller.sourceChapterState.currentChapterGroupList.reversed
+                .toList();
+      int activeIndex = controller.sourceChapterState.chapterIndex.value;
       return ListViewObserver(
-        controller: _chapterObserverController ?? controller.chapterObserverController,
+        controller:
+            _chapterObserverController ?? controller.chapterObserverController,
         child: ListView.builder(
-          controller: widget.chapterScrollController ?? controller.chapterScrollController,
+          controller:
+              _chapterScrollController ?? controller.chapterScrollController,
           padding: EdgeInsets.symmetric(
             horizontal: WidgetStyleCommons.safeSpace,
             vertical: WidgetStyleCommons.safeSpace,
@@ -221,22 +266,18 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
           itemCount: list.length,
           itemBuilder: (context, index) {
             var item = list[index];
-            return Obx(
-                  () => Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: WidgetStyleCommons.safeSpace / 2,
-                ),
-                height: WidgetStyleCommons.chapterHeight,
-                child: ChapterWidget(
-                  chapter: item,
-                  activated:
-                  item.index ==
-                      controller.sourceChapterState.chapterIndex.value,
-                  isCard: true,
-                  onClick: () {
-                    controller.sourceChapterState.chapterIndex(item.index);
-                  },
-                ),
+            return Container(
+              padding: EdgeInsets.symmetric(
+                vertical: WidgetStyleCommons.safeSpace / 2,
+              ),
+              height: WidgetStyleCommons.chapterHeight,
+              child: ChapterWidget(
+                chapter: item,
+                activated: item.index == activeIndex,
+                isCard: true,
+                onClick: () {
+                  controller.sourceChapterState.chapterIndex(item.index);
+                },
               ),
             );
           },
@@ -245,24 +286,23 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
     });
   }
 
-  // 列表方式
+  // 列表方式（grid）
   Widget _gridView(BuildContext context) {
     return Obx(() {
       var list = controller.sourceChapterState.chapterAsc.value
           ? controller.sourceChapterState.currentChapterGroupList
-          : controller
-          .sourceChapterState
-          .currentChapterGroupList
-          .reversed
-          .toList();
+          : controller.sourceChapterState.currentChapterGroupList.reversed
+                .toList();
+      int activeIndex = controller.sourceChapterState.chapterIndex.value;
       return GridViewObserver(
-        controller: _chapterGridObserverController ?? controller.chapterGridObserverController,
+        controller: _chapterGridObserverController,
         child: GridView.builder(
           padding: EdgeInsets.symmetric(
             horizontal: WidgetStyleCommons.safeSpace,
             vertical: WidgetStyleCommons.safeSpace,
           ),
-          controller: widget.chapterScrollController ?? controller.chapterScrollController,
+          controller:
+              _chapterScrollController ?? controller.chapterScrollController,
           itemCount: list.length,
           gridDelegate: SliverGridDelegateWithExtentAndRatio(
             crossAxisSpacing: WidgetStyleCommons.safeSpace,
@@ -271,19 +311,15 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
             childAspectRatio: WidgetStyleCommons.chapterGridRatio,
           ),
           itemBuilder: (context, index) {
-            return Obx(() {
-              var item = list[index];
-              return ChapterWidget(
-                chapter: item,
-                activated:
-                    item.index ==
-                    controller.sourceChapterState.chapterIndex.value,
-                isCard: true,
-                onClick: () {
-                  controller.sourceChapterState.chapterIndex(item.index);
-                },
-              );
-            });
+            var item = list[index];
+            return ChapterWidget(
+              chapter: item,
+              activated: item.index == activeIndex,
+              isCard: true,
+              onClick: () {
+                controller.sourceChapterState.chapterIndex(item.index);
+              },
+            );
           },
         ),
       );
@@ -293,52 +329,46 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
   // 横向滚动
   Widget _horizontalScroll(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: WidgetStyleCommons.safeSpace,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
       width: double.infinity,
       height: WidgetStyleCommons.chapterHeight,
       child: Scrollbar(
-        controller: widget.chapterScrollController ?? controller.chapterScrollController,
-        child: Obx(()  {
+        controller:
+            _chapterScrollController ?? controller.chapterScrollController,
+        child: Obx(() {
           var list = controller.sourceChapterState.chapterAsc.value
               ? controller.sourceChapterState.currentChapterGroupList
-              : controller
-              .sourceChapterState
-              .currentChapterGroupList
-              .reversed
-              .toList();
+              : controller.sourceChapterState.currentChapterGroupList.reversed
+                    .toList();
+          int activeIndex = controller.sourceChapterState.chapterIndex.value;
           return ListViewObserver(
-            controller: _chapterObserverController ?? controller.chapterObserverController,
+            controller:
+                _chapterObserverController ??
+                controller.chapterObserverController,
             child: ListView.builder(
-              controller: widget.chapterScrollController ?? controller.chapterScrollController,
+              controller:
+                  _chapterScrollController ??
+                  controller.chapterScrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               scrollDirection: Axis.horizontal,
-              itemCount: controller.sourceChapterState.currentChapterGroupList.length,
+              itemCount:
+                  controller.sourceChapterState.currentChapterGroupList.length,
               itemBuilder: (context, index) {
                 var item = list[index];
-                return Obx(() {
-                  return Container(
-                    margin: EdgeInsets.only(
-                      right: WidgetStyleCommons.safeSpace,
+                return Container(
+                  margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
+                  child: AspectRatio(
+                    aspectRatio: WidgetStyleCommons.chapterGridRatio,
+                    child: ChapterWidget(
+                      chapter: item,
+                      activated: item.index == activeIndex,
+                      isCard: true,
+                      onClick: () {
+                        controller.sourceChapterState.chapterIndex(item.index);
+                      },
                     ),
-                    child: AspectRatio(
-                      aspectRatio: WidgetStyleCommons.chapterGridRatio,
-                      child: ChapterWidget(
-                        chapter: item,
-                        activated:
-                        item.index ==
-                            controller.sourceChapterState.chapterIndex.value,
-                        isCard: true,
-                        onClick: () {
-                          controller.sourceChapterState.chapterIndex(
-                            item.index,
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                });
+                  ),
+                );
               },
             ),
           );
@@ -347,36 +377,36 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
     );
   }
 
+  // 章节分组显示
   Widget _chapterGroup(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-          left: WidgetStyleCommons.safeSpace,
-          right: WidgetStyleCommons.safeSpace,
-          bottom: WidgetStyleCommons.safeSpace/ 2
+        left: WidgetStyleCommons.safeSpace,
+        right: WidgetStyleCommons.safeSpace,
+        bottom: WidgetStyleCommons.safeSpace / 2,
       ),
       width: double.infinity,
       height: WidgetStyleCommons.chapterHeight,
       child: Obx(() {
         var list = controller.sourceChapterState.chapterAsc.value
             ? controller.sourceChapterState.chapterGroupNameList
-            : controller
-            .sourceChapterState
-            .chapterGroupNameList
-            .reversed
-            .toList();
+            : controller.sourceChapterState.chapterGroupNameList.reversed
+                  .toList();
+        int activeIndex = controller.sourceChapterState.chapterGroupIndex.value;
         return Scrollbar(
           controller: controller.chapterGroupScrollController,
-          child: ListView.builder(
-            controller: controller.chapterGroupScrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            scrollDirection: Axis.horizontal,
-            itemCount:
-            list.length,
-            itemBuilder: (context, index) {
-              return Obx(() {
-
+          child: ListViewObserver(
+            controller: _chapterGroupObserverController ?? controller.chapterGroupObserverController,
+            child: ListView.builder(
+              controller: controller.chapterGroupScrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              itemCount: list.length,
+              itemBuilder: (context, index) {
                 var item = list[index];
-                int realIndex = controller.sourceChapterState.chapterAsc.value ? index : list.length - index - 1;
+                int realIndex = controller.sourceChapterState.chapterAsc.value
+                    ? index
+                    : list.length - index - 1;
                 return Container(
                   margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
                   child: AspectRatio(
@@ -384,18 +414,18 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
                     child: ClickableButtonWidget(
                       text: item,
                       textAlign: TextAlign.center,
-                      activated:
-                      realIndex ==
-                          controller.sourceChapterState.chapterGroupIndex.value,
+                      activated: realIndex == activeIndex,
                       isCard: true,
                       onClick: () {
-                        controller.sourceChapterState.chapterGroupIndex(realIndex);
+                        controller.sourceChapterState.chapterGroupIndex(
+                          realIndex,
+                        );
                       },
                     ),
                   ),
                 );
-              });
-            },
+              },
+            ),
           ),
         );
       }),

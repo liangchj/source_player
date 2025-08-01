@@ -48,7 +48,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
       NetResourceDetailController(widget.resourceId),
       tag: widget.resourceId,
     );
-    controller.nestedScrollController.addListener(listener);
+    controller.nestedScrollController?.addListener(listener);
     super.initState();
   }
 
@@ -56,15 +56,15 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   void dispose() {
     // TODO: implement dispose
     controller.disposeId(widget.resourceId);
-    controller.nestedScrollController.removeListener(listener);
+    controller.nestedScrollController?.removeListener(listener);
     super.dispose();
   }
 
   void listener() {
-    print("listener， offset:${controller.nestedScrollController.offset}, "
+    /*print("listener， offset:${controller.nestedScrollController.offset}, "
         "position：${controller.nestedScrollController.position}, "
         "initialScrollOffset：${controller.nestedScrollController.initialScrollOffset}"
-        "keepScrollOffset：${controller.nestedScrollController.keepScrollOffset}");
+        "keepScrollOffset：${controller.nestedScrollController.keepScrollOffset}");*/
     /*if (controller.nestedScrollController.position.pixels >= 100) {
       controller.showBottomSheet(true);
     } else {
@@ -77,31 +77,33 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
     print("渲染");
     return PopScope(
       canPop: controller.canPopScope(),
-      child: Obx(() => Scaffold(
-        appBar: controller.loadingState.value.loading || !controller.loadingState.value.loadedSuc
-          || controller.videoModel.value == null ?
-            AppBar(
-              leading: BackButton(),
-            ) : null
-        ,
-        body: controller.loadingState.value.loading
-            ? const Center(
-          child: SizedBox(
-            height: 500,
-            child: LoadingWidget(textWidget: Text("资源加载中...")),
-          ),
-        )
-            : !controller.loadingState.value.loadedSuc
-            ? Center(
-          child: Text(
-            "资源加载失败: ${controller.loadingState.value.errorMsg}",
-          ),
-        )
-            : controller.videoModel.value == null
-            ? const Center(child: Text("获取资源为空"))
-        // : SizedBox(width: double.infinity, child: _createDetailAndPlay()),
-            : _createDetailScrollView(),
-      ))
+      child: Obx(
+        () => Scaffold(
+          appBar:
+              controller.loadingState.value.loading ||
+                  !controller.loadingState.value.loadedSuc ||
+                  controller.videoModel.value == null
+              ? AppBar(leading: BackButton())
+              : null,
+          body: controller.loadingState.value.loading
+              ? const Center(
+                  child: SizedBox(
+                    height: 500,
+                    child: LoadingWidget(textWidget: Text("资源加载中...")),
+                  ),
+                )
+              : !controller.loadingState.value.loadedSuc
+              ? Center(
+                  child: Text(
+                    "资源加载失败: ${controller.loadingState.value.errorMsg}",
+                  ),
+                )
+              : controller.videoModel.value == null
+              ? const Center(child: Text("获取资源为空"))
+              // : SizedBox(width: double.infinity, child: _createDetailAndPlay()),
+              : _createDetailScrollView(),
+        ),
+      ),
       /*child: Scaffold(
         // appBar: AppBar(leading: BackButton()),
         body: Obx(
@@ -137,7 +139,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
     return ExtendedNestedScrollView(
       controller: controller.nestedScrollController,
       onlyOneScrollInBody: true,
-        // physics: const NeverScrollableScrollPhysics(),
+      // physics: const NeverScrollableScrollPhysics(),
       /*physics: const NeverScrollableScrollPhysics(
         parent: ClampingScrollPhysics(),
       ),*/
@@ -147,7 +149,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
             // automaticallyImplyLeading: false,
             expandedHeight:
                 MediaQuery.of(context).size.width * _playerAspectRatio,
- /*           collapsedHeight: playerController.playing.value
+            /*           collapsedHeight: playerController.playing.value
                 ? MediaQuery.of(context).size.width * _playerAspectRatio
                 : _minPlayerHeight,*/
             floating: false,
@@ -161,8 +163,11 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
       pinnedHeaderSliverHeightBuilder: () {
         // print("pinnedHeaderHeight:$pinnedHeaderHeight");
         if (controller.bottomSheetController != null) {
-          print("进入：${MediaQuery.of(context).size.width * _playerAspectRatio - controller.nestedScrollController.offset}");
-          return MediaQuery.of(context).size.width * _playerAspectRatio - controller.nestedScrollController.offset;
+          print(
+            "进入：${MediaQuery.of(context).size.width * _playerAspectRatio - controller.nestedScrollController!.offset}",
+          );
+          return MediaQuery.of(context).size.width * _playerAspectRatio -
+              controller.nestedScrollController!.offset;
         }
         return pinnedHeaderHeight;
       },
@@ -195,42 +200,41 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         _createResourceDetailInfo(),
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
-        Padding(
-          padding: EdgeInsetsGeometry.symmetric(
-            // vertical: WidgetStyleCommons.safeSpace / 2,
-            horizontal: WidgetStyleCommons.safeSpace,
-          ),
-          child: PlaySourceApiWidget(controller: controller,
-            isSelect: true,
-            // isGrid:  true,
-            singleHorizontalScroll:  true,
-            // isSelect:  true,
-          ),
+        PlaySourceApiWidget(
+          controller: controller,
+          isSelect: true,
+          // isGrid:  true,
+          singleHorizontalScroll: true,
+          // isSelect:  true,
         ),
-        Padding(
-          padding: EdgeInsetsGeometry.symmetric(
-            // vertical: WidgetStyleCommons.safeSpace / 2,
-            horizontal: WidgetStyleCommons.safeSpace,
-          ),
-          child: PlaySourceGroupWidget(controller: controller, singleHorizontalScroll:  true,),
+        Obx(
+          () =>
+              controller
+                      .sourceChapterState
+                      .currentPlayedSourceGroupList
+                      .length >
+                  1
+              ? PlaySourceGroupWidget(
+                  controller: controller,
+                  singleHorizontalScroll: true,
+                )
+              : Container(),
         ),
 
         Container(
           padding: EdgeInsetsGeometry.symmetric(
             // horizontal: WidgetStyleCommons.safeSpace,
           ),
-          margin: EdgeInsetsGeometry.only(bottom: WidgetStyleCommons.safeSpace / 2),
-          child: ChapterLayoutWidget(controller: controller, singleHorizontalScroll:  true,),
+          margin: EdgeInsetsGeometry.only(
+            bottom: WidgetStyleCommons.safeSpace / 2,
+          ),
+          child: ChapterLayoutWidget(
+            controller: controller,
+            singleHorizontalScroll: true,
+          ),
         ),
-        Container(
-          height: 800,
-          color: Colors.red,
-        ),
-        Container(
-          height: 500,
-          color: Colors.amber,
-        ),
-
+        Container(height: 800, color: Colors.red),
+        Container(height: 500, color: Colors.amber),
       ],
     );
   }
