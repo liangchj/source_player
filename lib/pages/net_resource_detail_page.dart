@@ -10,7 +10,6 @@ import '../commons/widget_style_commons.dart';
 import '../getx_controller/net_resource_detail_controller.dart';
 import '../getx_controller/player_controller.dart';
 import '../widgets/loading_widget.dart' show LoadingWidget;
-import '../widgets/play_source_widget.dart';
 
 /// 网络资源详情页面
 /// 涉及到icon的，若使用系统的icon，统一使用rounded结尾的

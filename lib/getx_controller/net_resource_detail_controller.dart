@@ -83,6 +83,11 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       tabController = TabController(length: tabs.length, vsync: this);
       loadResourceDetail();
     }
+    _initEver();
+    super.onInit();
+  }
+
+  void _initEver() {
     ever(videoModel, (val) {
       var length = sourceChapterState.currentPlayedChapterList.length;
       int group = (length / WidgetStyleCommons.chapterGroupCount).ceil();
@@ -92,7 +97,30 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       sourceChapterState.chapterGroup(group);
       sourceChapterState.chapterGroupIndex(0);
     });
-    super.onInit();
+
+    ever(sourceChapterState.selectedSourceGroupIndex, (value) {
+      int jumpToIndex = -1;
+      if (sourceChapterState.playedSourceApiIndex.value != sourceChapterState.selectedSourceApiIndex.value
+      || sourceChapterState.playedSourceGroupIndex.value != sourceChapterState.selectedSourceGroupIndex.value) {
+        sourceChapterState.chapterGroupIndex(0);
+      } else {
+        jumpToIndex = sourceChapterState.chapterGroupActivatedIndex;
+      }
+      if (jumpToIndex >= 0) {
+        sourceChapterState.chapterGroupIndex(jumpToIndex);
+      }
+    });
+
+    // 选择章节
+    ever(sourceChapterState.chapterIndex, (value) {
+      // 只有选中了章节才能标记当前组为播放
+      // sourceChapterState.playedSourceApiIndex.value = sourceChapterState.selectedSourceApiIndex.value;
+      sourceChapterState.playedSourceApiIndex(sourceChapterState.selectedSourceApiIndex.value);
+      sourceChapterState.playedSourceGroupIndex(sourceChapterState.selectedSourceGroupIndex.value);
+      // sourceChapterState.playedSourceGroupIndex.value = sourceChapterState.selectedSourceGroupIndex.value;
+    });
+
+
   }
 
   // 初始化控制器

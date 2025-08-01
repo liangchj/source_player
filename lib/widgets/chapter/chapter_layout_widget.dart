@@ -57,7 +57,7 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
     if (widget.createChapterScrollController || widget.isGrid) {
       _chapterScrollController = ScrollController();
       int activatedIndex =
-          controller.sourceChapterState.chapterGroupActivatedIndex;
+          controller.sourceChapterState.chapterGroupActivatedChapterIndex;
       if (activatedIndex < 0) {
         activatedIndex = 0;
       }
@@ -71,29 +71,89 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
         )..initialIndex = activatedIndex;
       }
     }
+
+    /*ever(controller.sourceChapterState.selectedSourceGroupIndex, (value) {
+      int jumpToIndex = -1;
+      if (controller.sourceChapterState.playedSourceApiIndex.value != controller.sourceChapterState.selectedSourceApiIndex.value) {
+        jumpToIndex = 0;
+      } else {
+        jumpToIndex = controller.sourceChapterState.chapterGroupActivatedIndex;
+      }
+      if (jumpToIndex < 0) {
+        if (jumpToIndex == -1) {
+          return;
+        }
+        jumpToIndex = 0;
+      }
+      if (widget.bottomSheet) {
+        _chapterGroupObserverController?.jumpTo(
+          index: jumpToIndex,
+          isFixedHeight: true,
+        );
+      } else {
+        controller.chapterGroupObserverController?.jumpTo(
+          index: jumpToIndex,
+          isFixedHeight: true,
+        );
+      }
+    });*/
+
+    ever(controller.sourceChapterState.chapterGroupIndex, (value) {
+      int jumpToChapterIndex =
+          controller.sourceChapterState.chapterGroupActivatedChapterIndex;
+      if (jumpToChapterIndex < 0 || jumpToChapterIndex > WidgetStyleCommons.chapterGroupCount) {
+        jumpToChapterIndex = 0;
+      }
+      if (widget.bottomSheet) {
+        if (widget.isGrid) {
+          _chapterGridObserverController?.jumpTo(
+            index: jumpToChapterIndex,
+            isFixedHeight: true,
+          );
+        } else {
+          _chapterObserverController?.jumpTo(
+            index: jumpToChapterIndex,
+            isFixedHeight: true,
+          );
+        }
+      } else {
+        controller.chapterObserverController?.jumpTo(
+          index: jumpToChapterIndex,
+          isFixedHeight: true,
+        );
+      }
+    });
     super.initState();
   }
 
   @override
   void dispose() {
-    if (_chapterGroupScrollController != null && _chapterGroupIndex != controller.sourceChapterState.chapterGroupIndex.value) {
-      controller.chapterGroupObserverController?.jumpTo(index: controller.sourceChapterState.chapterGroupIndex.value, isFixedHeight: true);
-    }
-
-    if ((_chapterGridObserverController != null ||
-            _chapterObserverController != null) &&
-        _currentChapterIndex !=
-            controller.sourceChapterState.chapterIndex.value) {
-      int activatedIndex =
-          controller.sourceChapterState.chapterGroupActivatedIndex;
-      if (activatedIndex < 0) {
-        activatedIndex = 0;
-      }
-      controller.chapterObserverController?.jumpTo(
-        index: activatedIndex,
+    if (_chapterGroupScrollController != null &&
+        _chapterGroupIndex !=
+            controller.sourceChapterState.chapterGroupIndex.value) {
+      controller.chapterGroupObserverController?.jumpTo(
+        index: controller.sourceChapterState.chapterGroupIndex.value,
         isFixedHeight: true,
       );
     }
+    if (((_chapterGridObserverController != null ||
+                _chapterObserverController != null) &&
+            _currentChapterIndex !=
+                controller.sourceChapterState.chapterIndex.value) ||
+        (widget.bottomSheet &&
+            _chapterGroupIndex !=
+                controller.sourceChapterState.chapterGroupIndex.value)) {
+      int jumpToChapterIndex =
+          controller.sourceChapterState.chapterGroupActivatedChapterIndex;
+      if (jumpToChapterIndex < 0) {
+        jumpToChapterIndex = 0;
+      }
+      controller.chapterObserverController?.jumpTo(
+        index: jumpToChapterIndex,
+        isFixedHeight: true,
+      );
+    }
+
     _chapterGroupScrollController?.dispose();
     _chapterScrollController?.dispose();
     super.dispose();
@@ -252,7 +312,7 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
           ? controller.sourceChapterState.currentChapterGroupList
           : controller.sourceChapterState.currentChapterGroupList.reversed
                 .toList();
-      int activeIndex = controller.sourceChapterState.chapterIndex.value;
+      int activeIndex = controller.sourceChapterState.currentActivatedChapterIndex;
       return ListViewObserver(
         controller:
             _chapterObserverController ?? controller.chapterObserverController,
@@ -293,7 +353,7 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
           ? controller.sourceChapterState.currentChapterGroupList
           : controller.sourceChapterState.currentChapterGroupList.reversed
                 .toList();
-      int activeIndex = controller.sourceChapterState.chapterIndex.value;
+      int activeIndex = controller.sourceChapterState.currentActivatedChapterIndex;
       return GridViewObserver(
         controller: _chapterGridObserverController,
         child: GridView.builder(
@@ -340,7 +400,7 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
               ? controller.sourceChapterState.currentChapterGroupList
               : controller.sourceChapterState.currentChapterGroupList.reversed
                     .toList();
-          int activeIndex = controller.sourceChapterState.chapterIndex.value;
+          int activeIndex = controller.sourceChapterState.currentActivatedChapterIndex;
           return ListViewObserver(
             controller:
                 _chapterObserverController ??
@@ -393,10 +453,13 @@ class _ChapterLayoutWidgetState extends State<ChapterLayoutWidget> {
             : controller.sourceChapterState.chapterGroupNameList.reversed
                   .toList();
         int activeIndex = controller.sourceChapterState.chapterGroupIndex.value;
+        // int activeIndex = controller.sourceChapterState.currentActivatedChapterGroupIndex;
         return Scrollbar(
           controller: controller.chapterGroupScrollController,
           child: ListViewObserver(
-            controller: _chapterGroupObserverController ?? controller.chapterGroupObserverController,
+            controller:
+                _chapterGroupObserverController ??
+                controller.chapterGroupObserverController,
             child: ListView.builder(
               controller: controller.chapterGroupScrollController,
               physics: const AlwaysScrollableScrollPhysics(),

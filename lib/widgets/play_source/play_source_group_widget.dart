@@ -42,7 +42,7 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
   @override
   void initState() {
     _activatedIndex =
-        controller.sourceChapterState.playedSourceGroupIndex.value;
+        controller.sourceChapterState.selectedSourceGroupIndex.value;
 
     if (widget.createScrollController || widget.isGrid) {
       _scrollController = ScrollController();
@@ -57,16 +57,23 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
       }
     }
 
+    ever(controller.sourceChapterState.selectedSourceApiIndex, (value) {
+      if (controller.sourceChapterState.playedSourceApiIndex.value == controller.sourceChapterState.selectedSourceApiIndex.value) {
+        controller.sourceChapterState.selectedSourceApiIndex(controller.sourceChapterState.playedSourceApiIndex.value);
+      } else {
+        controller.sourceChapterState.selectedSourceApiIndex(0);
+      }
+    });
     super.initState();
   }
 
   @override
   void dispose() {
     if (_scrollController != null &&
-        controller.sourceChapterState.playedSourceGroupIndex.value !=
+        controller.sourceChapterState.selectedSourceGroupIndex.value !=
             _activatedIndex) {
       controller.playSourceApiObserverController?.jumpTo(
-        index: controller.sourceChapterState.playedSourceGroupIndex.value,
+        index: controller.sourceChapterState.selectedSourceGroupIndex.value,
         isFixedHeight: true,
       );
     }
@@ -205,7 +212,7 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
   Widget _listView(BuildContext context) {
     return Obx(() {
       int activatedIndex =
-          controller.sourceChapterState.playedSourceGroupIndex.value;
+          controller.sourceChapterState.selectedSourceGroupIndex.value;
       return ListViewObserver(
         controller:
             _observerController ?? controller.playSourceApiObserverController,
@@ -225,13 +232,13 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
-                text: item.name ?? "",
+                text: item.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 activated: index == activatedIndex,
                 isCard: false,
                 onClick: () {
-                  controller.sourceChapterState.playedSourceGroupIndex(index);
+                  controller.sourceChapterState.selectedSourceGroupIndex(index);
                 },
               ),
             );
@@ -245,7 +252,7 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
   Widget _gridView(BuildContext context) {
     return Obx(() {
       int activatedIndex =
-          controller.sourceChapterState.playedSourceGroupIndex.value;
+          controller.sourceChapterState.selectedSourceGroupIndex.value;
       return GridViewObserver(
         controller: _gridObserverController,
         child: GridView.builder(
@@ -268,14 +275,14 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
                 .sourceChapterState
                 .currentPlayedSourceGroupList[index];
             return ClickableButtonWidget(
-              text: item.name ?? "",
+              text: item.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               activated: index == activatedIndex,
               isCard: false,
               textAlign: TextAlign.center,
               onClick: () {
-                controller.sourceChapterState.playedSourceGroupIndex(index);
+                controller.sourceChapterState.selectedSourceGroupIndex(index);
               },
             );
           },
@@ -295,7 +302,7 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
             _scrollController ?? controller.playSourceGroupScrollController,
         child: Obx(() {
           int activatedIndex =
-              controller.sourceChapterState.playedSourceGroupIndex.value;
+              controller.sourceChapterState.selectedSourceGroupIndex.value;
           return ListViewObserver(
             controller:
                 _observerController ??
@@ -319,14 +326,14 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
                   child: AspectRatio(
                     aspectRatio: WidgetStyleCommons.playSourceGridRatio,
                     child: ClickableButtonWidget(
-                      text: item.name ?? "",
+                      text: item.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       activated: index == activatedIndex,
                       isCard: false,
                       textAlign: TextAlign.center,
                       onClick: () {
-                        controller.sourceChapterState.playedSourceGroupIndex(
+                        controller.sourceChapterState.selectedSourceGroupIndex(
                           index,
                         );
                       },

@@ -39,7 +39,8 @@ class SourceChapterState {
     if (playSourceList == null || playSourceList.isEmpty) {
       return null;
     }
-    return playSourceList[playedSourceApiIndex.value];
+    // return playSourceList[playedSourceApiIndex.value];
+    return playSourceList[selectedSourceApiIndex.value];
   }
 
   // 2. 获取当前播放网站源下的资源组列表（供资源组选择器使用）
@@ -50,7 +51,8 @@ class SourceChapterState {
   // 3. 获取当前播放的资源组
   PlaySourceGroupModel? get currentPlayedSourceGroup {
     var list = currentPlayedSourceGroupList;
-    return list.length > playedSourceGroupIndex.value ? currentPlayedSourceGroupList[playedSourceGroupIndex.value] : null;
+    // return list.length > playedSourceGroupIndex.value ? currentPlayedSourceGroupList[playedSourceGroupIndex.value] : null;
+    return list.length > selectedSourceGroupIndex.value ? list[selectedSourceGroupIndex.value] : null;
   }
 
   // 4. 获取当前播放资源组下的章节列表（供章节选择器使用）
@@ -100,13 +102,43 @@ class SourceChapterState {
     return list.sublist(start, end);
   }
 
-
-  int get chapterGroupActivatedIndex {
+  // 当前激活的章节中对应激活的章节下标（本组下标，不是全章节下标）
+  int get chapterGroupActivatedChapterIndex {
+    int index = currentActivatedChapterIndex;
     // chapterGroupIndex从0开始
     if (chapterGroup.value <= 0) {
-      return chapterIndex.value;
+      return index;
     }
     // 因为chapterGroupIndex从0开始，因此不需要先减1再计算
-    return chapterIndex.value - (chapterGroupIndex.value * WidgetStyleCommons.chapterGroupCount);
+    return index - (chapterGroupIndex.value * WidgetStyleCommons.chapterGroupCount);
+  }
+
+
+  // 当前激活的资源组索引
+  int get currentActivatedChapterGroupIndex {
+    if (playedSourceApiIndex.value != selectedSourceApiIndex.value) {
+      return -1;
+    }
+    return playedSourceGroupIndex.value;
+  }
+
+  // 当前激活的章节组
+  int get chapterGroupActivatedIndex {
+    int chapterIndex = currentActivatedChapterIndex;
+    if (chapterIndex < 0) {
+      return -1;
+    }
+    if (chapterIndex == 0) {
+      return 0;
+    }
+    return (chapterIndex / WidgetStyleCommons.chapterGroupCount).ceil() - 1;
+  }
+
+  // 当前激活的章节索引
+  int get currentActivatedChapterIndex {
+    if (playedSourceApiIndex.value != selectedSourceApiIndex.value || playedSourceGroupIndex.value != selectedSourceGroupIndex.value) {
+      return -1;
+    }
+    return chapterIndex.value;
   }
 }

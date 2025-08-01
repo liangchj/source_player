@@ -57,6 +57,11 @@ class _PlaySourceApiWidgetState extends State<PlaySourceApiWidget> {
         )..initialIndex = _activatedIndex;
       }
     }
+
+    ever(controller.sourceChapterState.playedSourceApiIndex, (value) {
+
+    });
+
     super.initState();
   }
 
