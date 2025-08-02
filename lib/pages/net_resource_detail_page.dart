@@ -1,6 +1,7 @@
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:source_player/player/player_view.dart';
 import 'package:source_player/widgets/chapter/chapter_layout_widget.dart';
 import 'package:source_player/widgets/play_source/play_source_api_widget.dart';
 import 'package:source_player/widgets/play_source/play_source_group_widget.dart';
@@ -8,7 +9,7 @@ import 'package:source_player/widgets/resource_detail/resource_detail_info_widge
 
 import '../commons/widget_style_commons.dart';
 import '../getx_controller/net_resource_detail_controller.dart';
-import '../getx_controller/player_controller.dart';
+import '../player/controller/player_controller.dart';
 import '../widgets/loading_widget.dart' show LoadingWidget;
 
 /// 网络资源详情页面
@@ -38,7 +39,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   final double _playerAspectRatio = 9 / 16.0;
   final double _minPlayerHeight = 60;
 
-  final PlayerController playerController = PlayerController();
+  PlayerController? playerController;
 
   @override
   void initState() {
@@ -280,6 +281,11 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
 
   /// 创建播放器
   _createPlayer() {
+    return PlayerView(
+      onCreatePlayerController: (controller) {
+        playerController = controller;
+      },
+    );
     /*return LayoutBuilder(
       builder: (context, constraints) {
         final height = constraints.maxHeight;

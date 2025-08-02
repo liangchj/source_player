@@ -1,17 +1,32 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'cache/shared_preferences_cache.dart';
 import 'http/dio_utils.dart';
 import 'pages/app_home_page.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 初始化SharedPreferences
   SharedPreferencesCache();
   // 初始化dio
   DioUtils();
+  await Future.wait(
+    [
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
+      ),
+      SystemChrome.setPreferredOrientations(
+        [
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ],
+      ),
+    ],
+  );
   runApp(
     GetMaterialApp(
       // getPages: AppPages.pages,
