@@ -146,7 +146,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
       headerSliverBuilder: (BuildContext c, bool f) {
         return [
           SliverAppBar(
-            // automaticallyImplyLeading: false,
+            automaticallyImplyLeading: false,
             expandedHeight:
                 MediaQuery.of(context).size.width * _playerAspectRatio,
             /*           collapsedHeight: playerController.playing.value

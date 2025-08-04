@@ -13,54 +13,48 @@ class FullscreenUtils {
 
   PlayerState get playerState => controller.playerState;
 
+  OverlayEntry? fullscreenOverlay;
 
-  OverlayEntry? fullScreenOverlay;
-
-
-  void toggleFullScreen({BuildContext? context}) {
+  void toggleFullscreen({BuildContext? context}) {
     bool playing = controller.player.value?.playing ?? false;
     if (controller.player.value != null && playing) {
       controller.player.value!.pause();
     }
-    if (playerState.fullScreen.value) {
-      exitFullScreen();
+    if (playerState.isFullscreen.value) {
+      exitFullscreen();
     } else {
-      enterFullScreen(context ?? Get.context!);
+      enterFullscreen(context ?? Get.context!);
       if (playing) {
         controller.player.value!.play();
       }
     }
-    playerState.fullScreen.toggle();
+    playerState.isFullscreen.toggle();
   }
 
-  void enterFullScreen(BuildContext context) {
-    // 处理本地视频的特殊情况
-    if (controller.isLocalVideo) {
-      _enterFullScreenForLocalVideo();
+  void enterFullscreen(BuildContext context) {
+    // 处理只有全屏的特殊情况
+    if (controller.onlyFullscreen) {
+      _enterFullscreenForLocalVideo();
       return;
     }
 
     OverlayState? overlay;
-    // 尝试使用Overlay方案
     try {
       overlay = Overlay.of(context, rootOverlay: true);
-    } catch (e) {
-
-    }
+    } catch (e) {}
 
     try {
       // 如果失败，尝试使用 Navigator 获取上下文
       final navigatorContext = Navigator.of(context).context;
       overlay = Overlay.of(navigatorContext, rootOverlay: true);
-    } catch (e) { }
+    } catch (e) {}
 
     try {
       // 使用 GetX 提供的 overlayContext
       if (Get.overlayContext != null) {
         overlay = Overlay.of(Get.overlayContext!, rootOverlay: true);
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     if (overlay != null) {
       _enterWithOverlay(context, overlay);
     } else {
@@ -69,10 +63,10 @@ class FullscreenUtils {
   }
 
   // 本地视频全屏处理
-  void _enterFullScreenForLocalVideo() {
+  void _enterFullscreenForLocalVideo() {
     // 直接跳转到全屏页面（无需位置计算）
     Get.to(
-      () => FullScreenPlayerPage(),
+      () => FullscreenPlayerPage(),
       transition: Transition.fade,
       duration: const Duration(milliseconds: 300),
     );
@@ -82,21 +76,22 @@ class FullscreenUtils {
   }
 
   void _enterWithOverlay(BuildContext context, OverlayState overlay) {
-    final RenderBox renderBox = playerState.verticalPlayerWidgetKey.currentContext?.findRenderObject() as RenderBox;
+    final RenderBox renderBox =
+        playerState.verticalPlayerWidgetKey.currentContext?.findRenderObject()
+            as RenderBox;
 
     final position = renderBox.localToGlobal(Offset.zero);
     final size = renderBox.size;
 
-    fullScreenOverlay = OverlayEntry(
-      builder: (context) => AnimatedFullScreenOverlay(
+    fullscreenOverlay = OverlayEntry(
+      builder: (context) => AnimatedFullscreenOverlay(
         position: position,
         size: size,
-        // child: _buildFullScreenContent(),
-        child: FullScreenPlayerPage(),
+        child: FullscreenPlayerPage(),
       ),
     );
 
-    overlay.insert(fullScreenOverlay!);
+    overlay.insert(fullscreenOverlay!);
     _lockLandscapeOrientation();
   }
 
@@ -111,13 +106,13 @@ class FullscreenUtils {
     ]);
   }
 
-  void exitFullScreen() {
+  void exitFullscreen() {
     // 移除Overlay
-    fullScreenOverlay?.remove();
-    fullScreenOverlay = null;
+    fullscreenOverlay?.remove();
+    fullscreenOverlay = null;
 
-    if (!playerState.fullScreen.value || controller.isLocalVideo) {
-      if (controller.isLocalVideo) {
+    if (!playerState.isFullscreen.value || controller.onlyFullscreen) {
+      if (controller.onlyFullscreen) {
         controller.pause();
         controller.player.value?.onDisposePlayer();
       }
@@ -126,7 +121,6 @@ class FullscreenUtils {
     _unlockOrientation();
   }
 
-
   // 恢复竖屏
   void _unlockOrientation() {
     SystemChrome.setEnabledSystemUIMode(
@@ -134,20 +128,17 @@ class FullscreenUtils {
       overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
     );
     // 恢复竖屏
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 }
 
-
 // 动画化全屏覆盖层
-class AnimatedFullScreenOverlay extends StatelessWidget {
+class AnimatedFullscreenOverlay extends StatelessWidget {
   final Offset position;
   final Size size;
   final Widget child;
 
-  const AnimatedFullScreenOverlay({
+  const AnimatedFullscreenOverlay({
     super.key,
     required this.position,
     required this.size,

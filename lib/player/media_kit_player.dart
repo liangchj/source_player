@@ -94,14 +94,14 @@ class MediaKitPlayer extends IPlayer {
     });
 
     stream.playing.listen((value) {
-      _playerController.playerState.playing(value);
+      _playerController.playerState.isPlaying(value);
       if (value) {
         // _playerController.playerState.errorMsg("");
       }
     });
 
     stream.completed.listen((value) {
-      _playerController.playerState.finished(value);
+      _playerController.playerState.isFinished(value);
     });
   }
 }

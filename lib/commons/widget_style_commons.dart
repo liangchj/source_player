@@ -4,6 +4,19 @@ import 'package:flutter/material.dart';
 class WidgetStyleCommons {
   // 主色调
   static const Color mainColor = Color(0xFF65F4FD);
+
+  static const Color activatedTextColor = mainColor;
+
+  // 边框宽度
+  static const double borderWidth = 1.0;
+  // 边框圆角
+  static const double borderRadius = 6.0;
+
+  // 默认的图标颜色
+  static const Color iconColor = Colors.white;
+  // 图标选中颜色
+  static const Color iconActivatedColor = mainColor;
+
   // 视频卡片宽度
   static double videoCardWidth = 240.0;
   // 视频卡片比例
@@ -40,4 +53,7 @@ class WidgetStyleCommons {
   static const Color chapterBackgroundColor = Color(0xFFD1D5D5);
   static const Color chapterTextColor = Colors.black;
   static const Color chapterTextActivatedColor = mainColor;
+
+
+
 }

@@ -46,7 +46,7 @@ class _PlayerViewState extends State<PlayerView> {
     return Container(
       key: _playerController.playerState.verticalPlayerWidgetKey,
       child: Obx(
-        () => _playerController.playerState.fullScreen.value
+        () => _playerController.playerState.isFullscreen.value
             ? Container()
             : Container(child: _playerController.playerState.playerView.value),
       ),
@@ -54,17 +54,17 @@ class _PlayerViewState extends State<PlayerView> {
   }
 }
 
-class FullScreenPlayerPage extends StatelessWidget {
+class FullscreenPlayerPage extends StatelessWidget {
   final PlayerController controller = Get.find<PlayerController>();
 
-  FullScreenPlayerPage({super.key});
+  FullscreenPlayerPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BackButtonListener(
       onBackButtonPressed: () {
         // 执行退出全屏逻辑
-        controller.fullscreenUtils.toggleFullScreen();
+        controller.fullscreenUtils.toggleFullscreen();
         return Future.value(true); // 表示已经处理了返回事件
       },
       child: PopScope(
@@ -73,7 +73,7 @@ class FullScreenPlayerPage extends StatelessWidget {
           // 只有当没有真正 pop 时才执行自定义逻辑
           if (!didPop) {
             // 执行退出全屏逻辑
-            controller.fullscreenUtils.toggleFullScreen();
+            controller.fullscreenUtils.toggleFullscreen();
           }
         },
         child: Scaffold(

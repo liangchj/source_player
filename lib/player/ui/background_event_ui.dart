@@ -10,7 +10,7 @@ class BackgroundEventUI extends GetView<PlayerController> {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => {},
+      onTap: () => controller.toggleBackground(),
       onHorizontalDragStart: (DragStartDetails details) {
 
       },
