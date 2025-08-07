@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart' hide PlayerState;
+import 'package:screen_brightness/screen_brightness.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
 import 'package:source_player/player/iplayer.dart';
 import 'package:source_player/player/state/player_ui_state.dart';
@@ -13,6 +17,7 @@ import '../media_kit_player.dart';
 import '../models/player_overlay_ui_model.dart';
 import '../player_view.dart';
 import '../state/player_state.dart';
+import '../ui/brightness_volume_ui.dart';
 import '../utils/fullscreen_utils.dart';
 
 class PlayerController extends GetxController {
@@ -213,5 +218,94 @@ class PlayerController extends GetxController {
     }
     _createUIAnimate(uiOverlay);
     uiState.overlayUIMap.addAll({key: uiOverlay});
+  }
+
+
+  Timer? _volumeTimer;
+  Timer? _brightnessTimer;
+
+  // 垂直滑动开始
+  void volumeOrBrightnessOnVerticalDragStart(DragStartDetails details) {
+    if (isWeb) {
+      return;
+    }
+    _volumeTimer?.cancel();
+    _brightnessTimer?.cancel();
+    playerState.isBrightnessDragging(false);
+    playerState.isVolumeDragging(false);
+    double width = Get.size.width;
+    String showUIKey;
+    if (details.globalPosition.dx > (width / 2)) {
+      FlutterVolumeController.updateShowSystemUI(false);
+      FlutterVolumeController.getVolume()
+          .then((value) => playerState.volume(((value ?? 0) * 100).floor()));
+      playerState.isVolumeDragging(true);
+      showUIKey = PlayerUIKeyEnum.centerVolumeUI.name;
+      hideUIByKeyList([PlayerUIKeyEnum.centerBrightnessUI.name]);
+    } else {
+      // 获取当前亮度
+      ScreenBrightness.instance.application.then((value) => playerState.brightness((value * 100).floor()));
+      playerState.isBrightnessDragging(true);
+      showUIKey = PlayerUIKeyEnum.centerBrightnessUI.name;
+      hideUIByKeyList([PlayerUIKeyEnum.centerVolumeUI.name]);
+    }
+    playerState.verticalDragSurplus = 0.0;
+    showUIByKeyList([showUIKey], ignoreLimit: true);
+  }
+
+  // 垂直滑动中
+  void volumeOrBrightnessOnVerticalDragUpdate(
+      BuildContext context, DragUpdateDetails details) {
+    if (isWeb) {
+      return;
+    }
+    _volumeTimer?.cancel();
+    _brightnessTimer?.cancel();
+    double height = Get.size.height;
+    // 使用百分率
+    // 当前拖动值
+    double currentDragVal = (details.delta.dy / height) * 100;
+    double totalDragValue = currentDragVal + playerState.verticalDragSurplus;
+    int dragValue = totalDragValue.floor();
+    playerState.verticalDragSurplus = totalDragValue - dragValue;
+    String showUIKey = "";
+    if (playerState.isVolumeDragging.value) {
+      // 设置音量
+      playerState.volume((playerState.volume.value - dragValue).clamp(0, 100));
+      FlutterVolumeController.updateShowSystemUI(false);
+      FlutterVolumeController.setVolume(playerState.volume / 100.0);
+      showUIKey = PlayerUIKeyEnum.centerVolumeUI.name;
+      hideUIByKeyList([PlayerUIKeyEnum.centerBrightnessUI.name]);
+    } else if (playerState.isBrightnessDragging.value) {
+      // 设置亮度
+      playerState
+          .brightness((playerState.brightness.value - dragValue).clamp(0, 100));
+      ScreenBrightness.instance.setApplicationScreenBrightness(playerState.brightness / 100.0);
+      showUIKey = PlayerUIKeyEnum.centerBrightnessUI.name;
+      hideUIByKeyList([PlayerUIKeyEnum.centerVolumeUI.name]);
+    }
+    showUIByKeyList([showUIKey], ignoreLimit: true);
+  }
+
+  // 垂直滑动结束
+  void volumeOrBrightnessOnVerticalDragEnd() {
+    if (isWeb) {
+      return;
+    }
+    if (playerState.isBrightnessDragging.value) {
+      _brightnessTimer = Timer(PlayerCommons.volumeOrBrightnessUIShowDuration, () {
+        hideUIByKeyList([PlayerUIKeyEnum.centerBrightnessUI.name]);
+      });
+    }
+    if (playerState.isVolumeDragging.value) {
+      _volumeTimer = Timer(PlayerCommons.volumeOrBrightnessUIShowDuration, () {
+        hideUIByKeyList([PlayerUIKeyEnum.centerVolumeUI.name]);
+      });
+    }
+    playerState.isBrightnessDragging(false);
+    playerState.isVolumeDragging(false);
+    playerState.verticalDragSurplus = 0.0;
+    /*Future.delayed(PlayerCommons.volumeOrBrightnessUIShowDuration).then((value) {
+    });*/
   }
 }

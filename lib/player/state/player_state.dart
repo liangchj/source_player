@@ -68,7 +68,7 @@ class PlayerState {
   var brightness = 0.obs;
   // 纵向滑动剩余值（每次更新只获取整数部分更新，剩下的留给后面更新）
   double verticalDragSurplus = 0.0;
-  var volumeDragging = false.obs; // 音量拖动中
+  var isVolumeDragging = false.obs; // 音量拖动中
   var isBrightnessDragging = false.obs; // 亮度拖动中
 
 

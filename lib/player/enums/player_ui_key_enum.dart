@@ -7,7 +7,8 @@ enum PlayerUIKeyEnum {
   screenshotCtrUI(),
   centerPlayPauseUI(),
   centerLoadingUI(),
-  centerVolumeAndBrightnessUI(),
+  centerVolumeUI(),
+  centerBrightnessUI(),
   centerProgressUI(),
   settingUI(),
   centerErrorUI();

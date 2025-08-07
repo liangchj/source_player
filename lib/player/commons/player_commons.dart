@@ -65,6 +65,10 @@ class PlayerCommons {
   // ui动画时长
   static Duration  playerUIAnimationDuration = const Duration(milliseconds: 300);
 
+  // 音量和亮度ui显示时长
+  static const Duration volumeOrBrightnessUIShowDuration =
+  Duration(milliseconds: 1000);
+
   // 进度条
   // 高度
   static const double progressBarHeight = 4.0;

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../enums/player_ui_key_enum.dart';
 import '../models/player_overlay_ui_model.dart';
+import '../ui/brightness_volume_ui.dart';
 import '../ui/center_play_progress_ui.dart';
 import '../ui/player_bottom_ui.dart';
 import '../ui/player_lock_ui.dart';
@@ -22,8 +23,8 @@ class PlayerUIState {
       PlayerUIKeyEnum.lockCtrUI.name: lockCtrUI,
       PlayerUIKeyEnum.screenshotCtrUI.name: screenshotCtrUI,
       PlayerUIKeyEnum.centerProgressUI.name: centerProgressUI,
-      PlayerUIKeyEnum.centerVolumeAndBrightnessUI.name:
-          centerVolumeAndBrightnessUI,
+      PlayerUIKeyEnum.centerVolumeUI.name: centerVolumeUI,
+      PlayerUIKeyEnum.centerBrightnessUI.name: centerBrightnessUI,
     });
   }
   Map<String, PlayerOverlayUIModel> overlayUIMap = {};
@@ -40,7 +41,8 @@ class PlayerUIState {
   List<String> notTouchCtrlKeyList = [
     PlayerUIKeyEnum.centerLoadingUI.name,
     PlayerUIKeyEnum.centerProgressUI.name,
-    PlayerUIKeyEnum.centerVolumeAndBrightnessUI.name,
+    PlayerUIKeyEnum.centerVolumeUI.name,
+    PlayerUIKeyEnum.centerBrightnessUI.name,
     PlayerUIKeyEnum.centerErrorUI.name,
   ];
 
@@ -123,8 +125,26 @@ class PlayerUIState {
         PlayerUITransition.playerUIOpacityAnimation(uiModel),
   );
 
-  var centerVolumeAndBrightnessUI = PlayerOverlayUIModel(
-    key: PlayerUIKeyEnum.centerVolumeAndBrightnessUI.name,
+  var centerVolumeUI = PlayerOverlayUIModel(
+    key: PlayerUIKeyEnum.centerVolumeUI.name,
+    child: const BrightnessVolumeUI(
+      brightnessVolumeType: BrightnessVolumeType.volume,
+    ),
+    useAnimationController: true,
+    tween: Tween<Opacity>(
+      begin: Opacity(opacity: 0.0),
+      end: Opacity(opacity: 1.0),
+    ),
+    animationDuration: Duration.zero,
+    widgetCallback: (uiModel) =>
+        PlayerUITransition.playerUIOpacityAnimation(uiModel),
+  );
+
+  var centerBrightnessUI = PlayerOverlayUIModel(
+    key: PlayerUIKeyEnum.centerBrightnessUI.name,
+    child: const BrightnessVolumeUI(
+      brightnessVolumeType: BrightnessVolumeType.brightness,
+    ),
     useAnimationController: true,
     tween: Tween<Opacity>(
       begin: Opacity(opacity: 0.0),

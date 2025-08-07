@@ -17,7 +17,11 @@ class BrightnessVolumeUI extends GetView<PlayerController> {
   @override
   Widget build(BuildContext context) {
     return brightnessVolumeType == BrightnessVolumeType.none
-        ? Container()
+        ? Container(
+      height: 20,
+      width: 20,
+      color: Colors.amber,
+    )
         : Center(
             child: UnconstrainedBox(
               child: Container(

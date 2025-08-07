@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../commons/widget_style_commons.dart';
 import '../controller/player_controller.dart';
 
 class PlayerLockUI extends GetView<PlayerController> {
@@ -10,6 +11,7 @@ class PlayerLockUI extends GetView<PlayerController> {
   Widget build(BuildContext context) {
     return Obx(
       () => IconButton(
+        // color: WidgetStyleCommons.iconColor,
         onPressed: () {
           controller.uiState.uiLocked(!controller.uiState.uiLocked.value);
           if (controller.uiState.uiLocked.value) {

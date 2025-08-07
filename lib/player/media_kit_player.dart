@@ -61,15 +61,13 @@ class MediaKitPlayer extends IPlayer {
   }
 
   @override
-  Future<void> seekTo(Duration position) {
-    // TODO: implement seekTo
-    throw UnimplementedError();
+  Future<void> seekTo(Duration position) async {
+    return await _player.seek(position);
   }
 
   @override
-  Future<void> setPlaySpeed(double speed) {
-    // TODO: implement setPlaySpeed
-    throw UnimplementedError();
+  Future<void> setPlaySpeed(double speed) async {
+    return await _player.setRate(speed);
   }
 
   @override
@@ -86,22 +84,51 @@ class MediaKitPlayer extends IPlayer {
     // 监听错误信息
     PlayerStream stream = _videoController.player.stream;
 
+    stream.error.listen((String? error) {
+      // 视频是否加载错误
+      _playerController.playerState.errorMsg(error ?? "");
+    });
+
     stream.duration.listen((value) {
       if (value.compareTo(Duration.zero) != 0) {
-        // _playerController.playerState.initialized(true);
+        _playerController.playerState.isInitialized(true);
       }
-      // _playerController.playerState.duration(value);
+      _playerController.playerState.duration(value);
     });
 
     stream.playing.listen((value) {
       _playerController.playerState.isPlaying(value);
       if (value) {
-        // _playerController.playerState.errorMsg("");
+        _playerController.playerState.errorMsg(null);
       }
+    });
+
+    stream.buffering.listen((value) {
+      _playerController.playerState.isBuffering(value);
     });
 
     stream.completed.listen((value) {
       _playerController.playerState.isFinished(value);
+    });
+
+    stream.rate
+        .listen((value) => _playerController.playerState.playSpeed(value));
+
+    // 监听进度
+    stream.position.listen((Duration? position) {
+      if (position != null) {
+        var state = _videoController.player.state;
+        bool isFinished = state.completed;
+        // 监听是否播放完成
+        _playerController.playerState.isFinished(isFinished);
+
+        if (isFinished) {
+          _playerController.playerState.positionDuration(position);
+        } else {
+          _playerController.playerState
+              .positionDuration(Duration(seconds: position.inSeconds));
+        }
+      }
     });
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/controller/player_controller.dart';
 
+import '../../commons/icon_commons.dart';
 import '../../commons/widget_style_commons.dart';
 import '../../utils/logger_utils.dart';
 import '../commons/player_commons.dart';
@@ -153,15 +154,14 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
   // 播放、暂停按钮
   Widget _buildPlayPause() {
     return IconButton(
+      color: WidgetStyleCommons.iconColor,
       onPressed: () => controller.playOrPause(),
       icon: Obx(() {
         var isFinished = controller.playerState.isFinished.value;
         var isPlaying = controller.playerState.isPlaying.value;
-        return Icon(
-          isFinished
-              ? Icons.play_arrow
-              : (isPlaying ? Icons.pause : Icons.play_arrow),
-        );
+        return isFinished
+            ? IconCommons.bottomReplayPlayIcon
+            : (isPlaying ? IconCommons.bottomPauseIcon : IconCommons.bottomPlayIcon);
       }),
     );
   }

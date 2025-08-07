@@ -93,11 +93,19 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
               ),
             ),
 
-            // 居中亮度和音量（最高层）
+            // 居中音量
             Center(
               child: Obx(
                 () =>
-                    controller.uiState.centerVolumeAndBrightnessUI.ui.value ??
+                    controller.uiState.centerVolumeUI.ui.value ??
+                    Container(),
+              ),
+            ),
+            // 居中亮度
+            Center(
+              child: Obx(
+                    () =>
+                controller.uiState.centerBrightnessUI.ui.value ??
                     Container(),
               ),
             ),
