@@ -69,6 +69,9 @@ class PlayerCommons {
   static const Duration volumeOrBrightnessUIShowDuration =
   Duration(milliseconds: 1000);
 
+  static const Duration progressUIShowDuration =
+  Duration(milliseconds: 1000);
+
   // 进度条
   // 高度
   static const double progressBarHeight = 4.0;

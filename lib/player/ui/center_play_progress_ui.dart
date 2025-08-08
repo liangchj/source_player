@@ -28,7 +28,7 @@ class CenterPlayProgressUI extends GetView<PlayerController> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                "${TimeFormatUtils.durationToMinuteAndSecond(Duration(seconds: controller.playerState.draggingSecond.value > 0 ? controller.playerState.dragProgressPositionDuration.inSeconds + controller.playerState.draggingSecond.value : 0))}/${TimeFormatUtils.durationToMinuteAndSecond(controller.playerState.duration.value)}",
+                "${TimeFormatUtils.durationToMinuteAndSecond(Duration(seconds: controller.playerState.draggingSecond.value.abs() > 0 ? controller.playerState.dragProgressPositionDuration.inSeconds + controller.playerState.draggingSecond.value : 0))}/${TimeFormatUtils.durationToMinuteAndSecond(controller.playerState.duration.value)}",
                 style: const TextStyle(color: PlayerCommons.textColor),
               ),
               const Padding(padding: EdgeInsets.symmetric(vertical: 4)),

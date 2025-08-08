@@ -82,8 +82,12 @@ class PlayerController extends GetxController {
     }
   }
 
-  Future<void> seekTo(Duration position) {
-    return player.value!.seekTo(position);
+  Future<void> seekTo(Duration position) async {
+    playerState.positionDuration(position);
+    playerState.isSeeking(true);
+    await player.value!.seekTo(position);
+    playerState.beforeSeekToIsPlaying = false;
+    playerState.isSeeking(false);
   }
 
   // 本地播放
@@ -221,9 +225,78 @@ class PlayerController extends GetxController {
   }
 
 
+
+  Timer? _progressTimer;
+  // 开始拖动播放进度条
+  void playProgressOnHorizontalDragStart() {
+    if (!playerState.isInitialized.value ||
+        playerState.errorMsg.isNotEmpty ||
+        playerState.isFinished.value) {
+      return;
+    }
+    _progressTimer?.cancel();
+    // 标记拖动状态
+    playerState.isDragging(true);
+    // 初始化拖动值
+    playerState.draggingSecond(0);
+    // 清除前一次拖动剩余
+    playerState.draggingSurplusSecond = 0.0;
+    // 记录开始拖动时的时间
+    playerState.dragProgressPositionDuration =
+        playerState.positionDuration.value;
+    //显示拖动进度UI
+    showUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name], ignoreLimit: true);
+  }
+
+  // 拖动播放进度条中
+  void playProgressOnHorizontalDragUpdate(BuildContext context, Offset delta) {
+    if (!playerState.isInitialized.value ||
+        playerState.errorMsg.isNotEmpty ||
+        playerState.isFinished.value) {
+      hideUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name]);
+      return;
+    }
+    _progressTimer?.cancel();
+    double width = Get.size.width;
+    // 获取拖动了多少秒
+    double dragSecond =
+        (delta.dx / width) * 100 + playerState.draggingSurplusSecond;
+    // 拖动秒数向下取整
+    int dragValue = dragSecond.floor();
+    // 记录本次拖动取整后剩余
+    playerState.draggingSurplusSecond = dragSecond - dragValue;
+    // 更新拖动值
+    playerState.draggingSecond(playerState.draggingSecond.value + dragValue);
+  }
+
+  // 拖动播放进度结束
+  void playProgressOnHorizontalDragEnd() {
+    if (!playerState.isInitialized.value ||
+        playerState.errorMsg.isNotEmpty ||
+        playerState.isFinished.value) {
+      hideUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name]);
+      return;
+    }
+    // 清除拖动标记
+    playerState.isDragging(false);
+    // 清除前一次拖动剩余值
+    playerState.draggingSurplusSecond = 0.0;
+    // 更新本次拖动值
+    var second = playerState.dragProgressPositionDuration.inSeconds +
+        playerState.draggingSecond.value;
+    seekTo(Duration(seconds: second.abs() > 0 ? second : 0));
+    // 定时隐藏拖动进度ui
+    _progressTimer = Timer.periodic(
+        PlayerCommons.volumeOrBrightnessUIShowDuration, (timer) {
+      playerState.draggingSecond(0);
+      playerState.dragProgressPositionDuration = playerState.positionDuration.value;
+      hideUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name]);
+    });
+  }
+
+
   Timer? _volumeTimer;
   Timer? _brightnessTimer;
-
   // 垂直滑动开始
   void volumeOrBrightnessOnVerticalDragStart(DragStartDetails details) {
     if (isWeb) {

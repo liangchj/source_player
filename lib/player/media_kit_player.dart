@@ -62,7 +62,10 @@ class MediaKitPlayer extends IPlayer {
 
   @override
   Future<void> seekTo(Duration position) async {
-    return await _player.seek(position);
+    await _player.seek(position);
+    await for (final _ in _player.stream.position.take(1)) {}
+    await Future.delayed(const Duration(milliseconds: 100));
+    await for (final _ in _player.stream.position.take(1)) {}
   }
 
   @override
@@ -89,7 +92,7 @@ class MediaKitPlayer extends IPlayer {
       _playerController.playerState.errorMsg(error ?? "");
     });
 
-    stream.duration.listen((value) {
+    stream.duration.distinct().listen((value) {
       if (value.compareTo(Duration.zero) != 0) {
         _playerController.playerState.isInitialized(true);
       }
@@ -116,7 +119,7 @@ class MediaKitPlayer extends IPlayer {
 
     // 监听进度
     stream.position.listen((Duration? position) {
-      if (position != null) {
+      if (position != null && !_playerController.playerState.isSeeking.value) {
         var state = _videoController.player.state;
         bool isFinished = state.completed;
         // 监听是否播放完成

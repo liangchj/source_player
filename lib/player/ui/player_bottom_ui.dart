@@ -128,7 +128,7 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
               onPressed: () => controller.showUIByKeyList([
                 PlayerUIKeyEnum.speedSettingUI.name,
               ]),
-              child: const Text("倍数"),
+              child: const Text("倍数", style: TextStyle(color: PlayerCommons.textColor),),
             ),
 
             // 只有全屏时没有退出全屏按钮
@@ -208,9 +208,9 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
   /// 进度条
   Widget _buildProgressBar() {
     return Obx(() {
-      /*if (!controller.uiOptions.bottomUI.visible.value) {
+      if (!controller.uiState.bottomUI.visible.value) {
         return Container();
-      }*/
+      }
       LoggerUtils.logger.d("播放进度：${controller.playerState.positionDuration}");
       return AbsorbPointer(
         absorbing: !controller.playerState.isInitialized.value,
@@ -229,26 +229,13 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
             controller.playerState.isDragging(true);
           },
           onDragEnd: () {
-            // 记录拖动结束前播放状态
-            controller.playerState.beforeSeekToIsPlaying =
-                controller.player.value?.playing ?? false;
-            if (controller.playerState.isPlaying.value) {
-              controller.pause();
-            }
             controller.playerState.isDragging(false);
           },
           onDragUpdate: (details) {
             LoggerUtils.logger.d("进度条改变事件");
           },
-          onSeek: (details) async {
-            controller.playerState.isSeeking(true);
-            await controller.seekTo(Duration(seconds: details.inSeconds));
-
-            if (controller.playerState.beforeSeekToIsPlaying) {
-              controller.playerState.beforeSeekToIsPlaying = false;
-              controller.playerState.isSeeking(false);
-              await controller.play();
-            }
+          onSeek: (details) {
+            controller.seekTo(Duration(seconds: details.inSeconds));
           },
         ),
       );
