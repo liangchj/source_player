@@ -51,7 +51,6 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   ListObserverController? chapterObserverController;
 
 
-  var showBottomSheet = false.obs;
 
   @override
   void onInit() {
@@ -211,17 +210,27 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
     if (bottomSheetController != null) {
       bottomSheetController!.close();
       bottomSheetController = null;
-      showBottomSheet( false);
       return false;
     }
     return true;
+  }
+
+
+  void showBottomSheet(Widget widget) {
+    bottomSheetController = childKey.currentState
+        ?.showBottomSheet(
+      backgroundColor: Colors.transparent,
+          (context) => widget,
+    );
   }
 
   void closeBottomSheet() {
     if (bottomSheetController != null) {
       bottomSheetController!.close();
       bottomSheetController = null;
-      showBottomSheet( false);
     }
   }
+
+
+
 }

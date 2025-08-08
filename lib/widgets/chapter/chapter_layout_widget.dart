@@ -6,7 +6,7 @@ import 'package:source_player/widgets/clickable_button_widget.dart';
 import '../../commons/widget_style_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
 import '../../utils/auto_compute_sliver_grid_count.dart';
-import 'chapter_widget.dart';
+import '../../player/widgets/chapter/chapter_widget.dart';
 
 class ChapterLayoutWidget extends StatefulWidget {
   const ChapterLayoutWidget({

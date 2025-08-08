@@ -11,17 +11,24 @@ import 'package:source_player/player/iplayer.dart';
 import 'package:source_player/player/state/player_ui_state.dart';
 import 'package:source_player/utils/logger_utils.dart';
 
+import '../../getx_controller/net_resource_detail_controller.dart';
 import '../commons/player_commons.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../media_kit_player.dart';
 import '../models/player_overlay_ui_model.dart';
 import '../player_view.dart';
 import '../state/player_state.dart';
+import '../state/resource_state.dart';
 import '../ui/brightness_volume_ui.dart';
 import '../utils/fullscreen_utils.dart';
 
 class PlayerController extends GetxController {
   var player = Rx<IPlayer?>(null);
+
+  NetResourceDetailController? netResourceDetailController;
+
+  late ResourceState resourceState;
+
   PlayerController();
 
   late PlayerState playerState;
@@ -35,10 +42,9 @@ class PlayerController extends GetxController {
   // 标记是否只有全屏页面
   bool onlyFullscreen = false;
 
-
-
   @override
   void onInit() {
+    resourceState = ResourceState();
     playerState = PlayerState();
     uiState = PlayerUIState();
     fullscreenUtils = FullscreenUtils(this);

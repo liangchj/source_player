@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:source_player/models/resource_chapter_model.dart';
 
-import '../../commons/widget_style_commons.dart';
+import '../../../commons/widget_style_commons.dart';
 
 class ChapterWidget extends StatelessWidget {
   const ChapterWidget({super.key, required this.chapter, required this.activated, this.isCard = false, this.onClick, this.left, this.right,});
