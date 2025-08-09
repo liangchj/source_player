@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
 import '../../../commons/widget_style_commons.dart';
+import '../../../widgets/clickable_button_widget.dart';
 import '../../controller/player_controller.dart';
 
 class ChapterGroupWidget extends StatefulWidget {
@@ -30,43 +31,41 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
   late PlayerController controller;
   ScrollController? _scrollController;
   ListObserverController? _observerController;
-  bool _needCreateLayout = false;
   late int _activatedIndex;
   @override
   void initState() {
     controller = Get.find<PlayerController>();
-    _activatedIndex = controller.resourceState.state.value.chapterGroupActivatedIndex;
-    _needCreateLayout = controller.resourceState.state.value.chapterGroup > 0;
-    if (_needCreateLayout) {
-      _scrollController = ScrollController();
-      _observerController = ListObserverController(
-        controller: _scrollController,
-      )..initialIndex = _activatedIndex;
-    }
-
+    _activatedIndex = controller.resourceState.activatedChapterGroupIndex;
+    int initialIndex = _activatedIndex >= 0 ? _activatedIndex : 0;
+    _scrollController = ScrollController();
+    _observerController = ListObserverController(controller: _scrollController)
+      ..initialIndex = initialIndex;
     super.initState();
   }
 
   @override
   void dispose() {
-    if (_scrollController != null &&
-        controller.resourceState.state.value.sourceApiActivatedIndex !=
-            _activatedIndex) {
-      widget.onDispose?.call(
-        controller.resourceState.state.value.sourceApiActivatedIndex,
-      );
+    int index = controller.resourceState.activatedChapterGroupIndex;
+    index = index >= 0 ? index : 0;
+    if (_scrollController != null && index != _activatedIndex) {
+      widget.onDispose?.call(index);
     }
     _scrollController?.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-    if (!_needCreateLayout) {
-      return Container();
-    }
-    return Container(
+    return Obx(
+      () => controller.resourceState.state.showChapterGroup > 1
+          ? _chapterGroup(context)
+          : Container(),
     );
-    /*return Container(
+  }
+
+  // 章节分组显示
+  Widget _chapterGroup(BuildContext context) {
+    return Container(
       padding: EdgeInsets.only(
         left: WidgetStyleCommons.safeSpace,
         right: WidgetStyleCommons.safeSpace,
@@ -76,25 +75,22 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
       height: WidgetStyleCommons.chapterHeight,
       child: Obx(() {
         var list = controller.resourceState.chapterAsc.value
-            ? controller.resourceState.chapterGroupNameList
-            : controller.resourceState.chapterGroupNameList.reversed
-            .toList();
-        int activeIndex = controller.sourceChapterState.chapterGroupIndex.value;
-        // int activeIndex = controller.sourceChapterState.currentActivatedChapterGroupIndex;
+            ? controller.resourceState.showChapterGroupNameList
+            : controller.resourceState.showChapterGroupNameList.reversed
+                  .toList();
+        int activeIndex = controller.resourceState.activatedChapterGroupIndex;
         return Scrollbar(
-          controller: controller.chapterGroupScrollController,
+          controller: _scrollController,
           child: ListViewObserver(
-            controller:
-            _chapterGroupObserverController ??
-                controller.chapterGroupObserverController,
+            controller: _observerController,
             child: ListView.builder(
-              controller: controller.chapterGroupScrollController,
+              controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               scrollDirection: Axis.horizontal,
               itemCount: list.length,
               itemBuilder: (context, index) {
                 var item = list[index];
-                int realIndex = controller.sourceChapterState.chapterAsc.value
+                int realIndex = controller.resourceState.chapterAsc.value
                     ? index
                     : list.length - index - 1;
                 return Container(
@@ -107,7 +103,7 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
                       activated: realIndex == activeIndex,
                       isCard: true,
                       onClick: () {
-                        controller.sourceChapterState.chapterGroupIndex(
+                        controller.resourceState.updateChapterGroupStateByIndex(
                           realIndex,
                         );
                       },
@@ -119,6 +115,6 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
           ),
         );
       }),
-    );*/
+    );
   }
 }

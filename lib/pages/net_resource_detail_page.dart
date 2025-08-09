@@ -2,6 +2,8 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/player_view.dart';
+import 'package:source_player/player/widgets/resource_source/source_api_widget.dart';
+import 'package:source_player/player/widgets/resource_source/source_group_widget.dart';
 import 'package:source_player/widgets/chapter/chapter_layout_widget.dart';
 import 'package:source_player/widgets/play_source/play_source_api_widget.dart';
 import 'package:source_player/widgets/play_source/play_source_group_widget.dart';
@@ -39,11 +41,11 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   final double _playerAspectRatio = 9 / 16.0;
   final double _minPlayerHeight = 60;
 
-  PlayerController? playerController;
-
+  // late PlayerController playerController;
   @override
   void initState() {
     print("entry initState");
+    // playerController = Get.put(PlayerController());
     controller = Get.put(
       NetResourceDetailController(widget.resourceId),
       tag: widget.resourceId,
@@ -200,13 +202,22 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         _createResourceDetailInfo(),
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
-        PlaySourceApiWidget(
+
+        SourceApiWidget(
+          isSelect:  true,
+        ),
+
+        SourceGroupWidget(
+          singleHorizontalScroll: true,
+        ),
+
+        /*PlaySourceApiWidget(
           controller: controller,
           isSelect: true,
           // isGrid:  true,
           singleHorizontalScroll: true,
           // isSelect:  true,
-        ),
+        ),*/
         Obx(
           () =>
               controller
@@ -281,45 +292,12 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
 
   /// 创建播放器
   _createPlayer() {
-    return PlayerView(
-      onCreatePlayerController: (controller) {
-        playerController = controller;
-      },
-    );
-    /*return LayoutBuilder(
-      builder: (context, constraints) {
-        final height = constraints.maxHeight;
-        return GestureDetector(
-          onTap: () {
-            if (height < MediaQuery.of(context).size.width * _playerAspectRatio) {
-              // 点击缩小窗口时恢复默认尺寸
-              // _scrollController.animateTo(0, duration: 300.ms, curve: Curves.ease);
-            }
-          },
-          child: Stack(
-            children: [
-              Positioned.fill(child: Container(
-                color: Colors.black,
-              )), // 播放器主体
-              if (height <= MediaQuery.of(context).size.width * _playerAspectRatio - 60)
-                Center(child: TextButton(onPressed: (){}, child: Text("立即播放"))), // 最小化时显示播放按钮
-            ],
-          ),
-        );
+    return Obx(() => controller.playerWidget.value ?? Container());
+    /*return PlayerView(
+      onCreatePlayerController: (c) {
+        controller.playerController = c;
       },
     );*/
-
-    var size = MediaQuery.of(context).size;
-    double width = size.width;
-    return AspectRatio(
-      aspectRatio: 16 / 9.0,
-      child: Container(
-        color: Colors.black,
-        /*child: JinPlayerView(createdPlayerGetxController: (playerGetxController) {
-
-        }, netResourceDetailPlayController: controller, player: MediaKitPlayer(),),*/
-      ),
-    );
   }
 
   /// 资源信息

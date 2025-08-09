@@ -58,6 +58,7 @@ class PlayerController extends GetxController {
     ever(player, (player) {
       player?.onInitPlayer();
     });
+    resourceState.initEver();
   }
 
   @override

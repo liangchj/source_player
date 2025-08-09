@@ -1,57 +1,82 @@
-
+import 'package:get/get.dart';
 
 class ResourceStateModel {
-  // 当前选择的网站源索引
-  int sourceApiPlayingIndex;
-  // 当前展示的网站源索引（未选择当前资源下的具体章节）
-  int sourceApiActivatedIndex;
-  // 当前选择的资源组索引
-  int sourceGroupPlayingIndex;
-  // 当前展示的资源组索引（未选择当前资源下的具体章节）
-  int sourceGroupActivatedIndex;
+  // 当前选择的网站源
+  var apiActivatedState = Rx<ActivatedStateModel?>(null);
+
+  // 当前选择的资源组
+  var sourceGroupActivatedState = Rx<SourceGroupActivatedStateModel?>(null);
 
   // 当前选择的资源组下章节组数量
-  int chapterGroup;
-  // 当前选择的资源组下章节组索引
-  int chapterGroupPlayingIndex;
-  // 当前展示的资源组下章节组索引（未选择当前资源下的具体章节）
-  int chapterGroupActivatedIndex;
+  var activatedChapterGroup = RxInt(-1);
+  // 当前展示的资源组下章节组数量
+  var showChapterGroup = RxInt(-1);
 
+  // 当前选择的资源组下章节组
+  var chapterGroupActivatedState = Rx<ChapterGroupActivatedStateModel?>(null);
 
   // 当前选择的章节索引
-  int chapterActivatedIndex;
+  var chapterActivatedIndex = RxInt(-1);
 
   ResourceStateModel({
-    required this.sourceApiPlayingIndex,
-    required this.sourceApiActivatedIndex,
-    required this.sourceGroupPlayingIndex,
-    required this.sourceGroupActivatedIndex,
-    this.chapterGroup = 0,
-    required this.chapterGroupPlayingIndex,
-    required this.chapterGroupActivatedIndex,
-    required this.chapterActivatedIndex,
-  });
-
-  ResourceStateModel copyWith({
-    int? sourceApiPlayingIndex,
-    int? sourceApiActivatedIndex,
-    int? sourceGroupPlayingIndex,
-    int? sourceGroupActivatedIndex,
-    int? chapterGroup,
-    int? chapterGroupPlayingIndex,
-    int? chapterGroupActivatedIndex,
+    Rx<ActivatedStateModel?>? apiActivatedState,
+    Rx<SourceGroupActivatedStateModel?>? sourceGroupActivatedState,
+    int? activateChapterGroup,
+    int? showChapterGroup,
+    Rx<ChapterGroupActivatedStateModel?>? chapterGroupActivatedState,
     int? chapterActivatedIndex,
   }) {
-    return ResourceStateModel(
-      sourceApiPlayingIndex: sourceApiPlayingIndex ?? this.sourceApiPlayingIndex,
-      sourceApiActivatedIndex: sourceApiActivatedIndex ?? this.sourceApiActivatedIndex,
-      sourceGroupPlayingIndex: sourceGroupPlayingIndex ?? this.sourceGroupPlayingIndex,
-      sourceGroupActivatedIndex: sourceGroupActivatedIndex ?? this.sourceGroupActivatedIndex,
-      chapterGroup: chapterGroup ?? this.chapterGroup,
-      chapterGroupPlayingIndex: chapterGroupPlayingIndex ?? this.chapterGroupPlayingIndex,
-      chapterGroupActivatedIndex: chapterGroupActivatedIndex ?? this.chapterGroupActivatedIndex,
-      chapterActivatedIndex: chapterActivatedIndex ?? this.chapterActivatedIndex,
-    );
+    this.apiActivatedState(apiActivatedState?.value);
+    this.sourceGroupActivatedState(sourceGroupActivatedState?.value);
+    this.activatedChapterGroup(activateChapterGroup);
+    this.showChapterGroup(showChapterGroup);
+    this.chapterGroupActivatedState(chapterGroupActivatedState?.value);
+    this.chapterActivatedIndex(chapterActivatedIndex);
   }
 
 }
+
+class ActivatedStateModel {
+  final int index;
+  final int activatedIndex;
+
+  ActivatedStateModel({required this.index, required this.activatedIndex});
+
+  ActivatedStateModel copyWith({int? index, int? activatedIndex}) {
+    return ActivatedStateModel(
+      index: index ?? this.index,
+      activatedIndex: activatedIndex ?? this.activatedIndex,
+    );
+  }
+}
+
+class SourceGroupActivatedStateModel extends ActivatedStateModel {
+  final ActivatedStateModel apiState;
+
+  SourceGroupActivatedStateModel({required super.index, required super.activatedIndex, required this.apiState});
+
+  @override
+  SourceGroupActivatedStateModel copyWith({int? index, int? activatedIndex, ActivatedStateModel? apiState}) {
+    return SourceGroupActivatedStateModel(
+      index: index ?? super.index,
+      activatedIndex: activatedIndex ?? this.activatedIndex,
+      apiState: apiState ?? this.apiState,
+    );
+  }
+}
+
+class ChapterGroupActivatedStateModel extends ActivatedStateModel {
+  final SourceGroupActivatedStateModel sourceGroupState;
+
+  ChapterGroupActivatedStateModel({required super.index, required super.activatedIndex, required this.sourceGroupState});
+
+  @override
+  ChapterGroupActivatedStateModel copyWith({int? index, int? activatedIndex, SourceGroupActivatedStateModel? sourceGroupState}) {
+    return ChapterGroupActivatedStateModel(
+      index: index ?? super.index,
+      activatedIndex: activatedIndex ?? this.activatedIndex,
+      sourceGroupState: sourceGroupState ?? this.sourceGroupState,
+    );
+  }
+}
+

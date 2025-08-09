@@ -8,11 +8,14 @@ import 'package:source_player/models/video_model.dart';
 
 import '../cache/db/current_configs.dart';
 import '../models/loading_state_model.dart';
+import '../player/controller/player_controller.dart';
+import '../player/player_view.dart';
 import '../utils/net_request_utils.dart';
 import 'state/source_chapter_state.dart';
 
 class NetResourceDetailController extends GetxController with GetSingleTickerProviderStateMixin {
   final String resourceId;
+
   NetResourceDetailController(this.resourceId);
 
   var loadingState = LoadingStateModel().obs;
@@ -49,8 +52,9 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   // 章节滚动控制器
   ScrollController? chapterScrollController;
   ListObserverController? chapterObserverController;
-
-
+  // PlayerController? playerController;
+  var playerController = Rx<PlayerController?>(null);
+  var playerWidget = Rx<Widget?>(null);
 
   @override
   void onInit() {
@@ -80,6 +84,12 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
     else {
       childKey = GlobalKey<ScaffoldState>();
       tabController = TabController(length: tabs.length, vsync: this);
+      playerWidget(PlayerView(
+        onCreatePlayerController: (c) {
+          playerController(c);
+          c.netResourceDetailController = this;
+        },
+      ));
       loadResourceDetail();
     }
     _initEver();
@@ -87,6 +97,11 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   }
 
   void _initEver() {
+    ever(playerController, (val) {
+      if (val != null) {
+        val.resourceState.videoModel(videoModel.value);
+      }
+    });
     ever(videoModel, (val) {
       var length = sourceChapterState.currentPlayedChapterList.length;
       int group = (length / WidgetStyleCommons.chapterGroupCount).ceil();
@@ -95,6 +110,8 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       }
       sourceChapterState.chapterGroup(group);
       sourceChapterState.chapterGroupIndex(0);
+      print("playerController 为空：${playerController == null}");
+      // playerController?.resourceState.videoModel(val);
     });
 
     ever(sourceChapterState.selectedSourceGroupIndex, (value) {
@@ -158,6 +175,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   @override
   void onClose() {
     _disposeController();
+    // playerController?.dispose();
     super.onClose();
   }
 

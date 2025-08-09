@@ -9,11 +9,13 @@ import 'media_kit_player.dart';
 class PlayerView extends StatefulWidget {
   const PlayerView({
     super.key,
+    this.controller,
     this.player,
-    required this.onCreatePlayerController,
+    this.onCreatePlayerController,
   });
+  final PlayerController? controller;
   final IPlayer? player;
-  final Function(PlayerController) onCreatePlayerController;
+  final Function(PlayerController)? onCreatePlayerController;
 
   @override
   State<PlayerView> createState() => _PlayerViewState();
@@ -25,13 +27,13 @@ class _PlayerViewState extends State<PlayerView> {
 
   @override
   void initState() {
-    _playerController = Get.put(PlayerController());
+    _playerController = widget.controller ?? Get.put(PlayerController());
     if (widget.player == null) {
       MediaKit.ensureInitialized();
     }
     player = widget.player ?? MediaKitPlayer();
     _playerController.player(player);
-    widget.onCreatePlayerController(_playerController);
+    widget.onCreatePlayerController?.call(_playerController);
     super.initState();
   }
 

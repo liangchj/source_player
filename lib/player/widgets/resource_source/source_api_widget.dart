@@ -6,6 +6,8 @@ import 'package:source_player/player/controller/player_controller.dart';
 import '../../../commons/widget_style_commons.dart';
 import '../../../utils/auto_compute_sliver_grid_count.dart';
 import '../../../widgets/clickable_button_widget.dart';
+import '../../models/resource_state_model.dart';
+
 /// 资源api排版
 class SourceApiWidget extends StatefulWidget {
   const SourceApiWidget({
@@ -35,39 +37,35 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
   ScrollController? _scrollController;
   ListObserverController? _observerController;
   GridObserverController? _gridObserverController;
-  // 有播放资源
-  int _dataLength = 0;
   late int _activatedIndex;
   @override
   void initState() {
     controller = Get.find<PlayerController>();
     _activatedIndex =
-        controller.resourceState.state.value.sourceApiActivatedIndex;
-    _dataLength =
-        controller.resourceState.playSourceList.length;
-    if (_dataLength > 0) {
-      _scrollController = ScrollController();
+        controller.resourceState.state.apiActivatedState.value?.index ?? 0;
 
-      if (widget.isGrid) {
-        _gridObserverController = GridObserverController(
-          controller: _scrollController,
-        )..initialIndex = _activatedIndex;
-      } else {
-        _observerController = ListObserverController(
-          controller: _scrollController,
-        )..initialIndex = _activatedIndex;
-      }
+    _scrollController = ScrollController();
+
+    if (widget.isGrid) {
+      _gridObserverController = GridObserverController(
+        controller: _scrollController,
+      )..initialIndex = _activatedIndex;
+    } else {
+      _observerController = ListObserverController(
+        controller: _scrollController,
+      )..initialIndex = _activatedIndex;
     }
+
     super.initState();
   }
 
   @override
   void dispose() {
     if (_scrollController != null &&
-        controller.resourceState.state.value.sourceApiActivatedIndex !=
+        (controller.resourceState.state.apiActivatedState.value?.index ?? 0) !=
             _activatedIndex) {
       widget.onDispose?.call(
-        controller.resourceState.state.value.sourceApiActivatedIndex,
+        controller.resourceState.state.apiActivatedState.value?.index ?? 0,
       );
     }
     _scrollController?.dispose();
@@ -76,20 +74,24 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_dataLength <= 0) {
-      return Container();
-    }
-    return Column(
-      children: [
-        _createHeader(context),
-        widget.bottomSheet
-            ? _bottomSheetList(context)
-            : widget.isSelect
-            ? _selectList(context)
-            : widget.singleHorizontalScroll
-            ? _horizontalScroll(context)
-            : _list(context),
-      ],
+    return Obx(
+      () {
+        if (controller.resourceState.videoModel.value == null || controller.resourceState.playSourceList.isEmpty) {
+          return Container();
+        }
+        return Column(
+          children: [
+            _createHeader(context),
+            widget.bottomSheet
+                ? _bottomSheetList(context)
+                : widget.isSelect
+                ? _selectList(context)
+                : widget.singleHorizontalScroll
+                ? _horizontalScroll(context)
+                : _list(context),
+          ],
+        );
+      },
     );
   }
 
@@ -106,7 +108,7 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
                   return Text(
                     controller
                             .resourceState
-                            .currentPlayingSource
+                            .showApiSource
                             ?.api!
                             .apiBaseModel
                             .name ??
@@ -162,9 +164,7 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
             children: [
               Row(
                 children: [
-                  Text(
-                    "${controller.resourceState.playSourceList.length}源",
-                  ),
+                  Text("${controller.resourceState.playSourceList.length}源"),
                   Icon(Icons.keyboard_arrow_right_rounded),
                 ],
               ),
@@ -222,7 +222,7 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
   Widget _listView(BuildContext context) {
     return Obx(() {
       int activatedIndex =
-          controller.resourceState.state.value.sourceApiActivatedIndex;
+          controller.resourceState.state.apiActivatedState.value?.index ?? 0;
       return ListViewObserver(
         controller: _observerController,
         child: ListView.builder(
@@ -237,16 +237,19 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
-                text: item?.api?.apiBaseModel.name ?? "",
+                text: item.api?.apiBaseModel.name ?? "",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 activated: index == activatedIndex,
                 isCard: false,
                 onClick: () {
-                  controller.resourceState.state(
-                    controller.resourceState.state.value.copyWith(
-                      sourceApiActivatedIndex: index,
-                    ),
+                  controller.resourceState.state.apiActivatedState(
+                    controller.resourceState.state.apiActivatedState.value
+                            ?.copyWith(index: index) ??
+                        ActivatedStateModel(
+                          index: index,
+                          activatedIndex: index,
+                        ),
                   );
                 },
               ),
@@ -261,7 +264,7 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
   Widget _gridView(BuildContext context) {
     return Obx(() {
       int activatedIndex =
-          controller.resourceState.state.value.sourceApiActivatedIndex;
+          controller.resourceState.state.apiActivatedState.value?.index ?? 0;
       return GridViewObserver(
         controller: _gridObserverController,
         child: GridView.builder(
@@ -280,17 +283,17 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
           itemBuilder: (context, index) {
             final item = controller.resourceState.playSourceList[index];
             return ClickableButtonWidget(
-              text: item?.api?.apiBaseModel.name ?? "",
+              text: item.api?.apiBaseModel.name ?? "",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               activated: index == activatedIndex,
               isCard: false,
               textAlign: TextAlign.center,
               onClick: () {
-                controller.resourceState.state(
-                  controller.resourceState.state.value.copyWith(
-                    sourceApiActivatedIndex: index,
-                  ),
+                controller.resourceState.state.apiActivatedState(
+                  controller.resourceState.state.apiActivatedState.value
+                          ?.copyWith(index: index) ??
+                      ActivatedStateModel(index: index, activatedIndex: index),
                 );
               },
             );
@@ -310,7 +313,8 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
         controller: _scrollController,
         child: Obx(() {
           int activatedIndex =
-              controller.resourceState.state.value.sourceApiActivatedIndex;
+              controller.resourceState.state.apiActivatedState.value?.index ??
+              0;
           return ListView.builder(
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
@@ -323,17 +327,20 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
                 child: AspectRatio(
                   aspectRatio: WidgetStyleCommons.playSourceGridRatio,
                   child: ClickableButtonWidget(
-                    text: item?.api?.apiBaseModel.name ?? "",
+                    text: item.api?.apiBaseModel.name ?? "",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     activated: index == activatedIndex,
                     isCard: false,
                     textAlign: TextAlign.center,
                     onClick: () {
-                      controller.resourceState.state(
-                        controller.resourceState.state.value.copyWith(
-                          sourceApiActivatedIndex: index,
-                        ),
+                      controller.resourceState.state.apiActivatedState(
+                        controller.resourceState.state.apiActivatedState.value
+                                ?.copyWith(index: index) ??
+                            ActivatedStateModel(
+                              index: index,
+                              activatedIndex: index,
+                            ),
                       );
                     },
                   ),

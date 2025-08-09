@@ -35,27 +35,22 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
   ScrollController? _scrollController;
   ListObserverController? _observerController;
   GridObserverController? _gridObserverController;
-  bool _needCreateLayout = false;
   late int _activatedIndex;
 
   @override
   void initState() {
     controller = Get.find<PlayerController>();
-    _activatedIndex =
-        controller.resourceState.state.value.sourceGroupActivatedIndex;
-    _needCreateLayout =
-        controller.resourceState.currentActivatedSourceGroupList.length > 1;
-    if (_needCreateLayout) {
-      _scrollController = ScrollController();
-      if (widget.isGrid) {
-        _gridObserverController = GridObserverController(
-          controller: _scrollController,
-        )..initialIndex = _activatedIndex;
-      } else {
-        _observerController = ListObserverController(
-          controller: _scrollController,
-        )..initialIndex = _activatedIndex;
-      }
+    _activatedIndex = controller.resourceState.activatedSourceGroupIndex;
+    int initialIndex = _activatedIndex >= 0 ? _activatedIndex : 0;
+    _scrollController = ScrollController();
+    if (widget.isGrid) {
+      _gridObserverController = GridObserverController(
+        controller: _scrollController,
+      )..initialIndex = initialIndex;
+    } else {
+      _observerController = ListObserverController(
+        controller: _scrollController,
+      )..initialIndex = initialIndex;
     }
 
     super.initState();
@@ -64,10 +59,10 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
   @override
   void dispose() {
     if (_scrollController != null &&
-        controller.resourceState.state.value.sourceApiActivatedIndex !=
-            _activatedIndex) {
+        controller.resourceState.activatedSourceGroupIndex >= 0 &&
+        controller.resourceState.activatedSourceGroupIndex != _activatedIndex) {
       widget.onDispose?.call(
-        controller.resourceState.state.value.sourceApiActivatedIndex,
+        controller.resourceState.activatedSourceGroupIndex,
       );
     }
     _scrollController?.dispose();
@@ -76,20 +71,21 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_needCreateLayout) {
-      return Container();
-    }
-    return Column(
-      children: [
-        _createHeader(context),
-        widget.bottomSheet
-            ? _bottomSheetList(context)
-            : widget.isSelect
-            ? _selectList(context)
-            : widget.singleHorizontalScroll
-            ? _horizontalScroll(context)
-            : _list(context),
-      ],
+    return Obx(
+      () => controller.resourceState.showSourceGroupList.length > 1
+          ? Column(
+              children: [
+                _createHeader(context),
+                widget.bottomSheet
+                    ? _bottomSheetList(context)
+                    : widget.isSelect
+                    ? _selectList(context)
+                    : widget.singleHorizontalScroll
+                    ? _horizontalScroll(context)
+                    : _list(context),
+              ],
+            )
+          : Container(),
     );
   }
 
@@ -104,8 +100,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
               Expanded(
                 child: Obx(() {
                   return Text(
-                    controller.resourceState.currentPlayingSourceGroup?.name ??
-                        "无",
+                    controller.resourceState.showSourceGroup?.name ?? "无",
                     textAlign: TextAlign.start,
                     overflow: TextOverflow.ellipsis,
                   );
@@ -158,7 +153,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
               Row(
                 children: [
                   Text(
-                    "${controller.resourceState.currentActivatedSourceGroupList.length}组",
+                    "${controller.resourceState.showSourceGroupList.length}组",
                   ),
                   Icon(Icons.keyboard_arrow_right_rounded),
                 ],
@@ -216,8 +211,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
   // 列表方式
   Widget _listView(BuildContext context) {
     return Obx(() {
-      int activatedIndex =
-          controller.resourceState.state.value.sourceGroupActivatedIndex;
+      int activatedIndex = controller.resourceState.activatedSourceGroupIndex;
       return ListViewObserver(
         controller: _observerController,
         child: ListView.builder(
@@ -226,11 +220,9 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
             horizontal: WidgetStyleCommons.safeSpace,
             vertical: WidgetStyleCommons.safeSpace,
           ),
-          itemCount:
-              controller.resourceState.currentActivatedSourceGroupList.length,
+          itemCount: controller.resourceState.showSourceGroupList.length,
           itemBuilder: (context, index) {
-            final item =
-                controller.resourceState.currentActivatedSourceGroupList[index];
+            final item = controller.resourceState.showSourceGroupList[index];
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
@@ -240,11 +232,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
                 activated: index == activatedIndex,
                 isCard: false,
                 onClick: () {
-                  controller.resourceState.state(
-                    controller.resourceState.state.value.copyWith(
-                      sourceGroupActivatedIndex: index,
-                    ),
-                  );
+                  controller.resourceState.updateSourceGroupStateByIndex(index);
                 },
               ),
             );
@@ -257,8 +245,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
   // 列表（grid）方式
   Widget _gridView(BuildContext context) {
     return Obx(() {
-      int activatedIndex =
-          controller.resourceState.state.value.sourceGroupActivatedIndex;
+      int activatedIndex = controller.resourceState.activatedSourceGroupIndex;
       return GridViewObserver(
         controller: _gridObserverController,
         child: GridView.builder(
@@ -267,8 +254,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
             vertical: WidgetStyleCommons.safeSpace,
           ),
           controller: _scrollController,
-          itemCount:
-              controller.resourceState.currentActivatedSourceGroupList.length,
+          itemCount: controller.resourceState.showSourceGroupList.length,
           gridDelegate: SliverGridDelegateWithExtentAndRatio(
             crossAxisSpacing: WidgetStyleCommons.safeSpace,
             mainAxisSpacing: WidgetStyleCommons.safeSpace,
@@ -276,8 +262,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
             childAspectRatio: WidgetStyleCommons.playSourceGridRatio,
           ),
           itemBuilder: (context, index) {
-            final item =
-                controller.resourceState.currentActivatedSourceGroupList[index];
+            final item = controller.resourceState.showSourceGroupList[index];
             return ClickableButtonWidget(
               text: item.name,
               maxLines: 1,
@@ -286,11 +271,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
               isCard: false,
               textAlign: TextAlign.center,
               onClick: () {
-                controller.resourceState.state(
-                  controller.resourceState.state.value.copyWith(
-                    sourceGroupActivatedIndex: index,
-                  ),
-                );
+                controller.resourceState.updateSourceGroupStateByIndex(index);
               },
             );
           },
@@ -309,21 +290,17 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
         controller: _scrollController,
         child: Obx(() {
           int activatedIndex =
-              controller.resourceState.state.value.sourceGroupActivatedIndex;
+              controller.resourceState.activatedSourceGroupIndex;
           return ListViewObserver(
             controller: _observerController,
             child: ListView.builder(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               scrollDirection: Axis.horizontal,
-              itemCount: controller
-                  .resourceState
-                  .currentActivatedSourceGroupList
-                  .length,
+              itemCount: controller.resourceState.showSourceGroupList.length,
               itemBuilder: (context, index) {
-                final item = controller
-                    .resourceState
-                    .currentActivatedSourceGroupList[index];
+                final item =
+                    controller.resourceState.showSourceGroupList[index];
                 return Container(
                   margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
                   child: AspectRatio(
@@ -336,10 +313,8 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
                       isCard: false,
                       textAlign: TextAlign.center,
                       onClick: () {
-                        controller.resourceState.state(
-                          controller.resourceState.state.value.copyWith(
-                            sourceGroupActivatedIndex: index,
-                          ),
+                        controller.resourceState.updateSourceGroupStateByIndex(
+                          index,
                         );
                       },
                     ),
