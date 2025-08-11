@@ -131,45 +131,32 @@ class ResourceState {
 
     // 当选择新的章节时，自动切换资源api、资源组、章节组
     ever(state.chapterActivatedIndex, (val) {
-      if (state.apiActivatedState.value?.index != state.apiActivatedState.value?.activatedIndex) {
-        state.apiActivatedState(
-          state.apiActivatedState.value?.copyWith(
-            activatedIndex: state.apiActivatedState.value?.index ?? 0,
-          ),
-        );
+      ActivatedStateModel apiState = state.apiActivatedState.value!.copyWith(
+        activatedIndex: state.apiActivatedState.value!.index,
+      );
+      if (apiState.index != state.apiActivatedState.value!.activatedIndex) {
+        state.apiActivatedState(apiState);
       }
+
       int sourceGroupIndex = activatedSourceGroupIndex;
-      // if (state.sourceGroupActivatedState.value?.index != state.sourceGroupActivatedState.value?.activatedIndex) {
-      if (sourceGroupIndex != state.sourceGroupActivatedState.value?.activatedIndex) {
-        if (sourceGroupIndex < 0) {
-          sourceGroupIndex = 0;
-        }
-        state.sourceGroupActivatedState(
-          state.sourceGroupActivatedState.value?.copyWith(
-            // activatedIndex: state.sourceGroupActivatedState.value?.index ?? 0,
-            index: sourceGroupIndex,
-            activatedIndex: sourceGroupIndex,
-          ),
-        );
+      SourceGroupActivatedStateModel sourceGroupActivatedStateModel =
+      state.sourceGroupActivatedState.value!.copyWith(
+        index: sourceGroupIndex >= 0 ? sourceGroupIndex : 0,
+        activatedIndex: sourceGroupIndex >= 0 ? sourceGroupIndex : 0,
+        apiState: apiState,
+      );
+      if (sourceGroupIndex < 0 || sourceGroupIndex != state.sourceGroupActivatedState.value?.activatedIndex) {
+        state.sourceGroupActivatedState(sourceGroupActivatedStateModel);
       }
+
       int chapterGroupIndex = activatedChapterGroupIndex;
-      // if (state.chapterGroupActivatedState.value?.index != state.chapterGroupActivatedState.value?.activatedIndex) {
+      ChapterGroupActivatedStateModel chapterGroupActivatedStateModel = state.chapterGroupActivatedState.value!.copyWith(
+        index: chapterGroupIndex >= 0 ? chapterGroupIndex : 0,
+        activatedIndex: chapterGroupIndex >= 0 ? chapterGroupIndex : 0,
+        sourceGroupState: sourceGroupActivatedStateModel,
+      );
       if (chapterGroupIndex != state.chapterGroupActivatedState.value?.activatedIndex) {
-        if (chapterGroupIndex < 0) {
-          chapterGroupIndex = 0;
-        }
-        state.chapterGroupActivatedState(
-          state.chapterGroupActivatedState.value?.copyWith(
-            // activatedIndex: state.chapterGroupActivatedState.value?.index ?? 0,
-            index: chapterGroupIndex,
-            activatedIndex: chapterGroupIndex,
-            sourceGroupState: state.chapterGroupActivatedState.value!.sourceGroupState,
-          ) ?? ChapterGroupActivatedStateModel(
-            index: chapterGroupIndex,
-            activatedIndex: chapterGroupIndex,
-            sourceGroupState: state.chapterGroupActivatedState.value!.sourceGroupState,
-          ),
-        );
+        state.chapterGroupActivatedState(chapterGroupActivatedStateModel);
       }
     });
   }

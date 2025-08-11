@@ -40,6 +40,8 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
 
   bool _showBottomSheet = false;
 
+  bool _chapterClicked = false;
+
   @override
   void initState() {
     controller = Get.find<PlayerController>();
@@ -57,7 +59,13 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
     }
 
     everAll([
+      controller.resourceState.state.apiActivatedState,
+      controller.resourceState.state.sourceGroupActivatedState,
       controller.resourceState.state.chapterGroupActivatedState], (val) {
+      if (_chapterClicked) {
+        _chapterClicked = false;
+        return;
+      }
       int index = controller.resourceState.chapterGroupActivatedChapterIndex;
       if (index < 0) {
         index = 0;
@@ -268,6 +276,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
                 activated: item.index == activeIndex,
                 isCard: true,
                 onClick: () {
+                  _chapterClicked = true;
                   controller.resourceState.state.chapterActivatedIndex(
                     item.index,
                   );
@@ -310,6 +319,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
               activated: item.index == activeIndex,
               isCard: true,
               onClick: () {
+                _chapterClicked = true;
                 controller.resourceState.state.chapterActivatedIndex(
                   item.index,
                 );
@@ -354,6 +364,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
                       activated: item.index == activeIndex,
                       isCard: true,
                       onClick: () {
+                        _chapterClicked = true;
                         controller.resourceState.state.chapterActivatedIndex(
                           item.index,
                         );
