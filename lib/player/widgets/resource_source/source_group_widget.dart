@@ -36,7 +36,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
   ListObserverController? _observerController;
   GridObserverController? _gridObserverController;
   late int _activatedIndex;
-
+  bool _showBottomSheet = false;
   @override
   void initState() {
     controller = Get.find<PlayerController>();
@@ -52,6 +52,18 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
         controller: _scrollController,
       )..initialIndex = initialIndex;
     }
+
+    everAll([
+      controller.resourceState.state.apiActivatedState], (val) {
+      int index = controller.resourceState.activatedSourceGroupIndex;
+      if (index < 0) {
+        index = 0;
+      }
+      if (!_showBottomSheet) {
+        _gridObserverController?.jumpTo(index: index, isFixedHeight: true);
+        _observerController?.jumpTo(index: index, isFixedHeight: true);
+      }
+    });
 
     super.initState();
   }
@@ -116,6 +128,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
       if (widget.singleHorizontalScroll || widget.isSelect)
         TextButton(
           onPressed: () {
+            _showBottomSheet = true;
             controller.netResourceDetailController?.bottomSheetController =
                 controller.netResourceDetailController?.childKey.currentState
                     ?.showBottomSheet(
@@ -129,6 +142,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
                                   .netResourceDetailController
                                   ?.bottomSheetController
                                   ?.close();
+                              _showBottomSheet = false;
                             },
                             bottomSheet: true,
                             isGrid: true,

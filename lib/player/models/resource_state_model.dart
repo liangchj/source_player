@@ -21,19 +21,18 @@ class ResourceStateModel {
   ResourceStateModel({
     Rx<ActivatedStateModel?>? apiActivatedState,
     Rx<SourceGroupActivatedStateModel?>? sourceGroupActivatedState,
-    int? activateChapterGroup,
+    int? activatedChapterGroup,
     int? showChapterGroup,
     Rx<ChapterGroupActivatedStateModel?>? chapterGroupActivatedState,
     int? chapterActivatedIndex,
   }) {
     this.apiActivatedState(apiActivatedState?.value);
     this.sourceGroupActivatedState(sourceGroupActivatedState?.value);
-    this.activatedChapterGroup(activateChapterGroup);
+    this.activatedChapterGroup(activatedChapterGroup);
     this.showChapterGroup(showChapterGroup);
     this.chapterGroupActivatedState(chapterGroupActivatedState?.value);
     this.chapterActivatedIndex(chapterActivatedIndex);
   }
-
 }
 
 class ActivatedStateModel {
@@ -53,10 +52,18 @@ class ActivatedStateModel {
 class SourceGroupActivatedStateModel extends ActivatedStateModel {
   final ActivatedStateModel apiState;
 
-  SourceGroupActivatedStateModel({required super.index, required super.activatedIndex, required this.apiState});
+  SourceGroupActivatedStateModel({
+    required super.index,
+    required super.activatedIndex,
+    required this.apiState,
+  });
 
   @override
-  SourceGroupActivatedStateModel copyWith({int? index, int? activatedIndex, ActivatedStateModel? apiState}) {
+  SourceGroupActivatedStateModel copyWith({
+    int? index,
+    int? activatedIndex,
+    ActivatedStateModel? apiState,
+  }) {
     return SourceGroupActivatedStateModel(
       index: index ?? super.index,
       activatedIndex: activatedIndex ?? this.activatedIndex,
@@ -68,10 +75,18 @@ class SourceGroupActivatedStateModel extends ActivatedStateModel {
 class ChapterGroupActivatedStateModel extends ActivatedStateModel {
   final SourceGroupActivatedStateModel sourceGroupState;
 
-  ChapterGroupActivatedStateModel({required super.index, required super.activatedIndex, required this.sourceGroupState});
+  ChapterGroupActivatedStateModel({
+    required super.index,
+    required super.activatedIndex,
+    required this.sourceGroupState,
+  });
 
   @override
-  ChapterGroupActivatedStateModel copyWith({int? index, int? activatedIndex, SourceGroupActivatedStateModel? sourceGroupState}) {
+  ChapterGroupActivatedStateModel copyWith({
+    int? index,
+    int? activatedIndex,
+    SourceGroupActivatedStateModel? sourceGroupState,
+  }) {
     return ChapterGroupActivatedStateModel(
       index: index ?? super.index,
       activatedIndex: activatedIndex ?? this.activatedIndex,
@@ -80,3 +95,47 @@ class ChapterGroupActivatedStateModel extends ActivatedStateModel {
   }
 }
 
+/*class SourceActivatedStateModel {
+  final int? apiIndex;
+  final int? sourceGroupIndex;
+  final int? chapterGroupIndex;
+  final int? chapterIndex;
+
+  SourceActivatedStateModel({
+    this.apiIndex,
+    this.sourceGroupIndex,
+    this.chapterGroupIndex,
+    this.chapterIndex,
+  });
+}
+
+class ApiStateModel {
+  final int index;
+  final int activatedIndex;
+
+  ApiStateModel({required this.index, required this.activatedIndex});
+}
+
+class SourceGroupStateModel {
+  final int index;
+  final SourceActivatedStateModel activatedState;
+  final SourceActivatedStateModel showState;
+
+  SourceGroupStateModel({
+    required this.index,
+    required this.activatedState,
+    required this.showState,
+  });
+}
+
+class ChapterGroupStateModel {
+  final int index;
+  final SourceActivatedStateModel activatedState;
+  final SourceActivatedStateModel showState;
+
+  ChapterGroupStateModel({
+    required this.index,
+    required this.activatedState,
+    required this.showState,
+  });
+}*/

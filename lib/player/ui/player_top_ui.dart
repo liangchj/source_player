@@ -23,7 +23,7 @@ class PlayerTopUI extends GetView<PlayerController> {
           IconButton(
             color: WidgetStyleCommons.iconColor,
             onPressed: () {
-              controller.fullscreenUtils.toggleFullscreen();
+               controller.fullscreenUtils.exitFullscreen();
             },
             // icon: const Icon(Icons.arrow_back_ios_new_rounded)),
             icon: IconCommons.backIcon,

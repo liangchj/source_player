@@ -40,6 +40,16 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
     _scrollController = ScrollController();
     _observerController = ListObserverController(controller: _scrollController)
       ..initialIndex = initialIndex;
+
+    everAll([
+      controller.resourceState.state.apiActivatedState,
+      controller.resourceState.state.sourceGroupActivatedState], (val) {
+      int index = controller.resourceState.activatedChapterGroupIndex;
+      if (index < 0) {
+        index = 0;
+      }
+      _observerController?.jumpTo(index: index, isFixedHeight: true);
+    });
     super.initState();
   }
 

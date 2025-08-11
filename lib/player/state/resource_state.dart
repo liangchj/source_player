@@ -5,11 +5,9 @@ import '../../models/play_source_group_model.dart';
 import '../../models/play_source_model.dart';
 import '../../models/resource_chapter_model.dart';
 import '../../models/video_model.dart';
-import '../controller/player_controller.dart';
 import '../models/resource_state_model.dart';
 
 class ResourceState {
-
   var videoModel = Rx<VideoModel?>(null);
 
   var showChapter = true.obs;
@@ -38,22 +36,27 @@ class ResourceState {
         );
         return;
       }
-      int index =
-          state.sourceGroupActivatedState.value!.index;
+      int index = state.sourceGroupActivatedState.value?.index ?? 0;
       // 当前组源api下标与显示的api下标相同时，则可以默认选中
       if (state.sourceGroupActivatedState.value?.apiState.index == val.index) {
         if (index < 0) {
           index = 0;
         }
         state.sourceGroupActivatedState(
-          state.sourceGroupActivatedState.value!.copyWith(activatedIndex: index),
+          state.sourceGroupActivatedState.value!.copyWith(
+            activatedIndex: index,
+            apiState: val,
+          ),
         );
       } else {
         index = -1;
+        state.sourceGroupActivatedState(
+          state.sourceGroupActivatedState.value!.copyWith(
+            index: index,
+            apiState: val,
+          ),
+        );
       }
-      /*state.sourceGroupActivatedState(
-        state.sourceGroupActivatedState.value!.copyWith(index: activatedIndex),
-      );*/
     });
     // 当前播放资源api下的资源组状态变动
     ever(state.sourceGroupActivatedState, (val) {
@@ -69,21 +72,30 @@ class ResourceState {
             sourceGroupState: val,
           ),
         );
-        return;
-      }
-      int activatedIndex = val.activatedIndex;
-      // 当前资源组下标与显示的资源组下标相同时，则可以默认选中
-      if (state.chapterGroupActivatedState.value?.sourceGroupState.index ==
-          val.index) {
-        if (activatedIndex < 0) {
-          activatedIndex = 0;
-        }
       } else {
-        activatedIndex = -1;
+        int index =
+            state.chapterGroupActivatedState.value?.index ?? 0;
+        // 当前资源组下标与显示的资源组下标相同时，则可以默认选中
+        if (state.chapterGroupActivatedState.value?.sourceGroupState.index ==
+            val.index) {
+          if (index < 0) {
+            index = 0;
+          }
+          state.chapterGroupActivatedState(
+            state.chapterGroupActivatedState.value!.copyWith(
+              activatedIndex: index,
+              sourceGroupState: val,
+            ),
+          );
+        } else {
+          index = -1;
+          /*state.chapterGroupActivatedState(
+            state.chapterGroupActivatedState.value!.copyWith(
+              index: index,
+            ),
+          );*/
+        }
       }
-      state.chapterGroupActivatedState(
-        state.chapterGroupActivatedState.value!.copyWith(index: activatedIndex),
-      );
 
       if (state.chapterGroupActivatedState.value?.index ==
           state.chapterGroupActivatedState.value?.activatedIndex) {
@@ -92,6 +104,7 @@ class ResourceState {
         if (group < 1) {
           group = 1;
         }
+        state.showChapterGroup(group);
         state.activatedChapterGroup(group);
       } else {
         int length = showChapterList.length;
@@ -104,24 +117,60 @@ class ResourceState {
     });
 
     // 当前播放资源api下的资源组下的章节组状态变动
-    ever(state.chapterGroupActivatedState, (val) {});
-
+    ever(state.chapterGroupActivatedState, (val) {
+      if (val == null) {
+        return;
+      }
+      if (val.index == val.activatedIndex) {
+        state.activatedChapterGroup(state.showChapterGroup.value);
+        if (state.chapterActivatedIndex < 0) {
+          state.chapterActivatedIndex(0);
+        }
+      }
+    });
 
     // 当选择新的章节时，自动切换资源api、资源组、章节组
     ever(state.chapterActivatedIndex, (val) {
-      state.apiActivatedState(state.apiActivatedState.value?.copyWith(
-        activatedIndex: state.apiActivatedState.value?.index ?? 0,
-      ));
-      state.sourceGroupActivatedState(
-        state.sourceGroupActivatedState.value?.copyWith(
-          activatedIndex: state.sourceGroupActivatedState.value?.index ?? 0,
-        ),
-      );
-      state.chapterGroupActivatedState(
-        state.chapterGroupActivatedState.value?.copyWith(
-          activatedIndex: state.chapterGroupActivatedState.value?.index ?? 0,
-        ),
-      );
+      if (state.apiActivatedState.value?.index != state.apiActivatedState.value?.activatedIndex) {
+        state.apiActivatedState(
+          state.apiActivatedState.value?.copyWith(
+            activatedIndex: state.apiActivatedState.value?.index ?? 0,
+          ),
+        );
+      }
+      int sourceGroupIndex = activatedSourceGroupIndex;
+      // if (state.sourceGroupActivatedState.value?.index != state.sourceGroupActivatedState.value?.activatedIndex) {
+      if (sourceGroupIndex != state.sourceGroupActivatedState.value?.activatedIndex) {
+        if (sourceGroupIndex < 0) {
+          sourceGroupIndex = 0;
+        }
+        state.sourceGroupActivatedState(
+          state.sourceGroupActivatedState.value?.copyWith(
+            // activatedIndex: state.sourceGroupActivatedState.value?.index ?? 0,
+            index: sourceGroupIndex,
+            activatedIndex: sourceGroupIndex,
+          ),
+        );
+      }
+      int chapterGroupIndex = activatedChapterGroupIndex;
+      // if (state.chapterGroupActivatedState.value?.index != state.chapterGroupActivatedState.value?.activatedIndex) {
+      if (chapterGroupIndex != state.chapterGroupActivatedState.value?.activatedIndex) {
+        if (chapterGroupIndex < 0) {
+          chapterGroupIndex = 0;
+        }
+        state.chapterGroupActivatedState(
+          state.chapterGroupActivatedState.value?.copyWith(
+            // activatedIndex: state.chapterGroupActivatedState.value?.index ?? 0,
+            index: chapterGroupIndex,
+            activatedIndex: chapterGroupIndex,
+            sourceGroupState: state.chapterGroupActivatedState.value!.sourceGroupState,
+          ) ?? ChapterGroupActivatedStateModel(
+            index: chapterGroupIndex,
+            activatedIndex: chapterGroupIndex,
+            sourceGroupState: state.chapterGroupActivatedState.value!.sourceGroupState,
+          ),
+        );
+      }
     });
   }
 
@@ -152,8 +201,11 @@ class ResourceState {
   // =============== 资源api下的资源组 START ===============
   int get activatedSourceGroupIndex {
     int apiIndex = state.apiActivatedState.value?.index ?? 0;
-    int groupApiIndex = state.sourceGroupActivatedState.value?.apiState.index ?? 0;
-    return groupApiIndex == apiIndex ? (state.sourceGroupActivatedState.value?.index ?? 0) : -1;
+    int groupApiIndex =
+        state.sourceGroupActivatedState.value?.apiState.index ?? 0;
+    return groupApiIndex == apiIndex
+        ? (state.sourceGroupActivatedState.value?.index ?? 0)
+        : -1;
   }
 
   // 获取当前播放网站源下的资源组列表（供资源组选择器使用）
@@ -182,14 +234,15 @@ class ResourceState {
   }
 
   void updateSourceGroupStateByIndex(int index) {
+    var apiState =
+    state.apiActivatedState.value ??
+    ActivatedStateModel(index: 0, activatedIndex: 0);
     state.sourceGroupActivatedState(
-      state.sourceGroupActivatedState.value?.copyWith(index: index) ??
+      state.sourceGroupActivatedState.value?.copyWith(index: index, apiState: apiState) ??
           SourceGroupActivatedStateModel(
             index: index,
             activatedIndex: index,
-            apiState:
-                state.apiActivatedState.value ??
-                ActivatedStateModel(index: 0, activatedIndex: 0),
+            apiState: apiState,
           ),
     );
   }
@@ -199,11 +252,15 @@ class ResourceState {
   // =============== 资源api下的资源组下的章节组 START ===============
 
   int get activatedChapterGroupIndex {
+    int sourceIndex = activatedSourceGroupIndex;
+    if (sourceIndex < 0) {
+      return -1;
+    }
     int sourceGroupIndex = state.sourceGroupActivatedState.value?.index ?? 0;
     int chapterGroupSourceGroupIndex =
-        state.chapterGroupActivatedState.value?.index ?? 0;
+        state.chapterGroupActivatedState.value?.sourceGroupState.index ?? 0;
     return chapterGroupSourceGroupIndex == sourceGroupIndex
-        ? chapterGroupSourceGroupIndex
+        ? state.chapterGroupActivatedState.value?.index ?? 0
         : -1;
   }
 
@@ -240,20 +297,20 @@ class ResourceState {
   }
 
   void updateChapterGroupStateByIndex(int index) {
+    var sourceGroupState = state.sourceGroupActivatedState.value ??
+        SourceGroupActivatedStateModel(
+          index: 0,
+          activatedIndex: 0,
+          apiState:
+          state.apiActivatedState.value ??
+              ActivatedStateModel(index: 0, activatedIndex: 0),
+        );
     state.chapterGroupActivatedState(
-      state.chapterGroupActivatedState.value?.copyWith(activatedIndex: index) ??
+      state.chapterGroupActivatedState.value?.copyWith(index: index, sourceGroupState: sourceGroupState) ??
           ChapterGroupActivatedStateModel(
             index: index,
             activatedIndex: index,
-            sourceGroupState:
-                state.sourceGroupActivatedState.value ??
-                SourceGroupActivatedStateModel(
-                  index: 0,
-                  activatedIndex: 0,
-                  apiState:
-                      state.apiActivatedState.value ??
-                      ActivatedStateModel(index: 0, activatedIndex: 0),
-                ),
+            sourceGroupState: sourceGroupState,
           ),
     );
   }
@@ -262,11 +319,26 @@ class ResourceState {
 
   // =============== 资源api下的资源组下的章节组下的章节 START ===============
   int get activatedChapterIndex {
-    int chapterGroupSourceGroupIndex =
-        state.chapterGroupActivatedState.value?.index ?? 0;
-    int chapterGroupSourceGroupActivatedIndex =
-        state.chapterGroupActivatedState.value?.activatedIndex ?? 0;
-    return chapterGroupSourceGroupIndex == chapterGroupSourceGroupActivatedIndex
+    bool apiActivated = state.apiActivatedState.value?.index == state.apiActivatedState.value?.activatedIndex;
+    if (!apiActivated) {
+      return -1;
+    }
+    bool sourceGroupActivated = state.sourceGroupActivatedState.value?.index == state.sourceGroupActivatedState.value?.activatedIndex;
+    if (!sourceGroupActivated) {
+      return -1;
+    }
+    bool chapterGroupActivated = state.chapterGroupActivatedState.value?.index == state.chapterGroupActivatedState.value?.activatedIndex;
+    if (!chapterGroupActivated) {
+      return -1;
+    }
+
+    int chapterGroupIndex = activatedChapterGroupIndex;
+    if (chapterGroupIndex < 0) {
+      return -1;
+    }
+
+    int chapterGroupSourceGroupIndex = activatedChapterGroupIndex;
+    return chapterGroupSourceGroupIndex >= 0
         ? state.chapterActivatedIndex.value
         : -1;
   }
@@ -300,10 +372,15 @@ class ResourceState {
 
   // 获取当前展示资源组下的章节组下的章节列表（供章节选择器使用）
   List<ResourceChapterModel> get showChapterGroupChapterList {
-    int chapterGroupIndex = state.chapterGroupActivatedState.value?.index ?? 0;
-    if (chapterGroupIndex <= 1) {
+    var index = state.showChapterGroup.value;
+    if (index <= 1) {
       return showChapterList;
     }
+    int chapterGroupIndex = activatedChapterGroupIndex;
+    if (chapterGroupIndex < 0) {
+      chapterGroupIndex = 0;
+    }
+    // int chapterGroupIndex = state.chapterGroupActivatedState.value?.index ?? 0;
     List<ResourceChapterModel> list = showChapterList;
 
     int start = chapterGroupIndex * WidgetStyleCommons.chapterGroupCount;
@@ -312,6 +389,24 @@ class ResourceState {
       end = list.length;
     }
     return list.sublist(start, end);
+  }
+
+  // 当前激活的章节中对应激活的章节下标（本组下标，不是全章节下标）
+  int get chapterGroupActivatedChapterIndex {
+    int index = activatedChapterIndex;
+    if (index < 0) {
+      return index;
+    }
+    int chapterGroupIndex = activatedChapterGroupIndex;
+    if (chapterGroupIndex < 0) {
+      return -1;
+    }
+    // chapterGroupIndex从0开始
+    if (state.showChapterGroup.value <= 1) {
+      return index;
+    }
+    // 因为chapterGroupIndex从0开始，因此不需要先减1再计算
+    return index - (chapterGroupIndex * WidgetStyleCommons.chapterGroupCount);
   }
 
   // =============== 资源api下的资源组下的章节组下的章节 END ===============

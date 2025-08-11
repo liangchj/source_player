@@ -2,6 +2,8 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/player_view.dart';
+import 'package:source_player/player/widgets/chapter/chapter_group_widget.dart';
+import 'package:source_player/player/widgets/chapter/chapter_list_widget.dart';
 import 'package:source_player/player/widgets/resource_source/source_api_widget.dart';
 import 'package:source_player/player/widgets/resource_source/source_group_widget.dart';
 import 'package:source_player/widgets/chapter/chapter_layout_widget.dart';
@@ -210,6 +212,9 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         SourceGroupWidget(
           singleHorizontalScroll: true,
         ),
+        ChapterListWidget(
+          singleHorizontalScroll: true,
+        ),
 
         /*PlaySourceApiWidget(
           controller: controller,
@@ -218,7 +223,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
           singleHorizontalScroll: true,
           // isSelect:  true,
         ),*/
-        Obx(
+        /*Obx(
           () =>
               controller
                       .sourceChapterState
@@ -230,9 +235,9 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                   singleHorizontalScroll: true,
                 )
               : Container(),
-        ),
+        ),*/
 
-        Container(
+        /*Container(
           padding: EdgeInsetsGeometry.symmetric(
             // horizontal: WidgetStyleCommons.safeSpace,
           ),
@@ -243,9 +248,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
             controller: controller,
             singleHorizontalScroll: true,
           ),
-        ),
-        Container(height: 800, color: Colors.red),
-        Container(height: 500, color: Colors.amber),
+        ),*/
       ],
     );
   }

@@ -6,6 +6,7 @@ import '../../../commons/widget_style_commons.dart';
 import '../../../utils/auto_compute_sliver_grid_count.dart';
 import '../../../widgets/chapter/chapter_layout_widget.dart';
 import '../../controller/player_controller.dart';
+import 'chapter_group_widget.dart';
 import 'chapter_widget.dart';
 
 class ChapterListWidget extends StatefulWidget {
@@ -37,10 +38,12 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   GridObserverController? _gridObserverController;
   late int _activatedIndex;
 
+  bool _showBottomSheet = false;
+
   @override
   void initState() {
     controller = Get.find<PlayerController>();
-    _activatedIndex = controller.resourceState.activatedChapterIndex;
+    _activatedIndex = controller.resourceState.chapterGroupActivatedChapterIndex;
     int initialIndex = _activatedIndex > 0 ? _activatedIndex : 0;
     _scrollController = ScrollController();
     if (widget.isGrid) {
@@ -53,12 +56,24 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
       )..initialIndex = initialIndex;
     }
 
+    everAll([
+      controller.resourceState.state.chapterGroupActivatedState], (val) {
+      int index = controller.resourceState.chapterGroupActivatedChapterIndex;
+      if (index < 0) {
+        index = 0;
+      }
+      if (!_showBottomSheet) {
+        _gridObserverController?.jumpTo(index: index, isFixedHeight: true);
+        _observerController?.jumpTo(index: index, isFixedHeight: true);
+      }
+    });
+
     super.initState();
   }
 
   @override
   void dispose() {
-    int index = controller.resourceState.activatedChapterIndex;
+    int index = controller.resourceState.chapterGroupActivatedChapterIndex;
     index = index >= 0 ? index : 0;
     if (_scrollController != null && index != _activatedIndex) {
       widget.onDispose?.call(index);
@@ -71,14 +86,20 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   Widget build(BuildContext context) {
     return Obx(
       () => controller.resourceState.showChapter.value
-          ? Container()
-          : Container(
-              child: widget.bottomSheet
+          ? Column(
+            children: [
+              _createHeader(context),
+              ChapterGroupWidget(
+                singleHorizontalScroll: true,
+              ),
+              widget.bottomSheet
                   ? _bottomSheetList(context)
                   : widget.singleHorizontalScroll
                   ? _horizontalScroll(context)
                   : _list(context),
-            ),
+            ],
+          )
+          : Container(),
     );
   }
 
@@ -130,6 +151,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
       if (widget.singleHorizontalScroll)
         TextButton(
           onPressed: () {
+            _showBottomSheet = true;
             controller.netResourceDetailController?.bottomSheetController =
                 controller.netResourceDetailController?.childKey.currentState
                     ?.showBottomSheet(
@@ -143,18 +165,19 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
                                   .netResourceDetailController
                                   ?.bottomSheetController
                                   ?.close();
+                              _showBottomSheet = false;
                             },
                             bottomSheet: true,
                             isGrid: true,
                             onDispose: (index) {
-                              _gridObserverController?.jumpTo(
-                                index: index,
-                                isFixedHeight: true,
-                              );
-                              _observerController?.jumpTo(
-                                index: index,
-                                isFixedHeight: true,
-                              );
+                                _gridObserverController?.jumpTo(
+                                  index: index,
+                                  isFixedHeight: true,
+                                );
+                                _observerController?.jumpTo(
+                                  index: index,
+                                  isFixedHeight: true,
+                                );
                             },
                           ),
                         ),
