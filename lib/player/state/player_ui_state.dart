@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:source_player/player/ui/player_setting_ui.dart';
 
 import '../enums/player_ui_key_enum.dart';
 import '../models/player_overlay_ui_model.dart';
@@ -25,6 +26,7 @@ class PlayerUIState {
       PlayerUIKeyEnum.centerProgressUI.name: centerProgressUI,
       PlayerUIKeyEnum.centerVolumeUI.name: centerVolumeUI,
       PlayerUIKeyEnum.centerBrightnessUI.name: centerBrightnessUI,
+      PlayerUIKeyEnum.settingUI.name: settingUI,
     });
   }
   Map<String, PlayerOverlayUIModel> overlayUIMap = {};
@@ -153,5 +155,17 @@ class PlayerUIState {
     animationDuration: Duration.zero,
     widgetCallback: (uiModel) =>
         PlayerUITransition.playerUIOpacityAnimation(uiModel),
+  );
+
+  var settingUI = PlayerOverlayUIModel(
+    key: PlayerUIKeyEnum.settingUI.name,
+    child: const PlayerSettingUI(),
+    useAnimationController: true,
+    tween: Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: const Offset(0.0, 0.0),
+    ),
+    widgetCallback: (uiModel) =>
+        PlayerUITransition.playerUISlideTransition(uiModel),
   );
 }

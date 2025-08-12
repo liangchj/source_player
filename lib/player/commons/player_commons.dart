@@ -9,8 +9,13 @@ class PlayerCommons {
   static const Color textColor = Colors.white;
   static const Color textBlackColor = Colors.black;
 
+  // 标题类字体大小
+  static const double titleTextSize = 16.0;
+
   // 图标大小
-  static const double iconSize = 26.0;
+  static const double iconSize = 24.0;
+
+  static const double bottomBtnSize = 40.0;
 
   static const Icon settingIcon = Icon(
     Icons.more_vert_rounded,
@@ -106,6 +111,8 @@ class PlayerCommons {
   static const double speedSettingUIDefaultWidth = 150.0;
 
   static const double chapterUIDefaultWidth = 300.0;
+
+  static const double settingUIDefaultWidth = 300.0;
 
   // 音量和亮度UI大小
   static const Size volumeOrBrightnessUISize = Size(80, 70);

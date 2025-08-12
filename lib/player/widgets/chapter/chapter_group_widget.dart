@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
@@ -89,8 +91,13 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
             : controller.resourceState.showChapterGroupNameList.reversed
                   .toList();
         int activeIndex = controller.resourceState.activatedChapterGroupIndex;
-        return Scrollbar(
-          controller: _scrollController,
+        return ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            dragDevices: {
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.touch,
+            },
+          ),
           child: ListViewObserver(
             controller: _observerController,
             child: ListView.builder(

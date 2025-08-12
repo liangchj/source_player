@@ -396,5 +396,10 @@ class ResourceState {
     return index - (chapterGroupIndex * WidgetStyleCommons.chapterGroupCount);
   }
 
+  String get chapterUrl {
+    int index = state.chapterActivatedIndex.value;
+    return activatedChapterList[ index].playUrl ?? "";
+  }
+
   // =============== 资源api下的资源组下的章节组下的章节 END ===============
 }

@@ -11,10 +11,12 @@ import 'package:source_player/player/iplayer.dart';
 import 'package:source_player/player/state/player_ui_state.dart';
 import 'package:source_player/utils/logger_utils.dart';
 
+import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
 import '../commons/player_commons.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../media_kit_player.dart';
+import '../models/buttom_ui_control_item_model.dart';
 import '../models/player_overlay_ui_model.dart';
 import '../player_view.dart';
 import '../state/player_state.dart';
@@ -42,6 +44,8 @@ class PlayerController extends GetxController {
   // 标记是否只有全屏页面
   bool onlyFullscreen = false;
 
+  List<PlayerBottomUIItemModel> fullscreenBottomUIItemList = [];
+
   @override
   void onInit() {
     resourceState = ResourceState();
@@ -51,7 +55,106 @@ class PlayerController extends GetxController {
 
     _initEver();
 
+    _initBottomControlItemList();
     super.onInit();
+  }
+
+  void _initBottomControlItemList() {
+    fullscreenBottomUIItemList = [
+      PlayerBottomUIItemModel(
+        type: ControlType.play,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 1,
+        child: IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          color: WidgetStyleCommons.iconColor,
+          onPressed: () => playOrPause(),
+          icon: Obx(() {
+            var isFinished = playerState.isFinished.value;
+            var isPlaying = playerState.isPlaying.value;
+            return isFinished
+                ? IconCommons.bottomReplayPlayIcon
+                : (isPlaying
+                      ? IconCommons.bottomPauseIcon
+                      : IconCommons.bottomPlayIcon);
+          }),
+        ),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.next,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 2,
+        child: IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          onPressed: () => {},
+          icon: IconCommons.nextPlayIcon,
+        ),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.sendDanmaku,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 5,
+        child: TextButton(onPressed: () {}, child: Text("发送弹幕")),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.danmaku,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 6,
+        child: IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          onPressed: () => {},
+          icon: IconCommons.danmakuBottomOpen,
+        ),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.danmakuSetting,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 7,
+        child: IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          onPressed: () => {},
+          icon: IconCommons.danmakuSetting,
+        ),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.chapter,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 4,
+        child: IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          onPressed: () => {},
+          icon: Icon(Icons.list),
+        ),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.speed,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 3,
+        child: TextButton(
+          onPressed: () =>
+              showUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]),
+          child: Text(
+            "${playerState.playSpeed.value}x",
+            style: TextStyle(color: PlayerCommons.textColor),
+          ),
+        ),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.exitOrEntryFullscreen,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 1,
+        child: Obx(
+          () => playerState.isFullscreen.value
+              ? IconButton(
+                  onPressed: () {
+                    fullscreenUtils.toggleFullscreen();
+                  },
+                  icon: PlayerCommons.exitFullscreenIcon,
+                )
+              : Container(),
+        ),
+      ),
+    ];
   }
 
   _initEver() {
@@ -231,8 +334,6 @@ class PlayerController extends GetxController {
     uiState.overlayUIMap.addAll({key: uiOverlay});
   }
 
-
-
   Timer? _progressTimer;
   // 开始拖动播放进度条
   void playProgressOnHorizontalDragStart() {
@@ -289,18 +390,21 @@ class PlayerController extends GetxController {
     // 清除前一次拖动剩余值
     playerState.draggingSurplusSecond = 0.0;
     // 更新本次拖动值
-    var second = playerState.dragProgressPositionDuration.inSeconds +
+    var second =
+        playerState.dragProgressPositionDuration.inSeconds +
         playerState.draggingSecond.value;
     seekTo(Duration(seconds: second.abs() > 0 ? second : 0));
     // 定时隐藏拖动进度ui
     _progressTimer = Timer.periodic(
-        PlayerCommons.volumeOrBrightnessUIShowDuration, (timer) {
-      playerState.draggingSecond(0);
-      playerState.dragProgressPositionDuration = playerState.positionDuration.value;
-      hideUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name]);
-    });
+      PlayerCommons.volumeOrBrightnessUIShowDuration,
+      (timer) {
+        playerState.draggingSecond(0);
+        playerState.dragProgressPositionDuration =
+            playerState.positionDuration.value;
+        hideUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name]);
+      },
+    );
   }
-
 
   Timer? _volumeTimer;
   Timer? _brightnessTimer;
@@ -317,14 +421,17 @@ class PlayerController extends GetxController {
     String showUIKey;
     if (details.globalPosition.dx > (width / 2)) {
       FlutterVolumeController.updateShowSystemUI(false);
-      FlutterVolumeController.getVolume()
-          .then((value) => playerState.volume(((value ?? 0) * 100).floor()));
+      FlutterVolumeController.getVolume().then(
+        (value) => playerState.volume(((value ?? 0) * 100).floor()),
+      );
       playerState.isVolumeDragging(true);
       showUIKey = PlayerUIKeyEnum.centerVolumeUI.name;
       hideUIByKeyList([PlayerUIKeyEnum.centerBrightnessUI.name]);
     } else {
       // 获取当前亮度
-      ScreenBrightness.instance.application.then((value) => playerState.brightness((value * 100).floor()));
+      ScreenBrightness.instance.application.then(
+        (value) => playerState.brightness((value * 100).floor()),
+      );
       playerState.isBrightnessDragging(true);
       showUIKey = PlayerUIKeyEnum.centerBrightnessUI.name;
       hideUIByKeyList([PlayerUIKeyEnum.centerVolumeUI.name]);
@@ -335,7 +442,9 @@ class PlayerController extends GetxController {
 
   // 垂直滑动中
   void volumeOrBrightnessOnVerticalDragUpdate(
-      BuildContext context, DragUpdateDetails details) {
+    BuildContext context,
+    DragUpdateDetails details,
+  ) {
     if (isWeb) {
       return;
     }
@@ -358,9 +467,12 @@ class PlayerController extends GetxController {
       hideUIByKeyList([PlayerUIKeyEnum.centerBrightnessUI.name]);
     } else if (playerState.isBrightnessDragging.value) {
       // 设置亮度
-      playerState
-          .brightness((playerState.brightness.value - dragValue).clamp(0, 100));
-      ScreenBrightness.instance.setApplicationScreenBrightness(playerState.brightness / 100.0);
+      playerState.brightness(
+        (playerState.brightness.value - dragValue).clamp(0, 100),
+      );
+      ScreenBrightness.instance.setApplicationScreenBrightness(
+        playerState.brightness / 100.0,
+      );
       showUIKey = PlayerUIKeyEnum.centerBrightnessUI.name;
       hideUIByKeyList([PlayerUIKeyEnum.centerVolumeUI.name]);
     }
@@ -373,9 +485,12 @@ class PlayerController extends GetxController {
       return;
     }
     if (playerState.isBrightnessDragging.value) {
-      _brightnessTimer = Timer(PlayerCommons.volumeOrBrightnessUIShowDuration, () {
-        hideUIByKeyList([PlayerUIKeyEnum.centerBrightnessUI.name]);
-      });
+      _brightnessTimer = Timer(
+        PlayerCommons.volumeOrBrightnessUIShowDuration,
+        () {
+          hideUIByKeyList([PlayerUIKeyEnum.centerBrightnessUI.name]);
+        },
+      );
     }
     if (playerState.isVolumeDragging.value) {
       _volumeTimer = Timer(PlayerCommons.volumeOrBrightnessUIShowDuration, () {

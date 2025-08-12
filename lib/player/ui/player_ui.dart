@@ -73,6 +73,18 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                 ),
               ),
 
+              // 右边设置（全屏情况显示）
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: 0,
+                child: Obx(
+                      () => controller.uiState.settingUI.widgetCallback(
+                    controller.uiState.settingUI,
+                  ),
+                ),
+              ),
+
               // 右边播放速度设置（全屏情况显示）
               Positioned(
                 top: 0,

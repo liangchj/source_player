@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,6 +8,7 @@ import 'package:source_player/player/widgets/chapter/chapter_group_widget.dart';
 import 'package:source_player/player/widgets/chapter/chapter_list_widget.dart';
 import 'package:source_player/player/widgets/resource_source/source_api_widget.dart';
 import 'package:source_player/player/widgets/resource_source/source_group_widget.dart';
+import 'package:source_player/utils/logger_utils.dart';
 import 'package:source_player/widgets/chapter/chapter_layout_widget.dart';
 import 'package:source_player/widgets/play_source/play_source_api_widget.dart';
 import 'package:source_player/widgets/play_source/play_source_group_widget.dart';
@@ -359,70 +362,77 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
             ),
             SizedBox(
               width: double.infinity,
-              child: SingleChildScrollView(
-                child: Row(
-                  children: [
-                    // 评分
-                    Text(
-                      controller.videoModel.value!.score != null
-                          ? "${controller.videoModel.value!.score}分"
-                          : "暂无",
-                      style: TextStyle(fontSize: secondaryTextFontSize),
-                    ),
-                    // 地区
-                    Container(
-                      padding: EdgeInsets.only(
-                        left: secondaryTextHorizontalPadding,
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.mouse,
+                    PointerDeviceKind.touch,
+                  },
+                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      // 评分
+                      Text(
+                        controller.videoModel.value!.score != null
+                            ? "${controller.videoModel.value!.score}分"
+                            : "暂无",
+                        style: TextStyle(fontSize: secondaryTextFontSize),
                       ),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                              right: secondaryTextHorizontalPadding,
+                      // 地区
+                      Container(
+                        padding: EdgeInsets.only(
+                          left: secondaryTextHorizontalPadding,
+                        ),
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                right: secondaryTextHorizontalPadding,
+                              ),
+                              child: Text(
+                                "|",
+                                style: TextStyle(fontSize: secondaryTextFontSize),
+                              ),
                             ),
-                            child: Text(
-                              "|",
+                            Text(
+                              controller.videoModel.value!.area != null
+                                  ? "${controller.videoModel.value!.area}"
+                                  : "地区缺失",
                               style: TextStyle(fontSize: secondaryTextFontSize),
                             ),
-                          ),
-                          Text(
-                            controller.videoModel.value!.area != null
-                                ? "${controller.videoModel.value!.area}"
-                                : "地区缺失",
-                            style: TextStyle(fontSize: secondaryTextFontSize),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    // 时间
-                    Container(
-                      padding: EdgeInsets.only(
-                        left: secondaryTextHorizontalPadding,
-                      ),
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                              right: secondaryTextHorizontalPadding,
+                      // 时间
+                      Container(
+                        padding: EdgeInsets.only(
+                          left: secondaryTextHorizontalPadding,
+                        ),
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                right: secondaryTextHorizontalPadding,
+                              ),
+                              child: Text(
+                                "|",
+                                style: TextStyle(fontSize: secondaryTextFontSize),
+                              ),
                             ),
-                            child: Text(
-                              "|",
+                            Text(
+                              controller.videoModel.value!.year != null
+                                  ? "${controller.videoModel.value!.year}"
+                                  : "时间缺失",
                               style: TextStyle(fontSize: secondaryTextFontSize),
                             ),
-                          ),
-                          Text(
-                            controller.videoModel.value!.year != null
-                                ? "${controller.videoModel.value!.year}"
-                                : "时间缺失",
-                            style: TextStyle(fontSize: secondaryTextFontSize),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    // 类型
-                    Expanded(
-                      child: Container(
+                      // 类型
+                      Container(
                         padding: EdgeInsets.only(
                           left: secondaryTextHorizontalPadding,
                         ),
@@ -448,8 +458,8 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -473,56 +483,56 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         vertical: verticalPadding,
         horizontal: horizontalPadding,
       ),
-      child: SingleChildScrollView(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            InkWell(
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Icon(Icons.favorite_outline_rounded, size: 30),
-                    Text("收藏"),
-                  ],
-                ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          InkWell(
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Icon(Icons.favorite_outline_rounded, size: 30),
+                  Text("收藏"),
+                ],
               ),
-              onTap: () {},
             ),
-            InkWell(
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Icon(Icons.downloading_rounded, size: 30),
-                    Text("下载"),
-                  ],
-                ),
+            onTap: () {},
+          ),
+          InkWell(
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Icon(Icons.downloading_rounded, size: 30),
+                  Text("下载"),
+                ],
               ),
-              onTap: () {},
             ),
-            InkWell(
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  children: [Icon(Icons.share_rounded, size: 30), Text("分享")],
-                ),
+            onTap: () {},
+          ),
+          InkWell(
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                children: [Icon(Icons.share_rounded, size: 30), Text("分享")],
               ),
-              onTap: () {},
             ),
-            InkWell(
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  children: [Icon(Icons.link_rounded, size: 30), Text("链接")],
-                ),
+            onTap: () {},
+          ),
+          InkWell(
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                children: [Icon(Icons.link_rounded, size: 30), Text("链接")],
               ),
-              onTap: () {
-                // logger.d("当前播放章节：${playingChapterIndex.value}，链接：${playUrl.value}");
-              },
             ),
-          ],
-        ),
+            onTap: () {
+              // logger.d("当前播放章节：${playingChapterIndex.value}，链接：${playUrl.value}");
+              var chapterUrl = controller.playerController.value?.resourceState.chapterUrl;
+              LoggerUtils.logger.d("当前播放章节链接：$chapterUrl");
+            },
+          ),
+        ],
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
@@ -337,8 +339,13 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
       padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
       width: double.infinity,
       height: WidgetStyleCommons.chapterHeight,
-      child: Scrollbar(
-        controller: _scrollController,
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          dragDevices: {
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.touch,
+          },
+        ),
         child: Obx(() {
           var list = controller.resourceState.chapterAsc.value
               ? controller.resourceState.showChapterGroupChapterList

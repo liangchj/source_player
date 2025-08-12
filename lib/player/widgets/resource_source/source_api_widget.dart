@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
@@ -309,8 +311,13 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
       padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
       width: double.infinity,
       height: WidgetStyleCommons.playSourceHeight,
-      child: Scrollbar(
-        controller: _scrollController,
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          dragDevices: {
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.touch,
+          },
+        ),
         child: Obx(() {
           int activatedIndex =
               controller.resourceState.state.apiActivatedState.value?.index ??

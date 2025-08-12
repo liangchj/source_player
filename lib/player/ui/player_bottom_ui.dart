@@ -8,6 +8,7 @@ import '../../commons/widget_style_commons.dart';
 import '../../utils/logger_utils.dart';
 import '../commons/player_commons.dart';
 import '../enums/player_ui_key_enum.dart';
+import '../models/buttom_ui_control_item_model.dart';
 import '../utils/time_format_utils.dart';
 
 class PlayerBottomUI extends StatefulWidget {
@@ -28,10 +29,66 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
         decoration: BoxDecoration(
           gradient: PlayerCommons.bottomUILinearGradient,
         ),
-        child: _buildHorizontalScreenBottomUI(),
+        // child: _buildHorizontalScreenBottomUI(),
+        // child: _buildVerticalScreenBottomUI(),
+        child: _buildBottomUI(),
         // child: Obx(() => controller.playerState.isFullscreen.value ? _buildHorizontalScreenBottomUI() : _buildVerticalScreenBottomUI()),
       ),
     );
+  }
+
+  Widget _buildBottomUI() {
+    return Obx(() {
+      return controller.playerState.isFullscreen.value
+          ? Obx(() => Column(
+        children: [
+          Padding(
+            padding: EdgeInsetsGeometry.symmetric(
+              horizontal: WidgetStyleCommons.safeSpace,
+            ),
+            child: _buildProgressBar(),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: controller.fullscreenBottomUIItemList.where((item) => item.visible.value).map((e) => e.child).toList(),
+          )
+        ],
+      ))
+          : _buildVerticalScreenBottomUI();
+    });
+    /*return LayoutBuilder(builder: (context, constraints) {
+      final availableWidth = constraints.maxWidth - WidgetStyleCommons.safeSpace * 2; // 减去左右边距
+      if (!controller.playerState.isFullscreen.value) {
+        return _buildVerticalScreenBottomUI();
+      }
+
+      *//*final sortControls = controller.playerBottomUIItemList.toList()..sort((a, b) => a.priority.compareTo(b.priority));
+      double currentWidth = 0.0;
+      for (final control in sortControls) {
+        final needWidth = currentWidth + control.fixedWidth + 16;
+        if (needWidth <= availableWidth) {
+          control.visible = true;
+          currentWidth = needWidth;
+        } else {
+          control.visible = false;
+          print("不显示的控件：${control.type.name}");
+        }
+      }*//*
+      return Column(
+        children: [
+          Padding(
+            padding: EdgeInsetsGeometry.symmetric(
+              horizontal: WidgetStyleCommons.safeSpace,
+            ),
+            child: _buildProgressBar(),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: controller.playerBottomUIItemList.where((item) => item.visible).map((e) => e.child).toList(),
+          )
+        ],
+      );
+    });*/
   }
 
   // 竖屏底部UI
@@ -42,17 +99,8 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
       children: [
         // 播放/暂停按钮
         _buildPlayPause(),
-
-        // 下一个视频按钮
-
-        // 播放时长
-        _buildPlayPositionDuration(),
         // 进度条
-        _buildProgressBar(),
-
-        // 总时长
-        _buildTotalDuration(),
-
+        Expanded(child: _buildProgressBar()),
         // 全屏下转为横屏/竖屏
         if (!controller.onlyFullscreen)
           // 全屏/退出全屏按钮
@@ -94,7 +142,9 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildPlayPause(),
+            SizedBox(
+                width: 40,
+                child: _buildPlayPause()),
             // 下一个视频
             // 下一个视频按钮
             /*Obx(() =>
@@ -128,7 +178,13 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
               onPressed: () => controller.showUIByKeyList([
                 PlayerUIKeyEnum.speedSettingUI.name,
               ]),
-              child: const Text("倍数", style: TextStyle(color: PlayerCommons.textColor),),
+              child: Text("${controller.playerState.playSpeed.value}x", style: TextStyle(color: PlayerCommons.textColor),),
+            ),
+
+            IconButton(
+              onPressed: () {
+              },
+              icon: PlayerCommons.exitFullscreenIcon,
             ),
 
             // 只有全屏时没有退出全屏按钮
@@ -154,6 +210,7 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
   // 播放、暂停按钮
   Widget _buildPlayPause() {
     return IconButton(
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       color: WidgetStyleCommons.iconColor,
       onPressed: () => controller.playOrPause(),
       icon: Obx(() {
