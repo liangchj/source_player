@@ -8,7 +8,7 @@ class PlayerState {
   final playerWidgetKey = GlobalKey();
 
   // 视频播放比例
-  var playerAspectRatio = (16 / 9.0).obs;
+  var aspectRatio = (16 / 9.0).obs;
 
   // 视频本身的比例
   var videoAspectRatio = 1.0.obs;
@@ -73,6 +73,15 @@ class PlayerState {
 
 
 
+  Map<String, double?> aspectRatioMap = {
+    "适应": null,
+    "拉伸": 1.0,
+    "填充": 1.0,
+    "16:9": 16/9.0,
+    "4:3": 4/3.0,
+  };
+
+  var openDanmaku = false.obs;
 
   String playUrl = "asset://assets/video/test.mp4";
 

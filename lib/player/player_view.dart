@@ -86,7 +86,7 @@ class FullscreenPlayerPage extends StatelessWidget {
             final sortControls = controller.fullscreenBottomUIItemList.toList()..sort((a, b) => a.priority.compareTo(b.priority));
             double currentWidth = 0.0;
             for (final control in sortControls) {
-              final needWidth = currentWidth + control.fixedWidth + 16;
+              final needWidth = currentWidth + control.fixedWidth;
               if (needWidth <= availableWidth) {
                 control.visible(true);
                 currentWidth = needWidth;

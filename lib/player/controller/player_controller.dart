@@ -86,13 +86,14 @@ class PlayerController extends GetxController {
         priority: 2,
         child: IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 0),
+          color: WidgetStyleCommons.iconColor,
           onPressed: () => {},
           icon: IconCommons.nextPlayIcon,
         ),
       ),
       PlayerBottomUIItemModel(
         type: ControlType.sendDanmaku,
-        fixedWidth: PlayerCommons.bottomBtnSize,
+        fixedWidth: 76,
         priority: 5,
         child: TextButton(onPressed: () {}, child: Text("发送弹幕")),
       ),
@@ -100,21 +101,14 @@ class PlayerController extends GetxController {
         type: ControlType.danmaku,
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 6,
-        child: IconButton(
+        child: Obx(() => IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 0),
-          onPressed: () => {},
-          icon: IconCommons.danmakuBottomOpen,
-        ),
-      ),
-      PlayerBottomUIItemModel(
-        type: ControlType.danmakuSetting,
-        fixedWidth: PlayerCommons.bottomBtnSize,
-        priority: 7,
-        child: IconButton(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          onPressed: () => {},
-          icon: IconCommons.danmakuSetting,
-        ),
+          color: playerState.openDanmaku.value ? WidgetStyleCommons.mainColor : WidgetStyleCommons.iconColor,
+          onPressed: () => {
+            playerState.openDanmaku(!playerState.openDanmaku.value)
+          },
+          icon: playerState.openDanmaku.value ? IconCommons.danmakuOpen : IconCommons.danmakuClose,
+        )),
       ),
       PlayerBottomUIItemModel(
         type: ControlType.chapter,
@@ -122,6 +116,7 @@ class PlayerController extends GetxController {
         priority: 4,
         child: IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 0),
+          color: WidgetStyleCommons.iconColor,
           onPressed: () => {},
           icon: Icon(Icons.list),
         ),
@@ -133,10 +128,10 @@ class PlayerController extends GetxController {
         child: TextButton(
           onPressed: () =>
               showUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]),
-          child: Text(
+          child: Obx(() => Text(
             "${playerState.playSpeed.value}x",
             style: TextStyle(color: PlayerCommons.textColor),
-          ),
+          )),
         ),
       ),
       PlayerBottomUIItemModel(
@@ -146,6 +141,8 @@ class PlayerController extends GetxController {
         child: Obx(
           () => playerState.isFullscreen.value
               ? IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  color: WidgetStyleCommons.iconColor,
                   onPressed: () {
                     fullscreenUtils.toggleFullscreen();
                   },

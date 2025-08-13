@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/commons/icon_commons.dart';
 import 'package:source_player/player/ui/player_setting_ui.dart';
-import 'package:source_player/player/ui/player_speed_ui.dart';
 
 import '../../commons/widget_style_commons.dart';
 import '../commons/player_commons.dart';
 import '../controller/player_controller.dart';
 import '../enums/player_ui_key_enum.dart';
+import '../utils/bottom_sheet_utils.dart';
 
 // 顶部UI
 class PlayerTopUI extends GetView<PlayerController> {
@@ -61,7 +61,19 @@ class PlayerTopUI extends GetView<PlayerController> {
       controller.showUIByKeyList([PlayerUIKeyEnum.settingUI.name]);
       return;
     }
-    openBottomSheet(
+
+    BottomSheetUtils.openBottomSheet(DefaultTextStyle(
+      style: TextStyle(color: controller.playerState.isFullscreen.value ? Colors.white : Colors.black),
+      child: Padding(
+        padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
+        child: PlayerSettingUI(bottomSheet: true,),
+      ),
+    ),
+    closeBtnShow: !controller.playerState.isFullscreen.value,
+      backgroundColor: controller.playerState.isFullscreen.value ? PlayerCommons.playerUIBackgroundColor : Colors.white
+    );
+
+    /*openBottomSheet(
         DefaultTextStyle(
           style: TextStyle(color: controller.playerState.isFullscreen.value ? Colors.white : Colors.black),
           child: Padding(
@@ -69,7 +81,7 @@ class PlayerTopUI extends GetView<PlayerController> {
             child: PlayerSettingUI(bottomSheet: true,),
           ),
         )
-    );
+    );*/
   }
 
   /// 打开底部窗口

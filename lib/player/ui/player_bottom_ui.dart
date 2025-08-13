@@ -56,39 +56,6 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
       ))
           : _buildVerticalScreenBottomUI();
     });
-    /*return LayoutBuilder(builder: (context, constraints) {
-      final availableWidth = constraints.maxWidth - WidgetStyleCommons.safeSpace * 2; // 减去左右边距
-      if (!controller.playerState.isFullscreen.value) {
-        return _buildVerticalScreenBottomUI();
-      }
-
-      *//*final sortControls = controller.playerBottomUIItemList.toList()..sort((a, b) => a.priority.compareTo(b.priority));
-      double currentWidth = 0.0;
-      for (final control in sortControls) {
-        final needWidth = currentWidth + control.fixedWidth + 16;
-        if (needWidth <= availableWidth) {
-          control.visible = true;
-          currentWidth = needWidth;
-        } else {
-          control.visible = false;
-          print("不显示的控件：${control.type.name}");
-        }
-      }*//*
-      return Column(
-        children: [
-          Padding(
-            padding: EdgeInsetsGeometry.symmetric(
-              horizontal: WidgetStyleCommons.safeSpace,
-            ),
-            child: _buildProgressBar(),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: controller.playerBottomUIItemList.where((item) => item.visible).map((e) => e.child).toList(),
-          )
-        ],
-      );
-    });*/
   }
 
   // 竖屏底部UI

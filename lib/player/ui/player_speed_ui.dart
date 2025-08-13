@@ -7,7 +7,8 @@ import 'package:source_player/player/controller/player_controller.dart';
 import '../commons/player_commons.dart';
 // 播放倍数ui
 class PlayerSpeedUI extends StatefulWidget {
-  const PlayerSpeedUI({super.key});
+  const PlayerSpeedUI({super.key, this.bottomSheet = false});
+  final bool bottomSheet;
 
   @override
   State<PlayerSpeedUI> createState() => _PlayerSpeedUIState();
@@ -48,7 +49,7 @@ class _PlayerSpeedUIState extends State<PlayerSpeedUI> {
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.playerState.isFullscreen.value) {
+    if (!controller.playerState.isFullscreen.value || widget.bottomSheet) {
       return ListViewObserver(
         controller: _listObserverController,
         child: ListView.builder(
