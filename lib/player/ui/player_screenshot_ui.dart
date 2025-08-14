@@ -16,7 +16,7 @@ class PlayerScreenshotUI extends GetView<PlayerController> {
         onPressed: () {},
         style: ButtonStyle(
             backgroundColor:
-            WidgetStateProperty.all(Colors.black.withOpacity(0.1))),
+            WidgetStateProperty.all(Colors.black.withValues(alpha: 0.1))),
         icon: Icon(Icons.photo_camera_outlined));
   }
 }

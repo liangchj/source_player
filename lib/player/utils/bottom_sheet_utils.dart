@@ -16,7 +16,7 @@ class BottomSheetUtils {
             color: backgroundColor,
             child: Column(
               children: [
-                Container(height: 6, color: Colors.grey.withOpacity(0.1)),
+                Container(height: 6, color: Colors.grey.withValues(alpha: 0.1)),
                 TextButton(
                   onPressed: () {
                     //关闭对话框

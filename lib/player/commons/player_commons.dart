@@ -45,7 +45,7 @@ class PlayerCommons {
       colors: gradientBackground);
 
   // ui背景色
-  static Color backgroundColor = Colors.black.withOpacity(0.8);
+  static Color backgroundColor = Colors.black.withValues(alpha: 0.8);
 
 
   // 进入全屏图标
@@ -65,7 +65,7 @@ class PlayerCommons {
 
   // 播放器信息
   // ui背景色
-  static Color playerUIBackgroundColor = Colors.black.withOpacity(0.8);
+  static Color playerUIBackgroundColor = Colors.black.withValues(alpha: 0.8);
 
   // ui动画时长
   static Duration  playerUIAnimationDuration = const Duration(milliseconds: 300);
@@ -86,9 +86,9 @@ class PlayerCommons {
   static const double progressBarThumbInnerRadius = 3.0;
   // 滑块外部颜色
   static Color progressBarThumbOverlayColor =
-  Colors.redAccent.withOpacity(0.24);
+  Colors.redAccent.withValues(alpha: 0.24);
   static Color progressBarThumbOverlayShapeColor =
-  Colors.redAccent.withOpacity(0.5);
+  Colors.redAccent.withValues(alpha: 0.5);
   // 滑块滑动或选中时显示外围的圆角
   static const double progressBarThumbOverlayColorShapeRadius = 16.0;
 
@@ -117,4 +117,6 @@ class PlayerCommons {
   // 音量和亮度UI大小
   static const Size volumeOrBrightnessUISize = Size(80, 70);
   static const Size playProgressUISize = Size(100, 70);
+
+  static Duration uiShowDuration = const Duration(seconds: 5);
 }

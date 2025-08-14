@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:source_player/player/enums/player_fit_enum.dart';
 import 'package:source_player/player/ui/player_speed_ui.dart';
 
 import '../../commons/widget_style_commons.dart';
@@ -21,10 +22,6 @@ class PlayerSettingUI extends StatefulWidget {
 
 class _PlayerSettingUIState extends State<PlayerSettingUI> {
   late PlayerController controller;
-
-
-  List<Widget> aspectRatioList = [
-  ];
 
   List<Widget> chapterList = [
     InkWell(
@@ -81,19 +78,6 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
   @override
   void initState() {
     controller = Get.find<PlayerController>();
-    controller.playerState.aspectRatioMap.forEach((key, value) {
-      aspectRatioList.add(
-        Obx(() => InkWell(
-          onTap: () {
-            controller.playerState.aspectRatio(value);
-          },
-          child: Text(key, style: TextStyle(color: value == controller.playerState.aspectRatio.value ? WidgetStyleCommons.mainColor : (
-              controller.playerState.isFullscreen.value ?
-              PlayerCommons.textColor : Colors.black))),
-        )),
-      );
-    });
-
     speedList.add(
       InkWell(
         onTap: () {
@@ -101,11 +85,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
           if (controller.playerState.isFullscreen.value) {
             controller.showUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]);
           } else {
-            BottomSheetUtils.openBottomSheet(
-              PlayerSpeedUI(
-                bottomSheet: true,
-              ),
-            );
+            BottomSheetUtils.openBottomSheet(PlayerSpeedUI(bottomSheet: true));
           }
         },
         child: Text("播放倍数"),
@@ -116,6 +96,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSize = Theme.of(context).textTheme.bodyMedium?.fontSize;
     double screenWidth = MediaQuery.of(context).size.width;
     return controller.playerState.isFullscreen.value && !widget.bottomSheet
         ? Container(
@@ -128,23 +109,100 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
             padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
             child: ListView(
               children: [
-                _settingItem("画面尺寸", aspectRatioList),
+                _createAspectRatio(),
                 _createChapter(),
                 _settingItem("字幕", subtitleList),
                 _createDanmaku(),
-                _settingItem("倍数", speedList),
+                // _settingItem("倍数", speedList),
+                _settingPlayerSpeed(PlayerCommons.settingUIDefaultWidth.clamp(
+                  screenWidth * 0.3,
+                  screenWidth * 0.8,
+                ), fontSize: fontSize),
               ],
             ),
           )
         : ListView(
             children: [
-              _settingItem("画面尺寸", aspectRatioList),
+              _createAspectRatio(),
               _createChapter(),
               _settingItem("字幕", subtitleList),
               _createDanmaku(),
-              _settingItem("倍数", speedList),
+              // _settingItem("倍数", speedList),
+              _settingPlayerSpeed(screenWidth, fontSize: fontSize),
             ],
           );
+  }
+
+  Widget _createAspectRatio() {
+    return Obx(() {
+      late Object? activated;
+      if (controller.playerState.aspectRatio.value == null) {
+        activated = controller.playerState.fit.value?.name;
+      } else {
+        activated = controller.playerState.aspectRatio.value;
+      }
+      activated ??= "contain";
+      return _createSettingItem(
+        "画面尺寸",
+        Row(
+          spacing: WidgetStyleCommons.safeSpace,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: controller.playerState.playerAspectRatioList.map((item) {
+            return InkWell(
+              onTap: () {
+                bool isNumber = item.value is double;
+                if (isNumber) {
+                  controller.playerState.fit.value = null;
+                  controller.playerState.aspectRatio(item.value);
+                } else {
+                  controller.playerState.aspectRatio.value = null;
+                  controller.playerState.fit(
+                    PlayerFitEnum.values.firstWhereOrNull(
+                          (e) => e.name == item.value,
+                        ) ??
+                        PlayerFitEnum.contain,
+                  );
+                }
+              },
+              child: Text(
+                item.name,
+                style: TextStyle(
+                  color: item.value == activated
+                      ? WidgetStyleCommons.primaryColor
+                      : (controller.playerState.isFullscreen.value
+                            ? PlayerCommons.textColor
+                            : Colors.black),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    });
+  }
+
+  Widget _settingPlayerSpeed(double width, {double? fontSize}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: WidgetStyleCommons.safeSpace),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(bottom: WidgetStyleCommons.safeSpace / 2),
+            child: _createTitle("倍数"),
+          ),
+          ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
+            ),
+            child: SizedBox(
+                width: width,
+                height: (fontSize ?? 14) + WidgetStyleCommons.safeSpace,
+                child: PlayerSpeedUI(bottomSheet:  true, singleHorizontalScroll:  true, )),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _createChapter() {
@@ -183,13 +241,24 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
   }
 
   Widget _settingItem(String text, List<Widget> childrenList) {
+    return _createSettingItem(
+      text,
+      Row(
+        spacing: WidgetStyleCommons.safeSpace,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: childrenList,
+      ),
+    );
+  }
+
+  Widget _createSettingItem(String text, Widget child) {
     return Padding(
       padding: EdgeInsets.only(bottom: WidgetStyleCommons.safeSpace),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(bottom: WidgetStyleCommons.safeSpace / 2),
+            padding: EdgeInsets.only(bottom: WidgetStyleCommons.safeSpace),
             child: _createTitle(text),
           ),
           ScrollConfiguration(
@@ -198,11 +267,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
             ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                spacing: WidgetStyleCommons.safeSpace,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: childrenList,
-              ),
+              child: child,
             ),
           ),
         ],
@@ -217,7 +282,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
         text: text,
         style: TextStyle(
           color: controller.playerState.isFullscreen.value
-              ? PlayerCommons.textColor
+              ? PlayerCommons.textColor.withValues(alpha: 0.8)
               : Colors.black,
           fontSize: PlayerCommons.titleTextSize,
         ),

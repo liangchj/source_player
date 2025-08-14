@@ -4,11 +4,18 @@ import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
 import 'package:source_player/player/controller/player_controller.dart';
 
+import '../../widgets/clickable_button_widget.dart';
 import '../commons/player_commons.dart';
+
 // 播放倍数ui
 class PlayerSpeedUI extends StatefulWidget {
-  const PlayerSpeedUI({super.key, this.bottomSheet = false});
+  const PlayerSpeedUI({
+    super.key,
+    this.bottomSheet = false,
+    this.singleHorizontalScroll = false,
+  });
   final bool bottomSheet;
+  final bool singleHorizontalScroll;
 
   @override
   State<PlayerSpeedUI> createState() => _PlayerSpeedUIState();
@@ -23,7 +30,9 @@ class _PlayerSpeedUIState extends State<PlayerSpeedUI> {
   void initState() {
     controller = Get.find<PlayerController>();
 
-    int playSpeedIndex = PlayerCommons.playSpeedList.indexOf(controller.playerState.playSpeed.value);
+    int playSpeedIndex = PlayerCommons.playSpeedList.indexOf(
+      controller.playerState.playSpeed.value,
+    );
     if (playSpeedIndex == -1) {
       playSpeedIndex = PlayerCommons.playSpeedList.indexOf(1.0);
       if (playSpeedIndex == -1) {
@@ -50,16 +59,7 @@ class _PlayerSpeedUIState extends State<PlayerSpeedUI> {
   @override
   Widget build(BuildContext context) {
     if (!controller.playerState.isFullscreen.value || widget.bottomSheet) {
-      return ListViewObserver(
-        controller: _listObserverController,
-        child: ListView.builder(
-            controller: _scrollController,
-            shrinkWrap: true,
-            itemCount: PlayerCommons.playSpeedList.length,
-            itemBuilder: (ctx, index) {
-              return Obx(() => _buildDialogSpeedButton(PlayerCommons.playSpeedList[index]));
-            }),
-      );
+      return _createList();
     }
     double screenWidth = MediaQuery.of(context).size.width;
     return Container(
@@ -70,52 +70,64 @@ class _PlayerSpeedUIState extends State<PlayerSpeedUI> {
       height: double.infinity,
       color: PlayerCommons.playerUIBackgroundColor,
       padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
-      child: Center(
-        child: ListViewObserver(
-          controller: _listObserverController,
-          child: ListView.builder(
-              controller: _scrollController,
-              shrinkWrap: true,
-              itemCount: PlayerCommons.playSpeedList.length,
-              itemBuilder: (ctx, index) {
-                return Obx(() => _buildFullscreenSpeedButton(PlayerCommons.playSpeedList[index]));
-              }),
-        ),
-
-      ),
+      child: Center(child: _createList()),
     );
   }
 
-  // 一般是竖屏弹出的选择倍速
-  Widget _buildDialogSpeedButton(double e) {
-    Color fontColor = e == controller.playerState.playSpeed.value
-        ? Colors.redAccent
-        : Colors.black;
-    return ListTile(
-      onTap: () {
-        controller.playerState.playSpeed(e);
-      },
-      textColor: fontColor,
-      title: Text("${e.toString()}x"),
-      trailing: const Icon(Icons.add),
-    );
-  }
-
-  Widget _buildFullscreenSpeedButton(double e) {
-    Color fontColor = e == controller.playerState.playSpeed.value
-        ? WidgetStyleCommons.activatedTextColor
-        : PlayerCommons.playSpeedTextColor;
-    return SizedBox(
-      width: double.infinity,
-      child: TextButton(
-        onPressed: () {
-          controller.playerState.playSpeed(e);
+  Widget _createList() {
+    return ListViewObserver(
+      controller: _listObserverController,
+      child: ListView.builder(
+        scrollDirection: widget.singleHorizontalScroll ? Axis.horizontal : Axis.vertical,
+        controller: _scrollController,
+        shrinkWrap: true,
+        itemCount: PlayerCommons.playSpeedList.length,
+        itemBuilder: (ctx, index) {
+          var value = PlayerCommons.playSpeedList[index];
+          return Obx(
+            () => widget.singleHorizontalScroll ?
+            Container(
+              decoration: BoxDecoration(
+                color: value == controller.playerState.playSpeed.value ? WidgetStyleCommons.primaryColor.withValues(alpha: 0.2) : null,
+                //设置四周圆角 角度
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(WidgetStyleCommons.borderRadius),
+                ),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  controller.playerState.playSpeed(value);
+                },
+                child: Text(
+                  "${value.toString()}x",
+                  style: TextStyle(color: value == controller.playerState.playSpeed.value ? WidgetStyleCommons.primaryColor : controller.playerState.isFullscreen.value
+                      ? Colors.white
+                      : Colors.black),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ) : Padding(
+              padding: EdgeInsets.symmetric(vertical: WidgetStyleCommons.safeSpace / 6),
+              child: ClickableButtonWidget(
+                text: "${value.toString()}x",
+                textAlign: TextAlign.center,
+                activated: value == controller.playerState.playSpeed.value,
+                isCard: true,
+                showBorder: false,
+                unActivatedTextColor: controller.playerState.isFullscreen.value
+                    ? Colors.white
+                    : Colors.black,
+                padding: EdgeInsets.symmetric(
+                  vertical: WidgetStyleCommons.safeSpace / 2,
+                  horizontal: 0,
+                ),
+                onClick: () {
+                  controller.playerState.playSpeed(value);
+                },
+              ),
+            ),
+          );
         },
-        child: Text(
-          "${e.toString()}x",
-          style: TextStyle(color: fontColor),
-          textAlign: TextAlign.center,
-        ),
       ),
     );
   }

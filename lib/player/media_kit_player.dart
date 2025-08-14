@@ -27,18 +27,29 @@ class MediaKitPlayer extends IPlayer {
         play: _playerController.playerState.autoPlay,
       );
       _playerController.playerState.playerView(
-          Video(
+        Obx(
+          () => Video(
             controller: _videoController,
+            fit: _playerController.playerState.fit.value == null
+                ? BoxFit.contain
+                : BoxFit.values.firstWhereOrNull(
+                        (e) =>
+                            e.name ==
+                            _playerController.playerState.fit.value?.name,
+                      ) ??
+                      BoxFit.contain,
+            aspectRatio: _playerController.playerState.aspectRatio.value ?? _playerController.playerState.videoAspectRatio,
             controls: (state) {
               return Scaffold(
                 backgroundColor: Colors.transparent,
                 body: PlayerUI(),
               );
             },
-          )
+          ),
+        ),
       );
       updateState();
-    } catch(e) {
+    } catch (e) {
       print(e);
       _playerController.playerState.playerView(Container());
     }
@@ -87,6 +98,11 @@ class MediaKitPlayer extends IPlayer {
     // 监听错误信息
     PlayerStream stream = _videoController.player.stream;
 
+    stream.videoParams.listen((value) {
+      if (value.aspect != null) {
+        _playerController.playerState.videoAspectRatio = value.aspect!;
+      }
+    });
     stream.error.listen((String? error) {
       // 视频是否加载错误
       _playerController.playerState.errorMsg(error ?? "");
@@ -114,8 +130,9 @@ class MediaKitPlayer extends IPlayer {
       _playerController.playerState.isFinished(value);
     });
 
-    stream.rate
-        .listen((value) => _playerController.playerState.playSpeed(value));
+    stream.rate.listen(
+      (value) => _playerController.playerState.playSpeed(value),
+    );
 
     // 监听进度
     stream.position.listen((Duration? position) {
@@ -128,8 +145,9 @@ class MediaKitPlayer extends IPlayer {
         if (isFinished) {
           _playerController.playerState.positionDuration(position);
         } else {
-          _playerController.playerState
-              .positionDuration(Duration(seconds: position.inSeconds));
+          _playerController.playerState.positionDuration(
+            Duration(seconds: position.inSeconds),
+          );
         }
       }
     });

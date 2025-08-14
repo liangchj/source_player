@@ -15,6 +15,8 @@ class ClickableButtonWidget extends StatelessWidget {
     this.overflow,
     this.textAlign,
     this.padding,
+    this.showBorder = true,
+    this.unActivatedTextColor,
   });
   final String text;
   final bool activated;
@@ -26,37 +28,45 @@ class ClickableButtonWidget extends StatelessWidget {
   final TextOverflow? overflow;
   final TextAlign? textAlign;
   final EdgeInsetsGeometry? padding;
+  final bool showBorder;
+  final Color? unActivatedTextColor;
 
   @override
   Widget build(BuildContext context) {
-    late ShapeBorder shape;
+    ShapeBorder? shape;
     late Color textFontColor;
     if (activated) {
+      if (showBorder) {
       shape = RoundedRectangleBorder(
         //边框颜色
           side: BorderSide(
-            color: WidgetStyleCommons.mainColor,
+            color: WidgetStyleCommons.primaryColor,
             width: WidgetStyleCommons.chapterBorderWidth,
           ),
           //边框圆角
           borderRadius: BorderRadius.all(
             Radius.circular(WidgetStyleCommons.chapterBorderRadius),
           ));
-      textFontColor = WidgetStyleCommons.chapterTextActivatedColor;
+      }
+
+      textFontColor = WidgetStyleCommons.primaryColor;
     } else {
-      shape = RoundedRectangleBorder(
-        //边框颜色
-          side: BorderSide(
-            color: WidgetStyleCommons.chapterBackgroundColor,
-            width: WidgetStyleCommons.chapterBorderWidth,
-          ),
-          //边框圆角
-          borderRadius: BorderRadius.all(
-            Radius.circular(WidgetStyleCommons.chapterBorderRadius),
-          ));
-      textFontColor = WidgetStyleCommons.chapterTextColor;
+      if (showBorder) {
+        shape = RoundedRectangleBorder(
+          //边框颜色
+            side: BorderSide(
+              color: WidgetStyleCommons.chapterBackgroundColor,
+              width: WidgetStyleCommons.chapterBorderWidth,
+            ),
+            //边框圆角
+            borderRadius: BorderRadius.all(
+              Radius.circular(WidgetStyleCommons.chapterBorderRadius),
+            ));
+      }
+      textFontColor = unActivatedTextColor ?? WidgetStyleCommons.chapterTextColor;
     }
     return MaterialButton(
+      color: activated ? textFontColor.withValues(alpha: 0.2) : null,
       //边框样式
       shape: shape,
       onPressed: () => onClick?.call(),

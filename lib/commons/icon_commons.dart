@@ -67,15 +67,25 @@ class IconCommons {
   );
 
 
-
-
+  /*static final Widget danmakuOpen = Image.asset(
+    "assets/icons/danmaku_open.png",
+    width: 24,
+    height: 24,
+  );
+  static final Widget danmakuClose = Image.asset(
+    "assets/icons/danmaku_close.png",
+    width: 24,
+    height: 24,
+  );*/
   // 弹幕开
-  static const ImageIcon danmakuOpen = ImageIcon(
-    AssetImage("assets/icons/danmaku_open.png", ),
+  static final String danmakuOpenImgPath = "assets/icons/danmaku_open.png";
+  static final ImageIcon danmakuOpen = ImageIcon(
+    AssetImage(danmakuOpenImgPath, ),
   );
   // 弹幕关
-  static const ImageIcon danmakuClose = ImageIcon(
-    AssetImage("assets/icons/danmaku_close.png", ),
+  static final String danmakuCloseImgPath = "assets/icons/danmaku_close.png";
+  static final ImageIcon danmakuClose = ImageIcon(
+    AssetImage(danmakuCloseImgPath, ),
   );
   // 弹幕设置
   static const ImageIcon danmakuSetting = ImageIcon(

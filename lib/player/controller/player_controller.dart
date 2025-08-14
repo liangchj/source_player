@@ -46,6 +46,8 @@ class PlayerController extends GetxController {
 
   List<PlayerBottomUIItemModel> fullscreenBottomUIItemList = [];
 
+  Timer? hideTimer;
+
   @override
   void onInit() {
     resourceState = ResourceState();
@@ -102,12 +104,14 @@ class PlayerController extends GetxController {
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 6,
         child: Obx(() => IconButton(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          color: playerState.openDanmaku.value ? WidgetStyleCommons.mainColor : WidgetStyleCommons.iconColor,
           onPressed: () => {
             playerState.openDanmaku(!playerState.openDanmaku.value)
           },
-          icon: playerState.openDanmaku.value ? IconCommons.danmakuOpen : IconCommons.danmakuClose,
+          icon: Image.asset(
+              playerState.openDanmaku.value ? IconCommons.danmakuOpenImgPath : IconCommons.danmakuCloseImgPath,
+              width: IconTheme.of(Get.context!).size ?? 24,
+              height: IconTheme.of(Get.context!).size ?? 24,
+          ),
         )),
       ),
       PlayerBottomUIItemModel(
@@ -163,12 +167,19 @@ class PlayerController extends GetxController {
 
   @override
   void onClose() {
+    hideTimer?.cancel();
+    _progressTimer?.cancel();
+    _volumeTimer?.cancel();
+    _brightnessTimer?.cancel();
     player.value?.onDisposePlayer();
     super.onClose();
   }
 
   // 视频播放
   Future<void> play() {
+    hideTimer = Timer(PlayerCommons.uiShowDuration, () {
+      hideUIByKeyList(uiState.touchBackgroundShowUIKeyList);
+    });
     return player.value!.play();
   }
 
@@ -216,6 +227,7 @@ class PlayerController extends GetxController {
   void toggleBackground() {
     LoggerUtils.logger.d("点击背景");
     if (haveUIShow()) {
+      hideTimer?.cancel();
       LoggerUtils.logger.d("有显示");
       hideUIByKeyList(
         uiState.overlayUIMap.keys
@@ -223,6 +235,9 @@ class PlayerController extends GetxController {
             .toList(),
       );
     } else {
+      hideTimer = Timer(PlayerCommons.uiShowDuration, () {
+        hideUIByKeyList(uiState.touchBackgroundShowUIKeyList);
+      });
       showUIByKeyList(
         uiState.uiLocked.value
             ? [PlayerUIKeyEnum.lockCtrUI.name]

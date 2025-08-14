@@ -22,7 +22,7 @@ class PlayerLockUI extends GetView<PlayerController> {
         },
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(
-            Colors.black.withOpacity(0.1),
+            Colors.black.withValues(alpha: 0.1),
           ),
         ),
         icon: Icon(

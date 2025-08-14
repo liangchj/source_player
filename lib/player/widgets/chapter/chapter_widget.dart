@@ -22,7 +22,7 @@ class ChapterWidget extends StatelessWidget {
       shape = RoundedRectangleBorder(
         //边框颜色
           side: BorderSide(
-            color: WidgetStyleCommons.mainColor,
+            color: WidgetStyleCommons.primaryColor,
             width: WidgetStyleCommons.chapterBorderWidth,
           ),
           //边框圆角
