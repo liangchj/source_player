@@ -168,13 +168,20 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         ];
       },
       pinnedHeaderSliverHeightBuilder: () {
+        final double statusBarHeight = MediaQuery.of(context).padding.top;
+        final double pinnedHeaderHeight =
+            //statusBar height
+            statusBarHeight +
+                //pinned SliverAppBar height in header
+                kToolbarHeight;
         // print("pinnedHeaderHeight:$pinnedHeaderHeight");
         if (controller.bottomSheetController != null) {
           print(
             "进入：${MediaQuery.of(context).size.width * _playerAspectRatio - controller.nestedScrollController!.offset}",
           );
           return MediaQuery.of(context).size.width * _playerAspectRatio -
-              controller.nestedScrollController!.offset;
+              controller.nestedScrollController!.offset +
+              statusBarHeight;
         }
         return pinnedHeaderHeight;
       },
