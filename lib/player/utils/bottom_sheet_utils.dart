@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 class BottomSheetUtils {
   static void openBottomSheet(Widget widget, {bool closeBtnShow = true, Color backgroundColor = Colors.white}) {
+    Get.closeAllBottomSheets();
     Widget bottomsheet = closeBtnShow ? widget
         : Stack(
       children: [

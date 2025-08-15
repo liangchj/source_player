@@ -10,9 +10,11 @@ import 'package:source_player/commons/widget_style_commons.dart';
 import 'package:source_player/player/iplayer.dart';
 import 'package:source_player/player/state/player_ui_state.dart';
 import 'package:source_player/utils/logger_utils.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
+import '../../models/video_model.dart';
 import '../commons/player_commons.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../media_kit_player.dart';
@@ -48,6 +50,8 @@ class PlayerController extends GetxController {
 
   Timer? hideTimer;
 
+  bool _initialized = false;
+
   @override
   void onInit() {
     resourceState = ResourceState();
@@ -58,7 +62,10 @@ class PlayerController extends GetxController {
     _initEver();
 
     _initBottomControlItemList();
+
+    // changeVideoUrl(autoPlay: playerState.autoPlay);
     super.onInit();
+    _initialized = true;
   }
 
   void _initBottomControlItemList() {
@@ -86,11 +93,13 @@ class PlayerController extends GetxController {
         type: ControlType.next,
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 2,
-        child: IconButton(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          color: WidgetStyleCommons.iconColor,
-          onPressed: () => {},
-          icon: IconCommons.nextPlayIcon,
+        child: Obx(
+          () => resourceState.haveNext ? IconButton(
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+            color: WidgetStyleCommons.iconColor,
+            onPressed: () => nextPlay(),
+            icon: IconCommons.nextPlayIcon,
+          ) : Container(),
         ),
       ),
       PlayerBottomUIItemModel(
@@ -103,27 +112,40 @@ class PlayerController extends GetxController {
         type: ControlType.danmaku,
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 6,
-        child: Obx(() => IconButton(
-          onPressed: () => {
-            playerState.openDanmaku(!playerState.openDanmaku.value)
-          },
-          icon: Image.asset(
-              playerState.openDanmaku.value ? IconCommons.danmakuOpenImgPath : IconCommons.danmakuCloseImgPath,
+        child: Obx(
+          () => IconButton(
+            onPressed: () => {
+              playerState.openDanmaku(!playerState.openDanmaku.value),
+            },
+            icon: Image.asset(
+              playerState.openDanmaku.value
+                  ? IconCommons.danmakuOpenImgPath
+                  : IconCommons.danmakuCloseImgPath,
               width: IconTheme.of(Get.context!).size ?? 24,
               height: IconTheme.of(Get.context!).size ?? 24,
+            ),
           ),
-        )),
+        ),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.none,
+        fixedWidth: 0,
+        priority: 4,
+        visible: true,
+        child: Expanded(child: Container()),
       ),
       PlayerBottomUIItemModel(
         type: ControlType.chapter,
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 4,
-        child: IconButton(
+        child: Obx(() => resourceState.activatedChapterList.length > 0 ? IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 0),
           color: WidgetStyleCommons.iconColor,
-          onPressed: () => {},
+          onPressed: () => {
+            showUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]),
+          },
           icon: Icon(Icons.list),
-        ),
+        ) : Container()),
       ),
       PlayerBottomUIItemModel(
         type: ControlType.speed,
@@ -132,10 +154,12 @@ class PlayerController extends GetxController {
         child: TextButton(
           onPressed: () =>
               showUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]),
-          child: Obx(() => Text(
-            "${playerState.playSpeed.value}x",
-            style: TextStyle(color: PlayerCommons.textColor),
-          )),
+          child: Obx(
+            () => Text(
+              "${playerState.playSpeed.value}x",
+              style: TextStyle(color: PlayerCommons.textColor),
+            ),
+          ),
         ),
       ),
       PlayerBottomUIItemModel(
@@ -163,6 +187,27 @@ class PlayerController extends GetxController {
       player?.onInitPlayer();
     });
     resourceState.initEver();
+
+    ever(playerState.isInitialized, (value) {
+      if (value && !uiState.uiLocked.value) {
+        cancelAndRestartTimer();
+        showUIByKeyList(uiState.touchBackgroundShowUIKeyList,);
+      }
+    });
+
+    ever(resourceState.state.chapterActivatedIndex, (val) {
+      changeVideoUrl(autoPlay: _initialized ? playerState.autoPlay : true);
+    });
+
+    ever(playerState.isPlaying, (value) {
+      if (value) {
+        // 播放时保持屏幕唤醒
+        WakelockPlus.enable();
+      } else {
+        // 暂停时关闭保持屏幕唤醒
+        WakelockPlus.disable();
+      }
+    });
   }
 
   @override
@@ -175,21 +220,77 @@ class PlayerController extends GetxController {
     super.onClose();
   }
 
-  // 视频播放
-  Future<void> play() {
+  // 清除定时器
+  void cancelHideTimer() {
+    hideTimer?.cancel();
+  }
+
+  // 开始计时UI显示时间
+  void startHideTimer() {
     hideTimer = Timer(PlayerCommons.uiShowDuration, () {
       hideUIByKeyList(uiState.touchBackgroundShowUIKeyList);
     });
-    return player.value!.play();
+  }
+
+  // 重新计算显示/隐藏UI计时器
+  void cancelAndRestartTimer() {
+    cancelHideTimer();
+    startHideTimer();
+  }
+
+  void resetPlayerState() {
+    playerState.aspectRatio(null);
+    playerState.videoAspectRatio = null;
+    playerState.errorMsg(null);
+    playerState.isInitialized(false);
+    playerState.isPlaying(false);
+    playerState.isBuffering(false);
+    playerState.isSeeking(false);
+    playerState.isFinished(false);
+
+    playerState.duration(Duration.zero);
+    playerState.positionDuration(Duration.zero);
+    playerState.bufferedDuration(Duration.zero);
+    playerState.beforeSeekToIsPlaying = false;
+    playerState.isDragging(false);
+    playerState.dragProgressPositionDuration = Duration.zero;
+    playerState.draggingSecond(0);
+    playerState.draggingSurplusSecond = 0.0;
+
+    playerState.verticalDragSurplus = 0.0;
+    playerState.isVolumeDragging(false);
+    playerState.isBrightnessDragging(false);
+  }
+
+  Future<void> changeVideoUrl({bool autoPlay = true}) async {
+    await stop();
+    resetPlayerState();
+    player.value?.changeVideoUrl(autoPlay: autoPlay);
+  }
+
+  // 视频播放
+  Future<void> play() async {
+    if (!uiState.uiLocked.value) {
+      cancelAndRestartTimer();
+      showUIByKeyList(uiState.touchBackgroundShowUIKeyList,);
+    }
+    return player.value?.play();
   }
 
   // 视频暂停
-  Future<void> pause() {
-    return player.value!.pause();
+  Future<void> pause() async {
+    return player.value?.pause();
+  }
+
+  Future<void> stop() async {
+    return player.value?.stop();
   }
 
   // 暂停或播放
   Future<void> playOrPause() async {
+    if (player.value == null) {
+      return;
+    }
     if (player.value!.finished) {
       // await seekTo(Duration.zero);
     }
@@ -203,13 +304,13 @@ class PlayerController extends GetxController {
   Future<void> seekTo(Duration position) async {
     playerState.positionDuration(position);
     playerState.isSeeking(true);
-    await player.value!.seekTo(position);
+    await player.value?.seekTo(position);
     playerState.beforeSeekToIsPlaying = false;
     playerState.isSeeking(false);
   }
 
   // 本地播放
-  void openLocalVideo({IPlayer? player}) {
+  void openLocalVideo(VideoModel videoModel, {IPlayer? player}) {
     onlyFullscreen = true;
     if (player == null) {
       MediaKit.ensureInitialized();
@@ -217,6 +318,7 @@ class PlayerController extends GetxController {
     playerState.autoPlay = false;
     // playerState.autoPlay = true;
     this.player(player ?? MediaKitPlayer());
+    resourceState.videoModel(videoModel);
     playerState.isFullscreen(true);
     fullscreenUtils.enterFullscreen(Get.context!);
   }
@@ -235,14 +337,13 @@ class PlayerController extends GetxController {
             .toList(),
       );
     } else {
-      hideTimer = Timer(PlayerCommons.uiShowDuration, () {
-        hideUIByKeyList(uiState.touchBackgroundShowUIKeyList);
-      });
+      cancelHideTimer();
       showUIByKeyList(
         uiState.uiLocked.value
             ? [PlayerUIKeyEnum.lockCtrUI.name]
             : uiState.touchBackgroundShowUIKeyList,
       );
+      startHideTimer();
     }
   }
 
@@ -281,6 +382,17 @@ class PlayerController extends GetxController {
       } else {
         element.ui(Container(key: UniqueKey()));
       }
+    }
+
+    bool haveToggleBackgroundUI = false;
+    for (String key in keyList) {
+      if (uiState.touchBackgroundShowUIKeyList.contains(key)) {
+        haveToggleBackgroundUI = true;
+        break;
+      }
+    }
+    if (haveToggleBackgroundUI) {
+      hideTimer?.cancel();
     }
   }
 
@@ -514,5 +626,9 @@ class PlayerController extends GetxController {
     playerState.verticalDragSurplus = 0.0;
     /*Future.delayed(PlayerCommons.volumeOrBrightnessUIShowDuration).then((value) {
     });*/
+  }
+
+  void nextPlay() {
+    resourceState.state.chapterActivatedIndex(resourceState.state.chapterActivatedIndex.value + 1);
   }
 }

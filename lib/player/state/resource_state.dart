@@ -158,6 +158,7 @@ class ResourceState {
       if (chapterGroupIndex != state.chapterGroupActivatedState.value?.activatedIndex) {
         state.chapterGroupActivatedState(chapterGroupActivatedStateModel);
       }
+
     });
   }
 
@@ -169,19 +170,21 @@ class ResourceState {
   // 获取当前播放的网站源
   PlaySourceModel? get activatedApiSource {
     List<PlaySourceModel>? playSourceList = videoModel.value?.playSourceList;
-    if (playSourceList == null || playSourceList.isEmpty) {
+    var index = state.apiActivatedState.value?.activatedIndex ?? 0;
+    if (index < 0 || playSourceList == null || playSourceList.isEmpty) {
       return null;
     }
-    return playSourceList[state.apiActivatedState.value?.activatedIndex ?? 0];
+    return playSourceList[index];
   }
 
   // 获取当前展示的网站源
   PlaySourceModel? get showApiSource {
     List<PlaySourceModel>? playSourceList = videoModel.value?.playSourceList;
-    if (playSourceList == null || playSourceList.isEmpty) {
+    var index = state.apiActivatedState.value?.index ?? 0;
+    if (index < 0 || playSourceList == null || playSourceList.isEmpty) {
       return null;
     }
-    return playSourceList[state.apiActivatedState.value?.index ?? 0];
+    return playSourceList[index];
   }
   // =============== 资源api END ===============
 
@@ -210,14 +213,14 @@ class ResourceState {
     var list = activatedSourceGroupList;
     int activatedIndex =
         state.sourceGroupActivatedState.value?.activatedIndex ?? 0;
-    return list.length > activatedIndex ? list[activatedIndex] : null;
+    return activatedIndex >= 0 && list.length > activatedIndex ? list[activatedIndex] : null;
   }
 
   // 获取当前展示的资源组
   PlaySourceGroupModel? get showSourceGroup {
     var list = showSourceGroupList;
     int index = state.sourceGroupActivatedState.value?.index ?? 0;
-    return list.length > index ? list[index] : null;
+    return index >= 0 && list.length > index ? list[index] : null;
   }
 
   void updateSourceGroupStateByIndex(int index) {
@@ -398,7 +401,13 @@ class ResourceState {
 
   String get chapterUrl {
     int index = state.chapterActivatedIndex.value;
-    return activatedChapterList[ index].playUrl ?? "";
+    return index >= 0 ? activatedChapterList[index].playUrl ?? "" : "";
+  }
+
+
+  bool get haveNext {
+    int index = state.chapterActivatedIndex.value;
+    return index < activatedChapterList.length - 1;
   }
 
   // =============== 资源api下的资源组下的章节组下的章节 END ===============

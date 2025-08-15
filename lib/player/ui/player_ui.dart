@@ -19,6 +19,15 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
   void initState() {
     controller = Get.find<PlayerController>();
     controller.updateAnimateController(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 在这里执行你的构建之后的操作
+      controller.cancelHideTimer();
+      if (!controller.uiState.uiLocked.value) {
+        controller.showUIByKeyList(controller.uiState.touchBackgroundShowUIKeyList,);
+        controller.cancelAndRestartTimer();
+      }
+    });
     super.initState();
   }
 
@@ -53,6 +62,14 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                           controller.uiState.bottomUI
                               .widgetCallback(controller.uiState.bottomUI)),
                     ),
+
+              Center(
+                child: Obx(
+                      () => controller.playerState.isInitialized.value ?  Container() : CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                ),
+              ),
 
               // 居中进度
               Center(
@@ -93,6 +110,17 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                 child: Obx(
                   () => controller.uiState.speedSettingUI.widgetCallback(
                     controller.uiState.speedSettingUI,
+                  ),
+                ),
+              ),
+              // 右边章节列表（全屏情况显示）
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: 0,
+                child: Obx(
+                  () => controller.uiState.chapterListUI.widgetCallback(
+                    controller.uiState.chapterListUI,
                   ),
                 ),
               ),

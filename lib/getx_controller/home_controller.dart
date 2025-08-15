@@ -21,6 +21,7 @@ class HomeController extends GetxController with GetSingleTickerProviderStateMix
   late List<Widget> tabPageList;
   // var currentTabIndex = 0.obs;
   late TabController tabController;
+  final currentIndex = 0.obs;
 
   @override
   void onInit() {

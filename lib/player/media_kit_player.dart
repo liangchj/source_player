@@ -21,11 +21,12 @@ class MediaKitPlayer extends IPlayer {
   @override
   Future<void> onInitPlayer() async {
     try {
-      _videoController.player.open(
+      /*_videoController.player.open(
         Media(_playerController.playerState.playUrl),
         // Media("https://user-images.githubusercontent.com/28951144/229373695-22f88f13-d18f-4288-9bf1-c3e078d83722.mp4"),
         play: _playerController.playerState.autoPlay,
-      );
+      );*/
+      _videoController.player.setPlaylistMode(PlaylistMode.none);
       _playerController.playerState.playerView(
         Obx(
           () => Video(
@@ -38,7 +39,9 @@ class MediaKitPlayer extends IPlayer {
                             _playerController.playerState.fit.value?.name,
                       ) ??
                       BoxFit.contain,
-            aspectRatio: _playerController.playerState.aspectRatio.value ?? _playerController.playerState.videoAspectRatio,
+            aspectRatio:
+                _playerController.playerState.aspectRatio.value ??
+                _playerController.playerState.videoAspectRatio,
             controls: (state) {
               return Scaffold(
                 backgroundColor: Colors.transparent,
@@ -50,7 +53,6 @@ class MediaKitPlayer extends IPlayer {
       );
       updateState();
     } catch (e) {
-      print(e);
       _playerController.playerState.playerView(Container());
     }
   }
@@ -69,6 +71,11 @@ class MediaKitPlayer extends IPlayer {
   @override
   Future<void> pause() async {
     return await _player.pause();
+  }
+
+  @override
+  Future<void> stop() async {
+    return await _player.stop();
   }
 
   @override
@@ -151,5 +158,24 @@ class MediaKitPlayer extends IPlayer {
         }
       }
     });
+  }
+
+  @override
+  Future<void> changeVideoUrl({bool autoPlay = true}) async {
+    await _videoController.player.stop();
+    if (_playerController.resourceState.chapterUrl.isNotEmpty) {
+    // if (_playerController.playerState.playUrl.isNotEmpty) {
+      try {
+        await _videoController.player.open(
+          Media(_playerController.resourceState.chapterUrl),
+          // Media(_playerController.playerState.playUrl),
+          play: autoPlay,
+        );
+      } catch (e) {
+        _playerController.playerState.errorMsg("播放链接异常：${e.toString()}");
+      }
+    } else {
+      _playerController.playerState.errorMsg("播放链接为空");
+    }
   }
 }

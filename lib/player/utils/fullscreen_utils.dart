@@ -15,12 +15,13 @@ class FullscreenUtils {
 
   OverlayEntry? fullscreenOverlay;
 
-  void toggleFullscreen({BuildContext? context}) {
+
+  void toggleFullscreen({BuildContext? context, bool exit = false}) {
     bool playing = controller.player.value?.playing ?? false;
     if (controller.player.value != null && playing) {
       controller.player.value!.pause();
     }
-    if (playerState.isFullscreen.value) {
+    if (playerState.isFullscreen.value || exit) {
       exitFullscreen();
     } else {
       enterFullscreen(context ?? Get.context!);
@@ -28,7 +29,11 @@ class FullscreenUtils {
         controller.player.value!.play();
       }
     }
-    playerState.isFullscreen.toggle();
+    if (exit) {
+      playerState.isFullscreen(false);
+    } else {
+      playerState.isFullscreen.toggle();
+    }
   }
 
   void enterFullscreen(BuildContext context) {

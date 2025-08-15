@@ -31,6 +31,7 @@ Future<void> main() async {
   );
   runApp(
     GetMaterialApp(
+      debugShowCheckedModeBanner: false, // 不显示debug标记
       // getPages: AppPages.pages,
       home: const SourceVideoPlayerApp(),
     ),
@@ -119,6 +120,7 @@ class SourceVideoPlayerApp extends StatelessWidget {
       /*theme: AppThemeModel.lightTheme(),
       darkTheme: AppThemeModel.darkTheme(),
       themeMode: ThemeMode.system,*/
+      debugShowCheckedModeBanner: false, // 不显示debug标记
       home: const AppHomePage(),
     );
   }

@@ -110,8 +110,6 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       }
       sourceChapterState.chapterGroup(group);
       sourceChapterState.chapterGroupIndex(0);
-      print("playerController 为空：${playerController == null}");
-      // playerController?.resourceState.videoModel(val);
     });
 
     ever(sourceChapterState.selectedSourceGroupIndex, (value) {

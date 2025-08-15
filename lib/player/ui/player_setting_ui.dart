@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/enums/player_fit_enum.dart';
+import 'package:source_player/player/ui/fullscreen_chapter_list_ui.dart';
 import 'package:source_player/player/ui/player_speed_ui.dart';
 
 import '../../commons/widget_style_commons.dart';
@@ -26,7 +27,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
   List<Widget> chapterList = [
     InkWell(
       onTap: () {
-        print("章节列表");
+        BottomSheetUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
       },
       child: Text("章节列表"),
     ),

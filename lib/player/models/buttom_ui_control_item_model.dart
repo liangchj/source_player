@@ -31,4 +31,5 @@ enum ControlType {
   chapter,    // 章节选择
   speed,      // 倍数播放
   exitOrEntryFullscreen,      // 全屏/退出全屏
+  none,      // 占位
 }

@@ -242,7 +242,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
-                text: item.name,
+                text: item.name ?? "未知分组",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 activated: index == activatedIndex,
@@ -280,7 +280,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
           itemBuilder: (context, index) {
             final item = controller.resourceState.showSourceGroupList[index];
             return ClickableButtonWidget(
-              text: item.name,
+              text: item.name ?? "未知分组",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               activated: index == activatedIndex,
@@ -327,7 +327,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
                   child: AspectRatio(
                     aspectRatio: WidgetStyleCommons.playSourceGridRatio,
                     child: ClickableButtonWidget(
-                      text: item.name,
+                      text: item.name ?? "未知分组",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       activated: index == activatedIndex,

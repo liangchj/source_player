@@ -9,6 +9,7 @@ abstract class IPlayer {
   Future<void> play();
   // 暂停
   Future<void> pause();
+  Future<void> stop();
 
   // 进度跳转
   Future<void> seekTo(Duration position);
@@ -29,5 +30,7 @@ abstract class IPlayer {
 
   /// 更新状态信息
   void updateState();
+
+  void changeVideoUrl({bool autoPlay = true});
   
 }

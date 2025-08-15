@@ -232,7 +232,7 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
-                text: item.name,
+                text: item.name ?? "未知分组",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 activated: index == activatedIndex,
@@ -275,7 +275,7 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
                 .sourceChapterState
                 .currentPlayedSourceGroupList[index];
             return ClickableButtonWidget(
-              text: item.name,
+              text: item.name ?? "未知分组",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               activated: index == activatedIndex,
@@ -326,7 +326,7 @@ class _PlaySourceGroupWidgetState extends State<PlaySourceGroupWidget> {
                   child: AspectRatio(
                     aspectRatio: WidgetStyleCommons.playSourceGridRatio,
                     child: ClickableButtonWidget(
-                      text: item.name,
+                      text: item.name ?? "未知分组",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       activated: index == activatedIndex,

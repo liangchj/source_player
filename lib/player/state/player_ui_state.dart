@@ -6,6 +6,7 @@ import '../enums/player_ui_key_enum.dart';
 import '../models/player_overlay_ui_model.dart';
 import '../ui/brightness_volume_ui.dart';
 import '../ui/center_play_progress_ui.dart';
+import '../ui/fullscreen_chapter_list_ui.dart';
 import '../ui/player_bottom_ui.dart';
 import '../ui/player_lock_ui.dart';
 import '../ui/player_screenshot_ui.dart';
@@ -27,6 +28,7 @@ class PlayerUIState {
       PlayerUIKeyEnum.centerVolumeUI.name: centerVolumeUI,
       PlayerUIKeyEnum.centerBrightnessUI.name: centerBrightnessUI,
       PlayerUIKeyEnum.settingUI.name: settingUI,
+      PlayerUIKeyEnum.chapterListUI.name: chapterListUI,
     });
   }
   Map<String, PlayerOverlayUIModel> overlayUIMap = {};
@@ -160,6 +162,18 @@ class PlayerUIState {
   var settingUI = PlayerOverlayUIModel(
     key: PlayerUIKeyEnum.settingUI.name,
     child: const PlayerSettingUI(),
+    useAnimationController: true,
+    tween: Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: const Offset(0.0, 0.0),
+    ),
+    widgetCallback: (uiModel) =>
+        PlayerUITransition.playerUISlideTransition(uiModel),
+  );
+
+  var chapterListUI = PlayerOverlayUIModel(
+    key: PlayerUIKeyEnum.chapterListUI.name,
+    child: const FullscreenChapterListUI(bottomSheet: false,),
     useAnimationController: true,
     tween: Tween<Offset>(
       begin: const Offset(1.0, 0.0),

@@ -7,8 +7,6 @@ import '../../commons/icon_commons.dart';
 import '../../commons/widget_style_commons.dart';
 import '../../utils/logger_utils.dart';
 import '../commons/player_commons.dart';
-import '../enums/player_ui_key_enum.dart';
-import '../models/buttom_ui_control_item_model.dart';
 import '../utils/time_format_utils.dart';
 
 class PlayerBottomUI extends StatefulWidget {
@@ -29,10 +27,7 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
         decoration: BoxDecoration(
           gradient: PlayerCommons.bottomUILinearGradient,
         ),
-        // child: _buildHorizontalScreenBottomUI(),
-        // child: _buildVerticalScreenBottomUI(),
         child: _buildBottomUI(),
-        // child: Obx(() => controller.playerState.isFullscreen.value ? _buildHorizontalScreenBottomUI() : _buildVerticalScreenBottomUI()),
       ),
     );
   }
@@ -40,20 +35,25 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
   Widget _buildBottomUI() {
     return Obx(() {
       return controller.playerState.isFullscreen.value
-          ? Obx(() => Column(
-        children: [
-          Padding(
-            padding: EdgeInsetsGeometry.symmetric(
-              horizontal: WidgetStyleCommons.safeSpace,
-            ),
-            child: _buildProgressBar(),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: controller.fullscreenBottomUIItemList.where((item) => item.visible.value).map((e) => e.child).toList(),
-          )
-        ],
-      ))
+          ? Obx(
+              () => Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsetsGeometry.symmetric(
+                      horizontal: WidgetStyleCommons.safeSpace,
+                    ),
+                    child: _buildProgressBar(),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: controller.fullscreenBottomUIItemList
+                        .where((item) => item.visible.value)
+                        .map((e) => e.child)
+                        .toList(),
+                  ),
+                ],
+              ),
+            )
           : _buildVerticalScreenBottomUI();
     });
   }
@@ -66,6 +66,16 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
       children: [
         // 播放/暂停按钮
         _buildPlayPause(),
+        Obx(
+          () => controller.resourceState.haveNext
+              ? IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  color: WidgetStyleCommons.iconColor,
+                  onPressed: () => controller.nextPlay(),
+                  icon: IconCommons.nextPlayIcon,
+                )
+              : Container(),
+        ),
         // 进度条
         Expanded(child: _buildProgressBar()),
         // 全屏下转为横屏/竖屏
@@ -85,95 +95,6 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
     );
   }
 
-  /// 横屏底部UI
-  Widget _buildHorizontalScreenBottomUI() {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsetsGeometry.symmetric(
-            horizontal: WidgetStyleCommons.safeSpace,
-          ),
-          child: _buildProgressBar(),
-        ),
-        /*Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // 播放时长
-            // _buildPlayPositionDuration(padding: EdgeInsets.all(0)),
-            // 进度条
-            _buildProgressBar(),
-            // 总时长
-            // _buildTotalDuration(),
-          ],
-        ),*/
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(
-                width: 40,
-                child: _buildPlayPause()),
-            // 下一个视频
-            // 下一个视频按钮
-            /*Obx(() =>
-            controller.netResourceDetailPlayController.haveNext.value
-                ? IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 0),
-                onPressed: () => controller.playNext(),
-                icon: UIConstants.nextPlayIcon)
-                : Container()),*/
-
-            // 弹幕开关
-
-            // // 弹幕设置
-            // Expanded(child: Container()),
-
-            // 选集
-            // if (controller
-            //     .playConfigOptions.resourceChapterList.isNotEmpty &&
-            //     controller.playConfigOptions.resourceChapterList.length > 1)
-            /*TextButton(
-              onPressed: () => controller.uiControl.onlyShowUIByKeyList(
-                  [PlayerUIKeyEnum.chapterListUI.name]),
-              child: const Text(
-                "选集",
-                style: TextStyle(color: UIConstants.textColor),
-              ),
-            ),*/
-
-            // 倍数
-            TextButton(
-              onPressed: () => controller.showUIByKeyList([
-                PlayerUIKeyEnum.speedSettingUI.name,
-              ]),
-              child: Text("${controller.playerState.playSpeed.value}x", style: TextStyle(color: PlayerCommons.textColor),),
-            ),
-
-            IconButton(
-              onPressed: () {
-              },
-              icon: PlayerCommons.exitFullscreenIcon,
-            ),
-
-            // 只有全屏时没有退出全屏按钮
-            if (!controller.onlyFullscreen)
-              Obx(
-                () => controller.playerState.isFullscreen.value
-                    ? IconButton(
-                        onPressed: () {
-                          controller.fullscreenUtils.toggleFullscreen(
-                            context: context,
-                          );
-                        },
-                        icon: PlayerCommons.exitFullscreenIcon,
-                      )
-                    : Container(),
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-
   // 播放、暂停按钮
   Widget _buildPlayPause() {
     return IconButton(
@@ -185,7 +106,9 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
         var isPlaying = controller.playerState.isPlaying.value;
         return isFinished
             ? IconCommons.bottomReplayPlayIcon
-            : (isPlaying ? IconCommons.bottomPauseIcon : IconCommons.bottomPlayIcon);
+            : (isPlaying
+                  ? IconCommons.bottomPauseIcon
+                  : IconCommons.bottomPlayIcon);
       }),
     );
   }

@@ -3,13 +3,13 @@ import 'package:source_player/models/resource_chapter_model.dart';
 
 
 class PlaySourceGroupModel {
-  final String name;
-  final String enName;
+  final String? name;
+  final String? enName;
   final List<ResourceChapterModel> chapterList;
 
   PlaySourceGroupModel({
-    required this.name,
-    required this.enName,
+    this.name,
+    this.enName,
     required this.chapterList,
   });
 

@@ -78,7 +78,9 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
   Widget build(BuildContext context) {
     return Obx(
       () {
-        if (controller.resourceState.videoModel.value == null || controller.resourceState.playSourceList.isEmpty) {
+        if (controller.resourceState.videoModel.value == null || controller.resourceState.playSourceList.isEmpty
+          || (controller.resourceState.playSourceList.length == 1 && controller.resourceState.playSourceList.first.api == null)
+        ) {
           return Container();
         }
         return Column(

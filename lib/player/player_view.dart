@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
@@ -6,6 +8,7 @@ import 'package:source_player/player/iplayer.dart';
 import '../commons/widget_style_commons.dart';
 import 'controller/player_controller.dart';
 import 'media_kit_player.dart';
+import 'models/buttom_ui_control_item_model.dart';
 
 class PlayerView extends StatefulWidget {
   const PlayerView({
@@ -28,7 +31,12 @@ class _PlayerViewState extends State<PlayerView> {
 
   @override
   void initState() {
-    _playerController = widget.controller ?? Get.put(PlayerController());
+    if (widget.controller == null) {
+      Get.delete<PlayerController>();
+      _playerController = Get.put(PlayerController());
+    } else {
+      _playerController = widget.controller!;
+    }
     if (widget.player == null) {
       MediaKit.ensureInitialized();
     }
@@ -81,23 +89,31 @@ class FullscreenPlayerPage extends StatelessWidget {
         },
         child: Scaffold(
           backgroundColor: Colors.black,
-          body: LayoutBuilder(builder: (context, constraints) {
-            final availableWidth = constraints.maxWidth - WidgetStyleCommons.safeSpace * 2; // 减去左右边距
-            final sortControls = controller.fullscreenBottomUIItemList.toList()..sort((a, b) => a.priority.compareTo(b.priority));
-            double currentWidth = 0.0;
-            for (final control in sortControls) {
-              final needWidth = currentWidth + control.fixedWidth;
-              if (needWidth <= availableWidth) {
-                control.visible(true);
-                currentWidth = needWidth;
-              } else {
-                control.visible(false);
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final availableWidth =
+                  constraints.maxWidth -
+                  WidgetStyleCommons.safeSpace * 2; // 减去左右边距
+              final sortControls =
+                  controller.fullscreenBottomUIItemList
+                      .where((item) => item.type != ControlType.none)
+                      .toList()
+                    ..sort((a, b) => a.priority.compareTo(b.priority));
+              double currentWidth = 0.0;
+              for (final control in sortControls) {
+                final needWidth = currentWidth + control.fixedWidth;
+                if (needWidth <= availableWidth) {
+                  control.visible(true);
+                  currentWidth = needWidth;
+                } else {
+                  control.visible(false);
+                }
               }
-            }
-            return Obx(
-                  () => controller.playerState.playerView.value ?? Container(),
-            );
-          }),
+              return Obx(
+                () => controller.playerState.playerView.value ?? Container(),
+              );
+            },
+          ),
         ),
       ),
     );

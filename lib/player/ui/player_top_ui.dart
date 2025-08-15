@@ -25,14 +25,15 @@ class PlayerTopUI extends GetView<PlayerController> {
           IconButton(
             color: WidgetStyleCommons.iconColor,
             onPressed: () {
-               controller.fullscreenUtils.exitFullscreen();
+               // controller.fullscreenUtils.exitFullscreen();
+               controller.fullscreenUtils.toggleFullscreen(exit: true);
             },
             // icon: const Icon(Icons.arrow_back_ios_new_rounded)),
             icon: IconCommons.backIcon,
           ),
           // 标题
           Expanded(
-            child: Text("标题", maxLines: 1, overflow: TextOverflow.ellipsis),
+            child: Obx(() => Text("${controller.resourceState.videoModel.value?.name}[第${controller.resourceState.state.chapterActivatedIndex.value + 1}集]", maxLines: 1, overflow: TextOverflow.ellipsis)),
           ),
           // 右边控制栏
           Row(
