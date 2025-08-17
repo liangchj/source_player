@@ -47,7 +47,8 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   @override
   void initState() {
     controller = Get.find<PlayerController>();
-    _activatedIndex = controller.resourceState.chapterGroupActivatedChapterIndex;
+    _activatedIndex =
+        controller.resourceState.chapterGroupActivatedChapterIndex;
     int initialIndex = _activatedIndex > 0 ? _activatedIndex : 0;
     _scrollController = ScrollController();
     if (widget.isGrid) {
@@ -60,23 +61,27 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
       )..initialIndex = initialIndex;
     }
 
-    everAll([
-      controller.resourceState.state.apiActivatedState,
-      controller.resourceState.state.sourceGroupActivatedState,
-      controller.resourceState.state.chapterGroupActivatedState], (val) {
-      if (_chapterClicked) {
-        _chapterClicked = false;
-        return;
-      }
-      int index = controller.resourceState.chapterGroupActivatedChapterIndex;
-      if (index < 0) {
-        index = 0;
-      }
-      if (!_showBottomSheet) {
-        _gridObserverController?.jumpTo(index: index, isFixedHeight: true);
-        _observerController?.jumpTo(index: index, isFixedHeight: true);
-      }
-    });
+    everAll(
+      [
+        controller.resourceState.state.apiActivatedState,
+        controller.resourceState.state.sourceGroupActivatedState,
+        controller.resourceState.state.chapterGroupActivatedState,
+      ],
+      (val) {
+        if (_chapterClicked) {
+          _chapterClicked = false;
+          return;
+        }
+        int index = controller.resourceState.chapterGroupActivatedChapterIndex;
+        if (index < 0) {
+          index = 0;
+        }
+        if (!_showBottomSheet) {
+          _gridObserverController?.jumpTo(index: index, isFixedHeight: true);
+          _observerController?.jumpTo(index: index, isFixedHeight: true);
+        }
+      },
+    );
 
     super.initState();
   }
@@ -96,19 +101,24 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   Widget build(BuildContext context) {
     return Obx(
       () => controller.resourceState.showChapter.value
-          ? Column(
-            children: [
-              _createHeader(context),
-              ChapterGroupWidget(
-                singleHorizontalScroll: true,
+          ? DefaultTextStyle(
+              style: TextStyle(
+                color: controller.playerState.isFullscreen.value
+                    ? Colors.white
+                    : Colors.black,
               ),
-              widget.bottomSheet
-                  ? _bottomSheetList(context)
-                  : widget.singleHorizontalScroll
-                  ? _horizontalScroll(context)
-                  : _list(context),
-            ],
-          )
+              child: Column(
+                children: [
+                  _createHeader(context),
+                  ChapterGroupWidget(singleHorizontalScroll: true),
+                  widget.bottomSheet
+                      ? _bottomSheetList(context)
+                      : widget.singleHorizontalScroll
+                      ? _horizontalScroll(context)
+                      : _list(context),
+                ],
+              ),
+            )
           : Container(),
     );
   }
@@ -116,7 +126,11 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   Widget _createHeader(BuildContext context) {
     final theme = Theme.of(context);
     List<Widget> lefts = [
-      Text("章节："),
+      Text(
+        controller.playerState.isFullscreen.value
+            ? "章节(${controller.resourceState.showChapterList.length})："
+            : "章节：",
+      ),
       IconButton(
         tooltip: '跳至顶部',
         icon: Icon(Icons.vertical_align_top),
@@ -134,12 +148,89 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
         icon: Icon(Icons.my_location),
         style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
         onPressed: () {
-          _observerController?.jumpTo(
-            index: controller.resourceState.state.chapterActivatedIndex.value,
-            isFixedHeight: true,
+          var activatedApi = controller.resourceState.state.apiActivatedState(
+            controller.resourceState.state.apiActivatedState.value?.copyWith(
+              index:
+                  controller
+                      .resourceState
+                      .state
+                      .apiActivatedState
+                      .value
+                      ?.activatedIndex ??
+                  0,
+            ),
           );
-          _gridObserverController?.jumpTo(
-            index: controller.resourceState.state.chapterActivatedIndex.value,
+          if (controller.resourceState.state.apiActivatedState.value?.index !=
+              activatedApi?.activatedIndex) {
+            controller.resourceState.state.apiActivatedState(activatedApi);
+          }
+          var activatedSourceGroup = controller.resourceState.state
+              .sourceGroupActivatedState(
+                controller.resourceState.state.sourceGroupActivatedState.value
+                    ?.copyWith(
+                      index:
+                          controller
+                              .resourceState
+                              .state
+                              .sourceGroupActivatedState
+                              .value
+                              ?.activatedIndex ??
+                          0,
+                      apiState: activatedApi,
+                    ),
+              );
+          if (controller
+                  .resourceState
+                  .state
+                  .sourceGroupActivatedState
+                  .value
+                  ?.index !=
+              activatedSourceGroup?.activatedIndex) {
+            controller.resourceState.state.sourceGroupActivatedState(
+              activatedSourceGroup,
+            );
+          }
+
+          var activatedChapterGroup = controller.resourceState.state
+              .chapterGroupActivatedState(
+                controller.resourceState.state.chapterGroupActivatedState.value
+                    ?.copyWith(
+                      index:
+                          controller
+                              .resourceState
+                              .state
+                              .chapterGroupActivatedState
+                              .value
+                              ?.activatedIndex ??
+                          0,
+                      sourceGroupState: activatedSourceGroup,
+                    ),
+              );
+          if (controller
+                  .resourceState
+                  .state
+                  .chapterGroupActivatedState
+                  .value
+                  ?.index !=
+              activatedChapterGroup?.activatedIndex) {
+            controller.resourceState.state.chapterGroupActivatedState(
+              activatedChapterGroup,
+            );
+          }
+
+          int index =
+              controller.resourceState.chapterGroupActivatedChapterIndex;
+          if (index < 0) {
+            index = 0;
+          }
+          _observerController?.jumpTo(
+            index: controller.resourceState.chapterAsc.value
+                ? index
+                : controller
+                          .resourceState
+                          .activatedChapterGroupChapterList
+                          .length - 1 -
+                      index,
             isFixedHeight: true,
           );
         },
@@ -158,7 +249,8 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
           );
         },
       ),
-      if (widget.singleHorizontalScroll)
+      if (widget.singleHorizontalScroll &&
+          !controller.playerState.isFullscreen.value)
         TextButton(
           onPressed: () {
             _showBottomSheet = true;
@@ -180,14 +272,14 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
                             bottomSheet: true,
                             isGrid: true,
                             onDispose: (index) {
-                                _gridObserverController?.jumpTo(
-                                  index: index,
-                                  isFixedHeight: true,
-                                );
-                                _observerController?.jumpTo(
-                                  index: index,
-                                  isFixedHeight: true,
-                                );
+                              _gridObserverController?.jumpTo(
+                                index: index,
+                                isFixedHeight: true,
+                              );
+                              _observerController?.jumpTo(
+                                index: index,
+                                isFixedHeight: true,
+                              );
                             },
                           ),
                         ),
@@ -235,7 +327,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
       child: Padding(
         padding: EdgeInsetsGeometry.symmetric(
           vertical: WidgetStyleCommons.safeSpace,
-          horizontal: WidgetStyleCommons.safeSpace,
+          horizontal: controller.playerState.isFullscreen.value ? 0 : WidgetStyleCommons.safeSpace,
         ),
         child: widget.isGrid ? _gridView(context) : _listView(context),
       ),
@@ -277,6 +369,9 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
                 chapter: item,
                 activated: item.index == activeIndex,
                 isCard: true,
+                unActivatedTextColor: controller.playerState.isFullscreen.value
+                    ? Colors.white
+                    : Colors.black,
                 onClick: () {
                   _chapterClicked = true;
                   controller.resourceState.state.chapterActivatedIndex(
@@ -320,6 +415,9 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
               chapter: item,
               activated: item.index == activeIndex,
               isCard: true,
+              unActivatedTextColor: controller.playerState.isFullscreen.value
+                  ? Colors.white
+                  : Colors.black,
               onClick: () {
                 _chapterClicked = true;
                 controller.resourceState.state.chapterActivatedIndex(
@@ -341,10 +439,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
       height: WidgetStyleCommons.chapterHeight,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(
-          dragDevices: {
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.touch,
-          },
+          dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
         ),
         child: Obx(() {
           var list = controller.resourceState.chapterAsc.value
@@ -370,6 +465,10 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
                       chapter: item,
                       activated: item.index == activeIndex,
                       isCard: true,
+                      unActivatedTextColor:
+                          controller.playerState.isFullscreen.value
+                          ? Colors.white
+                          : Colors.black,
                       onClick: () {
                         _chapterClicked = true;
                         controller.resourceState.state.chapterActivatedIndex(

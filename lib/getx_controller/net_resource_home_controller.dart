@@ -17,8 +17,10 @@ import '../utils/api_utils.dart';
 import '../utils/net_request_utils.dart';
 
 class NetResourceHomeController extends GetxController
-    with GetSingleTickerProviderStateMixin {
+    with GetTickerProviderStateMixin {
   Logger logger = Logger();
+
+  var currentApi = Rx<ApiConfigModel?>(null);
 
   // 配置加载状态
   var apiConfigLoadingState = LoadingStateModel().obs;
@@ -38,6 +40,8 @@ class NetResourceHomeController extends GetxController
 
   @override
   Future<void> onInit() async {
+    logger.d("NetResourceHomeController init");
+    _initEver();
     apiConfigLoadingState(apiConfigLoadingState.value.copyWith(loading: true));
     bool needWaitLoadOtherApi = false;
     // 获取当前api
@@ -77,17 +81,31 @@ class NetResourceHomeController extends GetxController
         loadedSuc: CurrentConfigs.currentApi != null,
       ),
     );
-    if (apiConfigLoadingState.value.loadedSuc) {
+    currentApi(CurrentConfigs.currentApi);
+    /*if (apiConfigLoadingState.value.loadedSuc) {
       // 加载视频类型
       await loadVideoType();
     }
     if (typeLoadingState.value.loadedSuc) {
       // 设置过滤类型
       createTabBarViews();
-    }
+    }*/
     apiConfigLoadingState(apiConfigLoadingState.value.copyWith(loading: false));
     typeLoadingState(typeLoadingState.value.copyWith(loading: false));
     super.onInit();
+  }
+
+  void _initEver() {
+    ever(currentApi, (val) async {
+      if (apiConfigLoadingState.value.loadedSuc) {
+        // 加载视频类型
+        await loadVideoType();
+      }
+      if (typeLoadingState.value.loadedSuc) {
+        // 设置过滤类型
+        createTabBarViews();
+      }
+    });
   }
 
   /// 视频类型
@@ -101,7 +119,7 @@ class NetResourceHomeController extends GetxController
     CurrentConfigs.currentApiVideoTypeMap = {};
     String desc = "获取视频类型api";
     NetApiModel? typeListApi =
-        CurrentConfigs.currentApi!.netApiMap["typeListApi"];
+        currentApi.value?.netApiMap["typeListApi"];
     if (typeListApi == null) {
       typeLoadingState(
         typeLoadingState.value.copyWith(loading: false, loadedSuc: true),
@@ -160,8 +178,8 @@ class NetResourceHomeController extends GetxController
   }
 
   loadNetResourceList() {
-    NetApiModel listApi = CurrentConfigs.currentApi!.netApiMap["listApi"]!;
-    String url = CurrentConfigs.currentApi!.apiBaseModel.baseUrl + listApi.path;
+    NetApiModel listApi = currentApi.value!.netApiMap["listApi"]!;
+    String url = currentApi.value!.apiBaseModel.baseUrl + listApi.path;
     Map<String, dynamic> params = {"pg": 1};
     Map<String, dynamic>? staticParams = listApi.requestParams.staticParams;
     if (staticParams != null && staticParams.isNotEmpty) {

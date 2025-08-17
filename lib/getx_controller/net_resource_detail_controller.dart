@@ -1,3 +1,4 @@
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:flutter_dynamic_api/models/dynamic_params_model.dart';
@@ -33,6 +34,10 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
     Tab(text: "详情"),
     Tab(text: "评论"),
   ];
+
+  late final scrollKey = GlobalKey<ExtendedNestedScrollViewState>();
+
+  var extendedNestedScrollViewOffset = 0.0.obs;
 
   late SourceChapterState sourceChapterState;
 

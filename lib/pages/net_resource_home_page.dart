@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:source_player/pages/api_select_list_page.dart';
 
 import '../cache/db/current_configs.dart';
 import '../getx_controller/net_resource_home_controller.dart';
@@ -19,20 +20,26 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
   );
   @override
   Widget build(BuildContext context) {
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
     super.build(context);
     return Obx(
       () => controller.apiConfigLoadingState.value.loading
           ? const Center(child: LoadingWidget(textWidget: Text("加载api配置中...")))
           : !controller.apiConfigLoadingState.value.loadedSuc
           ? Center(child: Text("加载api配置失败：${controller.apiConfigLoadingState.value.errorMsg}"))
-          : Column(
-              children: [
-                _customAppBar(),
-                Expanded(
-                  child: _buildTypeTabBar(content: _buildTypeResourceList()),
+          : Scaffold(
+            body: Padding(
+              padding: EdgeInsets.only(top: statusBarHeight),
+              child: Column(
+                  children: [
+                    _customAppBar(),
+                    Expanded(
+                      child: _buildTypeTabBar(content: _buildTypeResourceList()),
+                    ),
+                  ],
                 ),
-              ],
             ),
+          ),
     );
   }
 
@@ -44,7 +51,9 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(CurrentConfigs.currentApi?.apiBaseModel.name ?? ""),
+          TextButton(onPressed: () {
+            Get.to(()=>ApiSelectListPage(), );
+          }, child: Obx(() => Text(controller.currentApi.value?.apiBaseModel.name ?? ""))),
           _customAppBarRightButtons(),
         ],
       ),

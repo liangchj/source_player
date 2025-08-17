@@ -340,11 +340,11 @@ class ResourceState {
 
   // 获取当前播放资源组下的章节组下的章节列表（供章节选择器使用）
   List<ResourceChapterModel> get activatedChapterGroupChapterList {
-    int chapterGroupIndex = activatedChapterGroupIndex;
-    if (chapterGroupIndex <= 1) {
+    int group = state.activatedChapterGroup.value;
+    if (group <= 1) {
       return activatedChapterList;
     }
-
+    int chapterGroupIndex = activatedChapterGroupIndex;
     List<ResourceChapterModel> list = activatedChapterList;
 
     int start = chapterGroupIndex * WidgetStyleCommons.chapterGroupCount;
@@ -362,8 +362,8 @@ class ResourceState {
 
   // 获取当前展示资源组下的章节组下的章节列表（供章节选择器使用）
   List<ResourceChapterModel> get showChapterGroupChapterList {
-    var index = state.showChapterGroup.value;
-    if (index <= 1) {
+    var group = state.showChapterGroup.value;
+    if (group <= 1) {
       return showChapterList;
     }
     int chapterGroupIndex = activatedChapterGroupIndex;

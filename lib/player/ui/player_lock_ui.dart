@@ -11,7 +11,7 @@ class PlayerLockUI extends GetView<PlayerController> {
   Widget build(BuildContext context) {
     return Obx(
       () => IconButton(
-        // color: WidgetStyleCommons.iconColor,
+        color: WidgetStyleCommons.iconColor,
         onPressed: () {
           controller.uiState.uiLocked(!controller.uiState.uiLocked.value);
           if (controller.uiState.uiLocked.value) {

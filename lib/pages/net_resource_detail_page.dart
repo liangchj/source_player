@@ -4,6 +4,7 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/player_view.dart';
+import 'package:source_player/player/ui/player_top_ui.dart';
 import 'package:source_player/player/widgets/chapter/chapter_group_widget.dart';
 import 'package:source_player/player/widgets/chapter/chapter_list_widget.dart';
 import 'package:source_player/player/widgets/resource_source/source_api_widget.dart';
@@ -14,6 +15,7 @@ import 'package:source_player/widgets/play_source/play_source_api_widget.dart';
 import 'package:source_player/widgets/play_source/play_source_group_widget.dart';
 import 'package:source_player/widgets/resource_detail/resource_detail_info_widget.dart';
 
+import '../commons/icon_commons.dart';
 import '../commons/widget_style_commons.dart';
 import '../getx_controller/net_resource_detail_controller.dart';
 import '../player/controller/player_controller.dart';
@@ -68,10 +70,12 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   }
 
   void listener() {
-    /*print("listener， offset:${controller.nestedScrollController.offset}, "
-        "position：${controller.nestedScrollController.position}, "
-        "initialScrollOffset：${controller.nestedScrollController.initialScrollOffset}"
-        "keepScrollOffset：${controller.nestedScrollController.keepScrollOffset}");*/
+    print(
+      "listener， offset:${controller.nestedScrollController?.offset}, "
+      "position：${controller.nestedScrollController?.position}, "
+      "initialScrollOffset：${controller.nestedScrollController?.initialScrollOffset}"
+      "keepScrollOffset：${controller.nestedScrollController?.keepScrollOffset}",
+    );
     /*if (controller.nestedScrollController.position.pixels >= 100) {
       controller.showBottomSheet(true);
     } else {
@@ -111,28 +115,6 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
               : _createDetailScrollView(),
         ),
       ),
-      /*child: Scaffold(
-        // appBar: AppBar(leading: BackButton()),
-        body: Obx(
-          () => controller.loadingState.value.loading
-              ? const Center(
-                  child: SizedBox(
-                    height: 500,
-                    child: LoadingWidget(textWidget: Text("资源加载中...")),
-                  ),
-                )
-              : !controller.loadingState.value.loadedSuc
-              ? Center(
-                  child: Text(
-                    "资源加载失败: ${controller.loadingState.value.errorMsg}",
-                  ),
-                )
-              : controller.videoModel.value == null
-              ? const Center(child: Text("获取资源为空"))
-              // : SizedBox(width: double.infinity, child: _createDetailAndPlay()),
-              : _createDetailScrollView(),
-        ),
-      ),*/
     );
   }
 
@@ -144,45 +126,93 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         //pinned SliverAppBar height in header
         kToolbarHeight;
     return ExtendedNestedScrollView(
+      key: controller.scrollKey,
       controller: controller.nestedScrollController,
       onlyOneScrollInBody: true,
+
       // physics: const NeverScrollableScrollPhysics(),
       /*physics: const NeverScrollableScrollPhysics(
         parent: ClampingScrollPhysics(),
       ),*/
       headerSliverBuilder: (BuildContext c, bool f) {
+        double height = MediaQuery.of(context).size.width * _playerAspectRatio;
         return [
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            expandedHeight:
-                MediaQuery.of(context).size.width * _playerAspectRatio,
-            /*           collapsedHeight: playerController.playing.value
-                ? MediaQuery.of(context).size.width * _playerAspectRatio
-                : _minPlayerHeight,*/
-            floating: false,
-            pinned: true,
-            flexibleSpace: Stack(
-              children: [Positioned.fill(child: _createPlayer())],
-            ),
-          ),
+          Obx(() {
+            return SliverAppBar(
+              automaticallyImplyLeading: false,
+              expandedHeight: height,
+              collapsedHeight:
+                  controller
+                          .playerController
+                          .value
+                          ?.playerState
+                          .isPlaying
+                          .value ??
+                      false
+                  ? height
+                  : _minPlayerHeight,
+              floating: false,
+              pinned: true,
+              flexibleSpace: Stack(
+                children: [
+                  Positioned.fill(child: _createPlayer()),
+                  Positioned.fill(child: Obx(() =>
+                  controller.playerController.value != null &&
+                      !controller.playerController.value!.playerState
+                          .isPlaying.value &&
+                      height - controller
+                .extendedNestedScrollViewOffset
+                .value <= pinnedHeaderHeight * 2?
+                      Container(
+                        color: Colors.black,
+                      height: double.infinity,
+                  ) : Container())),
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    right: 0,
+                    child: Obx(
+                      () =>
+                          controller.playerController.value != null &&
+                              !controller.playerController.value!.playerState
+                                  .isPlaying.value &&
+                              controller
+                                  .extendedNestedScrollViewOffset
+                                  .value > pinnedHeaderHeight
+                          ? Container(
+                              color: Colors.black,
+                              padding: EdgeInsets.only(top: WidgetStyleCommons.safeSpace),
+                              child: PlayerTopUI(pauseScroll: true,),
+                            )
+                          : Container(),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ];
       },
       pinnedHeaderSliverHeightBuilder: () {
         final double statusBarHeight = MediaQuery.of(context).padding.top;
-        final double pinnedHeaderHeight =
-            //statusBar height
-            statusBarHeight +
-                //pinned SliverAppBar height in header
-                kToolbarHeight;
-        // print("pinnedHeaderHeight:$pinnedHeaderHeight");
-        if (controller.bottomSheetController != null) {
-          print(
-            "进入：${MediaQuery.of(context).size.width * _playerAspectRatio - controller.nestedScrollController!.offset}",
-          );
+        final double pinnedHeaderHeight = statusBarHeight + kToolbarHeight;
+        var offset = controller.nestedScrollController?.offset;
+        // 检查是否正在播放
+        final isPlaying =
+            controller.playerController.value?.playerState.isPlaying.value ??
+            false;
+
+        if (isPlaying) {
+          // 播放时固定返回最大高度
+          return MediaQuery.of(context).size.width * _playerAspectRatio +
+              statusBarHeight;
+        } else if (controller.bottomSheetController != null) {
+          // 未播放但有滚动时，根据偏移量计算
           return MediaQuery.of(context).size.width * _playerAspectRatio -
               controller.nestedScrollController!.offset +
               statusBarHeight;
         }
+        controller.extendedNestedScrollViewOffset(offset);
         return pinnedHeaderHeight;
       },
       body: Scaffold(
@@ -215,16 +245,10 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
 
-        SourceApiWidget(
-          isSelect:  true,
-        ),
+        SourceApiWidget(isSelect: true),
 
-        SourceGroupWidget(
-          singleHorizontalScroll: true,
-        ),
-        ChapterListWidget(
-          singleHorizontalScroll: true,
-        ),
+        SourceGroupWidget(singleHorizontalScroll: true),
+        ChapterListWidget(singleHorizontalScroll: true),
 
         /*PlaySourceApiWidget(
           controller: controller,
@@ -400,7 +424,9 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                               ),
                               child: Text(
                                 "|",
-                                style: TextStyle(fontSize: secondaryTextFontSize),
+                                style: TextStyle(
+                                  fontSize: secondaryTextFontSize,
+                                ),
                               ),
                             ),
                             Text(
@@ -425,7 +451,9 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                               ),
                               child: Text(
                                 "|",
-                                style: TextStyle(fontSize: secondaryTextFontSize),
+                                style: TextStyle(
+                                  fontSize: secondaryTextFontSize,
+                                ),
                               ),
                             ),
                             Text(
@@ -535,7 +563,8 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
             ),
             onTap: () {
               // logger.d("当前播放章节：${playingChapterIndex.value}，链接：${playUrl.value}");
-              var chapterUrl = controller.playerController.value?.resourceState.chapterUrl;
+              var chapterUrl =
+                  controller.playerController.value?.resourceState.chapterUrl;
               LoggerUtils.logger.d("当前播放章节链接：$chapterUrl");
             },
           ),

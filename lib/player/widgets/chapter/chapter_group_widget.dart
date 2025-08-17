@@ -70,7 +70,9 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
   Widget build(BuildContext context) {
     return Obx(
       () => controller.resourceState.state.showChapterGroup > 1
-          ? _chapterGroup(context)
+          ? DefaultTextStyle(
+          style: TextStyle(color: controller.playerState.isFullscreen.value ? Colors.white : Colors.black),
+          child: _chapterGroup(context))
           : Container(),
     );
   }
@@ -119,6 +121,7 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
                       textAlign: TextAlign.center,
                       activated: realIndex == activeIndex,
                       isCard: true,
+                      unActivatedTextColor: controller.playerState.isFullscreen.value ? Colors.white : Colors.black,
                       onClick: () {
                         controller.resourceState.updateChapterGroupStateByIndex(
                           realIndex,

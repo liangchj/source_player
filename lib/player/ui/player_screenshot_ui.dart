@@ -12,7 +12,7 @@ class PlayerScreenshotUI extends GetView<PlayerController> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-        // color: WidgetStyleCommons.iconColor,
+        color: WidgetStyleCommons.iconColor,
         onPressed: () {},
         style: ButtonStyle(
             backgroundColor:

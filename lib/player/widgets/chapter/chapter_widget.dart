@@ -5,13 +5,14 @@ import 'package:source_player/models/resource_chapter_model.dart';
 import '../../../commons/widget_style_commons.dart';
 
 class ChapterWidget extends StatelessWidget {
-  const ChapterWidget({super.key, required this.chapter, required this.activated, this.isCard = false, this.onClick, this.left, this.right,});
+  const ChapterWidget({super.key, required this.chapter, required this.activated, this.isCard = false, this.onClick, this.left, this.right, this.unActivatedTextColor,});
   final ResourceChapterModel chapter;
   final bool activated;
   final bool isCard;
   final VoidCallback? onClick;
   final Widget? left;
   final Widget? right;
+  final Color? unActivatedTextColor;
 
 
   @override
@@ -41,7 +42,7 @@ class ChapterWidget extends StatelessWidget {
           borderRadius: BorderRadius.all(
             Radius.circular(WidgetStyleCommons.chapterBorderRadius),
           ));
-      textFontColor = WidgetStyleCommons.chapterTextColor;
+      textFontColor = unActivatedTextColor ?? WidgetStyleCommons.chapterTextColor;
     }
     return MaterialButton(
       //边框样式

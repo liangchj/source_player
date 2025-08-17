@@ -87,18 +87,21 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
   Widget build(BuildContext context) {
     return Obx(
       () => controller.resourceState.showSourceGroupList.length > 1
-          ? Column(
-              children: [
-                _createHeader(context),
-                widget.bottomSheet
-                    ? _bottomSheetList(context)
-                    : widget.isSelect
-                    ? _selectList(context)
-                    : widget.singleHorizontalScroll
-                    ? _horizontalScroll(context)
-                    : _list(context),
-              ],
-            )
+          ? DefaultTextStyle(
+        style: TextStyle(color: controller.playerState.isFullscreen.value ? Colors.white : Colors.black),
+            child: Column(
+                children: [
+                  _createHeader(context),
+                  widget.bottomSheet
+                      ? _bottomSheetList(context)
+                      : widget.isSelect
+                      ? _selectList(context)
+                      : widget.singleHorizontalScroll
+                      ? _horizontalScroll(context)
+                      : _list(context),
+                ],
+              ),
+          )
           : Container(),
     );
   }
@@ -124,10 +127,10 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
           ),
         )
       else
-        Text("播放组："),
+        Text(controller.playerState.isFullscreen.value ? "播放组(${controller.resourceState.showSourceGroupList.length})：" : "播放组："),
     ];
     List<Widget> rights = [
-      if (widget.singleHorizontalScroll || widget.isSelect)
+      if (!controller.playerState.isFullscreen.value && (widget.singleHorizontalScroll || widget.isSelect))
         TextButton(
           onPressed: () {
             _showBottomSheet = true;
@@ -246,6 +249,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 activated: index == activatedIndex,
+                unActivatedTextColor: controller.playerState.isFullscreen.value ? Colors.white : Colors.black,
                 isCard: false,
                 onClick: () {
                   controller.resourceState.updateSourceGroupStateByIndex(index);
@@ -286,6 +290,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
               activated: index == activatedIndex,
               isCard: false,
               textAlign: TextAlign.center,
+              unActivatedTextColor: controller.playerState.isFullscreen.value ? Colors.white : Colors.black,
               onClick: () {
                 controller.resourceState.updateSourceGroupStateByIndex(index);
               },
@@ -333,6 +338,7 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
                       activated: index == activatedIndex,
                       isCard: false,
                       textAlign: TextAlign.center,
+                      unActivatedTextColor: controller.playerState.isFullscreen.value ? Colors.white : Colors.black,
                       onClick: () {
                         controller.resourceState.updateSourceGroupStateByIndex(
                           index,

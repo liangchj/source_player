@@ -83,17 +83,20 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
         ) {
           return Container();
         }
-        return Column(
-          children: [
-            _createHeader(context),
-            widget.bottomSheet
-                ? _bottomSheetList(context)
-                : widget.isSelect
-                ? _selectList(context)
-                : widget.singleHorizontalScroll
-                ? _horizontalScroll(context)
-                : _list(context),
-          ],
+        return DefaultTextStyle(
+          style: TextStyle(color: controller.playerState.isFullscreen.value ? Colors.white : Colors.black),
+          child: Column(
+            children: [
+              _createHeader(context),
+              widget.bottomSheet
+                  ? _bottomSheetList(context)
+                  : widget.isSelect
+                  ? _selectList(context)
+                  : widget.singleHorizontalScroll
+                  ? _horizontalScroll(context)
+                  : _list(context),
+            ],
+          ),
         );
       },
     );
@@ -126,10 +129,10 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
           ),
         )
       else
-        Text("播放源："),
+        Text(controller.playerState.isFullscreen.value ? "播放源(${controller.resourceState.playSourceList.length})：" : "播放源："),
     ];
     List<Widget> rights = [
-      if (widget.singleHorizontalScroll || widget.isSelect)
+      if (!controller.playerState.isFullscreen.value && (widget.singleHorizontalScroll || widget.isSelect))
         TextButton(
           onPressed: () {
             controller.netResourceDetailController?.bottomSheetController =
@@ -246,6 +249,7 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
                 overflow: TextOverflow.ellipsis,
                 activated: index == activatedIndex,
                 isCard: false,
+                unActivatedTextColor: controller.playerState.isFullscreen.value ? Colors.white : Colors.black,
                 onClick: () {
                   controller.resourceState.state.apiActivatedState(
                     controller.resourceState.state.apiActivatedState.value
@@ -293,6 +297,7 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
               activated: index == activatedIndex,
               isCard: false,
               textAlign: TextAlign.center,
+              unActivatedTextColor: controller.playerState.isFullscreen.value ? Colors.white : Colors.black,
               onClick: () {
                 controller.resourceState.state.apiActivatedState(
                   controller.resourceState.state.apiActivatedState.value
@@ -342,6 +347,7 @@ class _SourceApiWidgetState extends State<SourceApiWidget> {
                     activated: index == activatedIndex,
                     isCard: false,
                     textAlign: TextAlign.center,
+                    unActivatedTextColor: controller.playerState.isFullscreen.value ? Colors.white : Colors.black,
                     onClick: () {
                       controller.resourceState.state.apiActivatedState(
                         controller.resourceState.state.apiActivatedState.value
