@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class PublicCommons {
   static Logger logger = Logger();
@@ -12,4 +13,17 @@ class PublicCommons {
   // 下拉刷新距离
   static double refreshDisplacement = 20.0;
   static double refreshDragPercentage = 0.25;
+
+
+  // 权限
+  static List<Permission> permissionList = [
+    Permission.storage,
+    Permission.mediaLibrary,
+    Permission.sensors,
+    Permission.notification,
+    Permission.accessNotificationPolicy,
+    Permission.accessMediaLocation,
+    Permission.activityRecognition,
+    Permission.manageExternalStorage,
+  ];
 }

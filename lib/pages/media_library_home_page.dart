@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:source_player/player/controller/player_controller.dart';
-
-import '../models/play_source_group_model.dart';
-import '../models/play_source_model.dart';
-import '../models/resource_chapter_model.dart';
-import '../models/video_model.dart';
+import 'package:source_player/getx_controller/media_library_controller.dart';
 
 class MediaLibraryHomePage extends StatefulWidget {
   const MediaLibraryHomePage({super.key});
@@ -14,9 +9,35 @@ class MediaLibraryHomePage extends StatefulWidget {
   State<MediaLibraryHomePage> createState() => _MediaLibraryHomePageState();
 }
 
-class _MediaLibraryHomePageState extends State<MediaLibraryHomePage> {
+class _MediaLibraryHomePageState extends State<MediaLibraryHomePage> with AutomaticKeepAliveClientMixin {
+
+  late MediaLibraryController controller;
+
+  @override
+  void initState() {
+    controller = Get.put(MediaLibraryController());
+    super.initState();
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("媒体库"),
+      ),
+      body: ListView(
+        children: controller.libraryList.map((e) => e).toList(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+        },
+        tooltip: 'getVideo',
+        child: const Icon(Icons.add),
+      ),
+    );
+    /*super.build(context);
     return Center(
       // child: Text("媒体库", style: TextStyle(color: Colors.black)),
       child: Column(
@@ -53,6 +74,9 @@ class _MediaLibraryHomePageState extends State<MediaLibraryHomePage> {
           ),
         ],
       ),
-    );
+    );*/
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

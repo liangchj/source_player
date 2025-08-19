@@ -8,6 +8,7 @@ import 'cache/shared_preferences_cache.dart';
 import 'http/dio_utils.dart';
 import 'models/app_theme_model.dart';
 import 'pages/app_home_page.dart';
+import 'route/app_pages.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +33,7 @@ Future<void> main() async {
   runApp(
     GetMaterialApp(
       debugShowCheckedModeBanner: false, // 不显示debug标记
-      // getPages: AppPages.pages,
+      getPages: AppPages.pages,
       home: const SourceVideoPlayerApp(),
     ),
   );

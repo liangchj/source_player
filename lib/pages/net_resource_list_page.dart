@@ -7,6 +7,7 @@ import 'package:source_player/widgets/video_card_widget.dart';
 
 import '../cache/db/current_configs.dart';
 import '../getx_controller/net_resource_list_controller.dart';
+import '../widgets/custom_first_page_error.dart';
 import '../widgets/filter_criteria_widget.dart';
 import '../widgets/loading_widget.dart';
 
@@ -148,69 +149,4 @@ class _NetResourceListPageState extends State<NetResourceListPage> {
   }
 }
 
-class CustomFirstPageError extends StatelessWidget {
-  const CustomFirstPageError({super.key, required this.pagingController});
 
-  final PagingController<Object, Object> pagingController;
-
-  @override
-  Widget build(BuildContext context) {
-    return PagingListener(
-      controller: pagingController,
-      builder: (context, state, _) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '刷新失败 :(',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            if (state.error != null) ...[
-              const SizedBox(height: 16),
-              Text(state.error.toString(), textAlign: TextAlign.center),
-            ],
-            const SizedBox(height: 48),
-            SizedBox(
-              width: 200,
-              child: ElevatedButton.icon(
-                onPressed: pagingController.refresh,
-                icon: const Icon(Icons.refresh),
-                label: const Text('重试', style: TextStyle(fontSize: 16)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CustomNewPageError extends StatelessWidget {
-  const CustomNewPageError({super.key, required this.pagingController});
-
-  final PagingController<Object, Object> pagingController;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: pagingController.fetchNextPage,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '获取下一页数据失败，是否重试?',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 4),
-            const Icon(Icons.refresh, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}

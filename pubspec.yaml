@@ -61,6 +61,8 @@ dependencies:
   flutter_volume_controller: ^1.3.3
   screen_brightness: ^2.1.6
   wakelock_plus: ^1.3.2
+  photo_manager: ^3.7.1
+  permission_handler: ^12.0.1
 
 
 dev_dependencies:
