@@ -7,7 +7,7 @@ import '../../commons/widget_style_commons.dart';
 import '../commons/player_commons.dart';
 import '../controller/player_controller.dart';
 import '../enums/player_ui_key_enum.dart';
-import '../utils/bottom_sheet_utils.dart';
+import '../../utils/bottom_sheet_dialog_utils.dart';
 
 // 顶部UI
 class PlayerTopUI extends GetView<PlayerController> {
@@ -100,7 +100,7 @@ class PlayerTopUI extends GetView<PlayerController> {
       return;
     }
 
-    BottomSheetUtils.openBottomSheet(
+    BottomSheetDialogUtils.openBottomSheet(
       DefaultTextStyle(
         style: TextStyle(
           color: controller.playerState.isFullscreen.value

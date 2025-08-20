@@ -60,7 +60,11 @@ class MediaKitPlayer extends IPlayer {
   @override
   Future<void> onDisposePlayer() async {
     _playerController.playerState.playerView(Container());
-    return await _player.dispose();
+    try {
+      await _player.dispose();
+    } catch(ignore) {
+
+    }
   }
 
   @override

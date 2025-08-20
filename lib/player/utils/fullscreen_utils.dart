@@ -120,6 +120,7 @@ class FullscreenUtils {
       if (controller.onlyFullscreen) {
         controller.pause();
         controller.player.value?.onDisposePlayer();
+        controller.dispose();
       }
       Get.back();
     }

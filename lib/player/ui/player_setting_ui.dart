@@ -11,7 +11,7 @@ import '../commons/player_commons.dart';
 import '../controller/player_controller.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../models/buttom_ui_control_item_model.dart';
-import '../utils/bottom_sheet_utils.dart';
+import '../../utils/bottom_sheet_dialog_utils.dart';
 
 class PlayerSettingUI extends StatefulWidget {
   const PlayerSettingUI({super.key, this.bottomSheet = false});
@@ -27,7 +27,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
   List<Widget> chapterList = [
     InkWell(
       onTap: () {
-        BottomSheetUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
+        BottomSheetDialogUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
       },
       child: Text("章节列表"),
     ),
@@ -86,7 +86,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
           if (controller.playerState.isFullscreen.value) {
             controller.showUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]);
           } else {
-            BottomSheetUtils.openBottomSheet(PlayerSpeedUI(bottomSheet: true));
+            BottomSheetDialogUtils.openBottomSheet(PlayerSpeedUI(bottomSheet: true));
           }
         },
         child: Text("播放倍数"),
