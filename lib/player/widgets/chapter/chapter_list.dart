@@ -9,6 +9,7 @@ import '../../../utils/auto_compute_sliver_grid_count.dart';
 import '../../../widgets/chapter/chapter_layout_widget.dart';
 import '../../controller/player_controller.dart';
 import '../../models/play_source_option_model.dart';
+import 'chapter_group.dart';
 import 'chapter_group_widget.dart';
 import 'chapter_widget.dart';
 
@@ -76,7 +77,7 @@ class _ChapterListState extends State<ChapterList> {
               child: Column(
                 children: [
                   _createHeader(context),
-                  ChapterGroupWidget(singleHorizontalScroll: true),
+                  ChapterGroup(option: PlaySourceOptionModel()),
                   option.bottomSheet
                       ? _bottomSheetList(context)
                       : option.singleHorizontalScroll
@@ -229,8 +230,9 @@ class _ChapterListState extends State<ChapterList> {
   Widget _listView(BuildContext context) {
     return Obx(() {
       var list = controller.resourcePlayState.chapterAsc.value
-          ? controller.resourcePlayState.chapterList
-          : controller.resourcePlayState.chapterList.reversed.toList();
+          ? controller.resourcePlayState.chapterGroupChapterList
+          : controller.resourcePlayState.chapterGroupChapterList.reversed
+                .toList();
       int activeIndex =
           controller.resourcePlayState.chapterActivatedIndex.value;
       return ListViewObserver(
@@ -273,8 +275,9 @@ class _ChapterListState extends State<ChapterList> {
   Widget _gridView(BuildContext context) {
     return Obx(() {
       var list = controller.resourcePlayState.chapterAsc.value
-          ? controller.resourcePlayState.chapterList
-          : controller.resourcePlayState.chapterList.reversed.toList();
+          ? controller.resourcePlayState.chapterGroupChapterList
+          : controller.resourcePlayState.chapterGroupChapterList.reversed
+                .toList();
       int activeIndex =
           controller.resourcePlayState.chapterActivatedIndex.value;
       return GridViewObserver(
@@ -325,8 +328,9 @@ class _ChapterListState extends State<ChapterList> {
         ),
         child: Obx(() {
           var list = controller.resourcePlayState.chapterAsc.value
-              ? controller.resourcePlayState.chapterList
-              : controller.resourcePlayState.chapterList.reversed.toList();
+              ? controller.resourcePlayState.chapterGroupChapterList
+              : controller.resourcePlayState.chapterGroupChapterList.reversed
+                    .toList();
           int activeIndex =
               controller.resourcePlayState.chapterActivatedIndex.value;
           return ListViewObserver(

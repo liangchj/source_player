@@ -65,9 +65,7 @@ class _SourceApiState extends State<SourceApi> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.resourcePlayState.playSourceList.isEmpty ||
-          (controller.resourcePlayState.playSourceList.length == 1 &&
-              controller.resourcePlayState.playSourceList.first.api == null)) {
+      if (!controller.resourcePlayState.createApiWidget) {
         return Container();
       }
       return DefaultTextStyle(
@@ -105,7 +103,8 @@ class _SourceApiState extends State<SourceApi> {
                   return Text(
                     controller
                             .resourcePlayState
-                            .playSourceList[controller
+                            .playSourceList
+                            .value![controller
                                 .resourcePlayState
                                 .apiActivatedIndex
                                 .value]
@@ -124,7 +123,7 @@ class _SourceApiState extends State<SourceApi> {
       else
         Text(
           controller.playerState.isFullscreen.value
-              ? "播放源(${controller.resourcePlayState.playSourceList.length})："
+              ? "播放源(${controller.resourcePlayState.playSourceList.value!.length})："
               : "播放源：",
         ),
     ];
@@ -172,7 +171,7 @@ class _SourceApiState extends State<SourceApi> {
               Row(
                 children: [
                   Text(
-                    "${controller.resourcePlayState.playSourceList.length}源",
+                    "${controller.resourcePlayState.playSourceList.value!.length}源",
                   ),
                   Icon(Icons.keyboard_arrow_right_rounded),
                 ],
@@ -239,9 +238,10 @@ class _SourceApiState extends State<SourceApi> {
             horizontal: WidgetStyleCommons.safeSpace,
             vertical: WidgetStyleCommons.safeSpace,
           ),
-          itemCount: controller.resourcePlayState.playSourceList.length,
+          itemCount: controller.resourcePlayState.playSourceList.value!.length,
           itemBuilder: (context, index) {
-            final item = controller.resourcePlayState.playSourceList[index];
+            final item =
+                controller.resourcePlayState.playSourceList.value![index];
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
@@ -276,7 +276,7 @@ class _SourceApiState extends State<SourceApi> {
             vertical: WidgetStyleCommons.safeSpace,
           ),
           controller: _scrollController,
-          itemCount: controller.resourcePlayState.playSourceList.length,
+          itemCount: controller.resourcePlayState.playSourceList.value!.length,
           gridDelegate: SliverGridDelegateWithExtentAndRatio(
             crossAxisSpacing: WidgetStyleCommons.safeSpace,
             mainAxisSpacing: WidgetStyleCommons.safeSpace,
@@ -284,7 +284,8 @@ class _SourceApiState extends State<SourceApi> {
             childAspectRatio: WidgetStyleCommons.playSourceGridRatio,
           ),
           itemBuilder: (context, index) {
-            final item = controller.resourcePlayState.playSourceList[index];
+            final item =
+                controller.resourcePlayState.playSourceList.value![index];
             return ClickableButtonWidget(
               text: item.api?.apiBaseModel.name ?? "",
               maxLines: 1,
@@ -322,9 +323,11 @@ class _SourceApiState extends State<SourceApi> {
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             scrollDirection: Axis.horizontal,
-            itemCount: controller.resourcePlayState.playSourceList.length,
+            itemCount:
+                controller.resourcePlayState.playSourceList.value!.length,
             itemBuilder: (context, index) {
-              final item = controller.resourcePlayState.playSourceList[index];
+              final item =
+                  controller.resourcePlayState.playSourceList.value![index];
               return Container(
                 margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
                 child: AspectRatio(

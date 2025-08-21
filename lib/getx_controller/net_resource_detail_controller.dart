@@ -92,9 +92,6 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       tabController = TabController(length: tabs.length, vsync: this);
       playerWidget(PlayerView(
         onCreatePlayerController: (c) {
-          c.sourceAdapter = NetworkSourceAdapter(onPlay: (val) {
-
-          });
           playerController(c);
           c.netResourceDetailController = this;
         },

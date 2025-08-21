@@ -36,14 +36,20 @@ class ResourcePlayState {
 
 
   // 播放源列表
-  final playSourceList = <PlaySourceModel>[].obs;
+  final playSourceList = Rx<List<PlaySourceModel>?>(null);
 
-  /*PlaySourceModel? get playingApi {
-    return playSourceList.isEmpty ? null : playSourceList[resourcePlayingState.value.apiIndex];
-  }*/
+  // 播放列表
+  final chapterList = Rx<List<ResourceChapterModel>?>(null);
+
+  bool get createApiWidget {
+    return !(playSourceList.value == null || playSourceList.value!.isEmpty ||
+        (playSourceList.value!.length == 1 &&
+            playSourceList.value!.first.api == null));
+  }
+
   // 激活的播放源
   PlaySourceModel? get activatedApi {
-    return playSourceList.isEmpty ? null : playSourceList.value[apiActivatedIndex.value];
+    return playSourceList.value == null || playSourceList.value!.isEmpty ? null : playSourceList.value![apiActivatedIndex.value];
   }
 
   // 播放源组列表
@@ -61,22 +67,31 @@ class ResourcePlayState {
     return sourceGroupList[apiGroupActivatedIndex.value];
   }
 
+  // 章节组
   List<ChapterGroupModel> get chapterGroupList {
-    if (activatedSourceGroup == null) {
+    List<ResourceChapterModel> chapters = [];
+    if (playSourceList.value == null || playSourceList.value!.isEmpty) {
+      chapters = chapterList.value ?? [];
+    } else {
+      if (activatedSourceGroup == null) {
+        return [];
+      }
+      chapters = activatedSourceGroup!.chapterList;
+    }
+    if (chapters.isEmpty) {
       return [];
     }
-    var chapterList = activatedSourceGroup!.chapterList;
-    List<ChapterGroupModel> list = [];
 
-    int groupCount = (chapterList.length / WidgetStyleCommons.chapterGroupCount).ceil();
+    List<ChapterGroupModel> list = [];
+    int groupCount = (chapters.length / WidgetStyleCommons.chapterGroupCount).ceil();
     for (int i = 0; i < groupCount; i++) {
       int start = i * WidgetStyleCommons.chapterGroupCount + 1;
       int end = start + WidgetStyleCommons.chapterGroupCount - 1;
-      if (end > chapterList.length) {
-        end = chapterList.length;
+      if (end > chapters.length) {
+        end = chapters.length;
       }
       String name = "${start.toString()}至${end.toString()}";
-      list.add(ChapterGroupModel(id: i.toString(), name: name, chapterList: chapterList.sublist(start - 1, end)));
+      list.add(ChapterGroupModel(id: i.toString(), name: name, chapterList: chapters.sublist(start - 1, end)));
     }
     return list;
   }
@@ -90,13 +105,17 @@ class ResourcePlayState {
   }
 
   int get chapterCount {
-    if (activatedSourceGroup == null) {
-      return 0;
+    if (playSourceList.value == null || playSourceList.value!.isEmpty) {
+      return chapterList.value?.length ?? 0;
+    } else {
+      if (activatedSourceGroup == null) {
+        return 0;
+      }
+      return activatedSourceGroup!.chapterList.length;
     }
-    return activatedSourceGroup!.chapterList.length;
   }
 
-  List<ResourceChapterModel> get chapterList {
+  List<ResourceChapterModel> get chapterGroupChapterList {
     if (activatedChapterGroup == null) {
       return [];
     }

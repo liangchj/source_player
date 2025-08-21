@@ -19,6 +19,10 @@ import '../commons/icon_commons.dart';
 import '../commons/widget_style_commons.dart';
 import '../getx_controller/net_resource_detail_controller.dart';
 import '../player/controller/player_controller.dart';
+import '../player/models/play_source_option_model.dart';
+import '../player/widgets/chapter/chapter_list.dart';
+import '../player/widgets/resource_source/source_api.dart';
+import '../player/widgets/resource_source/source_group.dart';
 import '../widgets/loading_widget.dart' show LoadingWidget;
 
 /// 网络资源详情页面
@@ -156,17 +160,28 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
               flexibleSpace: Stack(
                 children: [
                   Positioned.fill(child: _createPlayer()),
-                  Positioned.fill(child: Obx(() =>
-                  controller.playerController.value != null &&
-                      !controller.playerController.value!.playerState
-                          .isPlaying.value &&
-                      height - controller
-                .extendedNestedScrollViewOffset
-                .value <= pinnedHeaderHeight * 2?
-                      Container(
-                        color: Colors.black,
-                      height: double.infinity,
-                  ) : Container())),
+                  Positioned.fill(
+                    child: Obx(
+                      () =>
+                          controller.playerController.value != null &&
+                              !controller
+                                  .playerController
+                                  .value!
+                                  .playerState
+                                  .isPlaying
+                                  .value &&
+                              height -
+                                      controller
+                                          .extendedNestedScrollViewOffset
+                                          .value <=
+                                  pinnedHeaderHeight * 2
+                          ? Container(
+                              color: Colors.black,
+                              height: double.infinity,
+                            )
+                          : Container(),
+                    ),
+                  ),
                   Positioned(
                     left: 0,
                     top: 0,
@@ -174,15 +189,20 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                     child: Obx(
                       () =>
                           controller.playerController.value != null &&
-                              !controller.playerController.value!.playerState
-                                  .isPlaying.value &&
-                              controller
-                                  .extendedNestedScrollViewOffset
-                                  .value > pinnedHeaderHeight
+                              !controller
+                                  .playerController
+                                  .value!
+                                  .playerState
+                                  .isPlaying
+                                  .value &&
+                              controller.extendedNestedScrollViewOffset.value >
+                                  pinnedHeaderHeight
                           ? Container(
                               color: Colors.black,
-                              padding: EdgeInsets.only(top: WidgetStyleCommons.safeSpace),
-                              child: PlayerTopUI(pauseScroll: true,),
+                              padding: EdgeInsets.only(
+                                top: WidgetStyleCommons.safeSpace,
+                              ),
+                              child: PlayerTopUI(pauseScroll: true),
                             )
                           : Container(),
                     ),
@@ -251,7 +271,26 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         ChapterListWidget(singleHorizontalScroll: true),*/
 
         // ...(controller.playerController.value?.sourceAdapter?.sourceUIList() ?? [])
-        Obx(() {
+        Obx(
+          () => controller.playerController.value == null
+              ? Container()
+              : SourceApi(option: PlaySourceOptionModel(isSelect: true)),
+        ),
+        Obx(
+          () => controller.playerController.value == null
+              ? Container()
+              : SourceGroup(
+                  option: PlaySourceOptionModel(singleHorizontalScroll: true),
+                ),
+        ),
+        Obx(
+          () => controller.playerController.value == null
+              ? Container()
+              : ChapterList(
+                  option: PlaySourceOptionModel(singleHorizontalScroll: true),
+                ),
+        ),
+        /*Obx(() {
           if (controller.playerController.value == null ||
               controller.playerController.value?.sourceAdapter == null) {
           return  Container();
@@ -263,7 +302,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                 ?.sourceUIList()[0],
           );
         }
-    )
+    )*/
 
         /*PlaySourceApiWidget(
           controller: controller,
