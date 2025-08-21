@@ -15,6 +15,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
 import '../../models/video_model.dart';
+import '../adapter/source_adapter.dart';
 import '../commons/player_commons.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../media_kit_player.dart';
@@ -22,6 +23,7 @@ import '../models/buttom_ui_control_item_model.dart';
 import '../models/player_overlay_ui_model.dart';
 import '../player_view.dart';
 import '../state/player_state.dart';
+import '../state/resource_play_state.dart';
 import '../state/resource_state.dart';
 import '../ui/brightness_volume_ui.dart';
 import '../utils/fullscreen_utils.dart';
@@ -32,6 +34,8 @@ class PlayerController extends GetxController {
   NetResourceDetailController? netResourceDetailController;
 
   late ResourceState resourceState;
+
+  late ResourcePlayState resourcePlayState;
 
   PlayerController();
 
@@ -52,9 +56,12 @@ class PlayerController extends GetxController {
 
   bool _initialized = false;
 
+  SourceAdapter? sourceAdapter;
+
   @override
   void onInit() {
     resourceState = ResourceState();
+    resourcePlayState = ResourcePlayState();
     playerState = PlayerState();
     uiState = PlayerUIState();
     fullscreenUtils = FullscreenUtils(this);

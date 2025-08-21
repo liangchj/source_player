@@ -6,6 +6,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:source_player/player/iplayer.dart';
 
 import '../commons/widget_style_commons.dart';
+import 'adapter/source_adapter.dart';
 import 'controller/player_controller.dart';
 import 'media_kit_player.dart';
 import 'models/buttom_ui_control_item_model.dart';
@@ -16,10 +17,12 @@ class PlayerView extends StatefulWidget {
     this.controller,
     this.player,
     this.onCreatePlayerController,
+    this.sourceAdapter,
   });
   final PlayerController? controller;
   final IPlayer? player;
   final Function(PlayerController)? onCreatePlayerController;
+  final SourceAdapter? sourceAdapter;
 
   @override
   State<PlayerView> createState() => _PlayerViewState();
@@ -37,6 +40,7 @@ class _PlayerViewState extends State<PlayerView> {
     } else {
       _playerController = widget.controller!;
     }
+    _playerController.sourceAdapter = widget.sourceAdapter;
     if (widget.player == null) {
       MediaKit.ensureInitialized();
     }

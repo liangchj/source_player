@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
 import 'package:source_player/models/video_model.dart';
+import 'package:source_player/player/adapter/network_source_adapter.dart';
 
 import '../cache/db/current_configs.dart';
 import '../models/loading_state_model.dart';
@@ -91,6 +92,9 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       tabController = TabController(length: tabs.length, vsync: this);
       playerWidget(PlayerView(
         onCreatePlayerController: (c) {
+          c.sourceAdapter = NetworkSourceAdapter(onPlay: (val) {
+
+          });
           playerController(c);
           c.netResourceDetailController = this;
         },
@@ -104,7 +108,9 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   void _initEver() {
     ever(playerController, (val) {
       if (val != null) {
-        val.resourceState.videoModel(videoModel.value);
+        // val.resourceState.videoModel(videoModel.value);
+        val.resourcePlayState.playSourceList.value = videoModel.value?.playSourceList ?? [];
+
       }
     });
     ever(videoModel, (val) {
@@ -115,6 +121,10 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       }
       sourceChapterState.chapterGroup(group);
       sourceChapterState.chapterGroupIndex(0);
+
+      if (playerController.value != null) {
+        playerController.value!.resourcePlayState.playSourceList.value = videoModel.value?.playSourceList ?? [];
+      }
     });
 
     ever(sourceChapterState.selectedSourceGroupIndex, (value) {

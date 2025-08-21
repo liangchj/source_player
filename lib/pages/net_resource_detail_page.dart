@@ -245,10 +245,25 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
 
-        SourceApiWidget(isSelect: true),
+        /*SourceApiWidget(isSelect: true),
 
         SourceGroupWidget(singleHorizontalScroll: true),
-        ChapterListWidget(singleHorizontalScroll: true),
+        ChapterListWidget(singleHorizontalScroll: true),*/
+
+        // ...(controller.playerController.value?.sourceAdapter?.sourceUIList() ?? [])
+        Obx(() {
+          if (controller.playerController.value == null ||
+              controller.playerController.value?.sourceAdapter == null) {
+          return  Container();
+          }
+
+          return Container(
+            height: 80,
+            child: controller.playerController.value?.sourceAdapter
+                ?.sourceUIList()[0],
+          );
+        }
+    )
 
         /*PlaySourceApiWidget(
           controller: controller,
