@@ -15,17 +15,13 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
 import '../../models/video_model.dart';
-import '../adapter/source_adapter.dart';
 import '../commons/player_commons.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../media_kit_player.dart';
 import '../models/buttom_ui_control_item_model.dart';
 import '../models/player_overlay_ui_model.dart';
-import '../player_view.dart';
 import '../state/player_state.dart';
 import '../state/resource_play_state.dart';
-import '../state/resource_state.dart';
-import '../ui/brightness_volume_ui.dart';
 import '../utils/fullscreen_utils.dart';
 
 class PlayerController extends GetxController {
@@ -33,7 +29,6 @@ class PlayerController extends GetxController {
 
   NetResourceDetailController? netResourceDetailController;
 
-  late ResourceState resourceState;
 
   late ResourcePlayState resourcePlayState;
 
@@ -56,11 +51,8 @@ class PlayerController extends GetxController {
 
   bool _initialized = false;
 
-  SourceAdapter? sourceAdapter;
-
   @override
   void onInit() {
-    resourceState = ResourceState();
     resourcePlayState = ResourcePlayState();
     playerState = PlayerState();
     uiState = PlayerUIState();
@@ -101,12 +93,14 @@ class PlayerController extends GetxController {
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 2,
         child: Obx(
-          () => resourceState.haveNext ? IconButton(
-            padding: const EdgeInsets.symmetric(horizontal: 0),
-            color: WidgetStyleCommons.iconColor,
-            onPressed: () => nextPlay(),
-            icon: IconCommons.nextPlayIcon,
-          ) : Container(),
+          () => resourcePlayState.haveNext
+              ? IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  color: WidgetStyleCommons.iconColor,
+                  onPressed: () => nextPlay(),
+                  icon: IconCommons.nextPlayIcon,
+                )
+              : Container(),
         ),
       ),
       PlayerBottomUIItemModel(
@@ -145,14 +139,18 @@ class PlayerController extends GetxController {
         type: ControlType.chapter,
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 4,
-        child: Obx(() => resourceState.activatedChapterList.length > 0 ? IconButton(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          color: WidgetStyleCommons.iconColor,
-          onPressed: () => {
-            showUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]),
-          },
-          icon: Icon(Icons.list),
-        ) : Container()),
+        child: Obx(
+          () => resourcePlayState.activatedChapterList.length > 1
+              ? IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  color: WidgetStyleCommons.iconColor,
+                  onPressed: () => {
+                    showUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]),
+                  },
+                  icon: Icon(Icons.list),
+                )
+              : Container(),
+        ),
       ),
       PlayerBottomUIItemModel(
         type: ControlType.speed,
@@ -193,16 +191,15 @@ class PlayerController extends GetxController {
     ever(player, (player) {
       player?.onInitPlayer();
     });
-    resourceState.initEver();
 
     ever(playerState.isInitialized, (value) {
       if (value && !uiState.uiLocked.value) {
         cancelAndRestartTimer();
-        showUIByKeyList(uiState.touchBackgroundShowUIKeyList,);
+        showUIByKeyList(uiState.touchBackgroundShowUIKeyList);
       }
     });
 
-    ever(resourceState.state.chapterActivatedIndex, (val) {
+    ever(resourcePlayState.resourcePlayingState, (val) {
       changeVideoUrl(autoPlay: _initialized ? playerState.autoPlay : true);
     });
 
@@ -215,6 +212,8 @@ class PlayerController extends GetxController {
         WakelockPlus.disable();
       }
     });
+
+    resourcePlayState.initEver();
   }
 
   @override
@@ -279,7 +278,7 @@ class PlayerController extends GetxController {
   Future<void> play() async {
     if (!uiState.uiLocked.value) {
       cancelAndRestartTimer();
-      showUIByKeyList(uiState.touchBackgroundShowUIKeyList,);
+      showUIByKeyList(uiState.touchBackgroundShowUIKeyList);
     }
     return player.value?.play();
   }
@@ -325,7 +324,6 @@ class PlayerController extends GetxController {
     playerState.autoPlay = false;
     // playerState.autoPlay = true;
     this.player(player ?? MediaKitPlayer());
-    resourceState.videoModel(videoModel);
     playerState.isFullscreen(true);
     fullscreenUtils.enterFullscreen(Get.context!);
   }
@@ -636,6 +634,7 @@ class PlayerController extends GetxController {
   }
 
   void nextPlay() {
-    resourceState.state.chapterActivatedIndex(resourceState.state.chapterActivatedIndex.value + 1);
+    resourcePlayState.chapterActivatedIndex.value =
+        resourcePlayState.chapterActivatedIndex.value + 1;
   }
 }

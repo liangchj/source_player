@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:source_player/player/widgets/chapter/chapter_list_widget.dart';
+import 'package:source_player/player/models/play_source_option_model.dart';
 
 import '../../commons/widget_style_commons.dart';
 import '../commons/player_commons.dart';
 import '../controller/player_controller.dart';
-import '../widgets/resource_source/source_api_widget.dart';
-import '../widgets/resource_source/source_group_widget.dart';
+import '../widgets/chapter/chapter_list.dart';
+import '../widgets/resource_source/source_api.dart';
+import '../widgets/resource_source/source_group.dart';
 
 class FullscreenChapterListUI extends StatefulWidget {
   const FullscreenChapterListUI({super.key, this.bottomSheet = false});
@@ -39,19 +40,31 @@ class _FullscreenChapterListUIState extends State<FullscreenChapterListUI> {
             padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
             child: Column(
               children: [
-                SourceApiWidget(singleHorizontalScroll: true),
+                SourceApi(
+                  option: PlaySourceOptionModel(singleHorizontalScroll: true),
+                ),
 
-                SourceGroupWidget(singleHorizontalScroll: true),
-                Expanded(child: ChapterListWidget(isGrid: true)),
+                SourceGroup(
+                  option: PlaySourceOptionModel(singleHorizontalScroll: true),
+                ),
+                Expanded(
+                  child: ChapterList(
+                    option: PlaySourceOptionModel(isGrid: true),
+                  ),
+                ),
               ],
             ),
           )
         : Column(
             children: [
-              SourceApiWidget(singleHorizontalScroll: true),
+              SourceApi(
+                option: PlaySourceOptionModel(singleHorizontalScroll: true),
+              ),
 
-              SourceGroupWidget(singleHorizontalScroll: true),
-              Expanded(child: ChapterListWidget()),
+              SourceGroup(
+                option: PlaySourceOptionModel(singleHorizontalScroll: true),
+              ),
+              Expanded(child: ChapterList(option: PlaySourceOptionModel())),
             ],
           );
   }

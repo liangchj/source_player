@@ -3,22 +3,12 @@ import 'dart:ui';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:source_player/player/player_view.dart';
 import 'package:source_player/player/ui/player_top_ui.dart';
-import 'package:source_player/player/widgets/chapter/chapter_group_widget.dart';
-import 'package:source_player/player/widgets/chapter/chapter_list_widget.dart';
-import 'package:source_player/player/widgets/resource_source/source_api_widget.dart';
-import 'package:source_player/player/widgets/resource_source/source_group_widget.dart';
 import 'package:source_player/utils/logger_utils.dart';
-import 'package:source_player/widgets/chapter/chapter_layout_widget.dart';
-import 'package:source_player/widgets/play_source/play_source_api_widget.dart';
-import 'package:source_player/widgets/play_source/play_source_group_widget.dart';
 import 'package:source_player/widgets/resource_detail/resource_detail_info_widget.dart';
 
-import '../commons/icon_commons.dart';
 import '../commons/widget_style_commons.dart';
 import '../getx_controller/net_resource_detail_controller.dart';
-import '../player/controller/player_controller.dart';
 import '../player/models/play_source_option_model.dart';
 import '../player/widgets/chapter/chapter_list.dart';
 import '../player/widgets/resource_source/source_api.dart';
@@ -265,12 +255,6 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
 
-        /*SourceApiWidget(isSelect: true),
-
-        SourceGroupWidget(singleHorizontalScroll: true),
-        ChapterListWidget(singleHorizontalScroll: true),*/
-
-        // ...(controller.playerController.value?.sourceAdapter?.sourceUIList() ?? [])
         Obx(
           () => controller.playerController.value == null
               ? Container()
@@ -618,7 +602,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
             onTap: () {
               // logger.d("当前播放章节：${playingChapterIndex.value}，链接：${playUrl.value}");
               var chapterUrl =
-                  controller.playerController.value?.resourceState.chapterUrl;
+                  controller.playerController.value?.resourcePlayState.activatedChapter?.playUrl;
               LoggerUtils.logger.d("当前播放章节链接：$chapterUrl");
             },
           ),

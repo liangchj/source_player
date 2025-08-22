@@ -58,7 +58,11 @@ class NetResourceListController extends GetxController {
   }
 
   changeFilterCriteria() {
-    pagingController.refresh();
+    // pagingController.refresh();
+    // 使用一个微任务来延迟刷新，让当前帧完成后再执行刷新
+    Future.microtask(() {
+      pagingController.refresh();
+    });
   }
 
   /// 加载过滤列表

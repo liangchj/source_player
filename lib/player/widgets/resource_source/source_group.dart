@@ -236,6 +236,7 @@ class _SourceGroupState extends State<SourceGroup> {
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
+                key: ValueKey("source_group_${option.bottomSheet}_listView_${controller.resourcePlayState.apiActivatedIndex.value}_$index"),
                 text: item.name ?? "未知分组",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -281,6 +282,7 @@ class _SourceGroupState extends State<SourceGroup> {
             final item =
                 controller.resourcePlayState.sourceGroupList[index];
             return ClickableButtonWidget(
+              key: ValueKey("source_group_${option.bottomSheet}_gridView_${controller.resourcePlayState.apiActivatedIndex.value}_$index"),
               text: item.name ?? "未知分组",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -331,6 +333,7 @@ class _SourceGroupState extends State<SourceGroup> {
                   child: AspectRatio(
                     aspectRatio: WidgetStyleCommons.playSourceGridRatio,
                     child: ClickableButtonWidget(
+                      key: ValueKey("source_group_${option.bottomSheet}_horizontalScroll_${controller.resourcePlayState.apiActivatedIndex.value}_$index"),
                       text: item.name ?? "未知分组",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

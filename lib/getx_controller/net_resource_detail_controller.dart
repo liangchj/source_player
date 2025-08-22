@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
 import 'package:source_player/models/video_model.dart';
-import 'package:source_player/player/adapter/network_source_adapter.dart';
 
 import '../cache/db/current_configs.dart';
 import '../models/loading_state_model.dart';
@@ -105,8 +104,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   void _initEver() {
     ever(playerController, (val) {
       if (val != null) {
-        // val.resourceState.videoModel(videoModel.value);
-        val.resourcePlayState.playSourceList.value = videoModel.value?.playSourceList ?? [];
+        val.resourcePlayState.videoModel.value = videoModel.value;
 
       }
     });
@@ -120,7 +118,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
       sourceChapterState.chapterGroupIndex(0);
 
       if (playerController.value != null) {
-        playerController.value!.resourcePlayState.playSourceList.value = videoModel.value?.playSourceList ?? [];
+        playerController.value!.resourcePlayState.videoModel.value = val;
       }
     });
 

@@ -88,9 +88,8 @@ class PlayerState {
 
   var openDanmaku = false.obs;
 
+
   String playUrl = "asset://assets/video/test.mp4";
-
-
 
 
 }

@@ -53,7 +53,10 @@ class PlayerTopUI extends GetView<PlayerController> {
                             : controller.playerState.isFinished.value
                             ? "重新"
                             : "继续";
-                        return Text("$prefix播放", style: TextStyle(color: Colors.white),);
+                        return Text(
+                          "$prefix播放",
+                          style: TextStyle(color: Colors.white),
+                        );
                       }),
                     ),
                   ),
@@ -65,7 +68,7 @@ class PlayerTopUI extends GetView<PlayerController> {
             Expanded(
               child: Obx(
                 () => Text(
-                  "${controller.resourceState.videoModel.value?.name}[第${controller.resourceState.state.chapterActivatedIndex.value + 1}集]",
+                  controller.resourcePlayState.playTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

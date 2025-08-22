@@ -5,6 +5,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:source_player/player/controller/player_controller.dart';
 import 'package:source_player/player/iplayer.dart';
 
+import '../http/dio_utils.dart';
 import 'ui/player_ui.dart';
 
 class MediaKitPlayer extends IPlayer {
@@ -62,9 +63,7 @@ class MediaKitPlayer extends IPlayer {
     _playerController.playerState.playerView(Container());
     try {
       await _player.dispose();
-    } catch(ignore) {
-
-    }
+    } catch (ignore) {}
   }
 
   @override
@@ -167,12 +166,27 @@ class MediaKitPlayer extends IPlayer {
   @override
   Future<void> changeVideoUrl({bool autoPlay = true}) async {
     await _videoController.player.stop();
-    if (_playerController.resourceState.chapterUrl.isNotEmpty) {
-    // if (_playerController.playerState.playUrl.isNotEmpty) {
+    if (_playerController.resourcePlayState.activatedChapter != null &&
+        (_playerController.resourcePlayState.activatedChapter!.playUrl ?? "")
+            .isNotEmpty) {
       try {
+        var httpHeaders = _playerController
+            .resourcePlayState
+            .activatedChapter!
+            .httpHeaders;
+        if (httpHeaders != null) {
+          httpHeaders = {"user-agent": DioUtils.getRandomUA()};
+        } else if (!httpHeaders!.containsKey("user-agent")) {
+          httpHeaders["user-agent"] = DioUtils.getRandomUA();
+        }
         await _videoController.player.open(
-          Media(_playerController.resourceState.chapterUrl),
-          // Media(_playerController.playerState.playUrl),
+          Media(
+            _playerController.resourcePlayState.activatedChapter!.playUrl!,
+            extras:
+                _playerController.resourcePlayState.activatedChapter!.extras,
+            httpHeaders: httpHeaders,
+            start: _playerController.resourcePlayState.activatedChapter!.start,
+          ),
           play: autoPlay,
         );
       } catch (e) {

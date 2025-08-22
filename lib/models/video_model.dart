@@ -1,15 +1,10 @@
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:source_player/models/play_source_model.dart';
 
+import '../player/models/video_base_model.dart';
 import '../utils/map_data_utils.dart';
 
-class VideoModel {
-  // 资源id
-  final String id;
-  // 名称
-  final String name;
-  // 名称（英文名称或拼音）
-  final String? enName;
+class VideoModel extends VideoBaseModel {
   // 类型Id
   final String typeId;
   // 类型名称
@@ -52,9 +47,9 @@ class VideoModel {
   List<PlaySourceModel>? playSourceList;
 
   VideoModel({
-    required this.id,
-    required this.name,
-    this.enName,
+    required super.id,
+    required super.name,
+    super.enName,
     required this.typeId,
     required this.typeName,
     this.parentTypeId,

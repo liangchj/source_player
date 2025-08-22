@@ -100,6 +100,7 @@ class _ChapterGroupState extends State<ChapterGroup> {
                   child: AspectRatio(
                     aspectRatio: WidgetStyleCommons.chapterGridRatio,
                     child: ClickableButtonWidget(
+                      key: ValueKey("chapterGroup_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-$realIndex"),
                       text: item.name,
                       textAlign: TextAlign.center,
                       activated: realIndex == activeIndex,

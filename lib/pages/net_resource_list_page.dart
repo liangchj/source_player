@@ -80,7 +80,6 @@ class _NetResourceListPageState extends State<NetResourceListPage> {
       return Padding(
         padding: EdgeInsetsGeometry.symmetric(horizontal: 10.0),
         child: RefreshIndicator(
-          // onRefresh: () async => controller.pagingController.refresh(),
           onRefresh: () async => controller.onRefresh(),
           child: PagingListener(
             controller: controller.pagingController,
@@ -96,6 +95,7 @@ class _NetResourceListPageState extends State<NetResourceListPage> {
                   ),
 
                 PagedSliverGrid<int, VideoModel>(
+                  key: ValueKey('paged_sliver_grid_${controller.videoType.id}'),
                   state: state,
                   fetchNextPage: fetchNextPage,
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

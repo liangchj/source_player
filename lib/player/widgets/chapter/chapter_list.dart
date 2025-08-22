@@ -6,11 +6,9 @@ import 'package:scrollview_observer/scrollview_observer.dart';
 
 import '../../../commons/widget_style_commons.dart';
 import '../../../utils/auto_compute_sliver_grid_count.dart';
-import '../../../widgets/chapter/chapter_layout_widget.dart';
 import '../../controller/player_controller.dart';
 import '../../models/play_source_option_model.dart';
 import 'chapter_group.dart';
-import 'chapter_group_widget.dart';
 import 'chapter_widget.dart';
 
 class ChapterList extends StatefulWidget {
@@ -32,12 +30,11 @@ class _ChapterListState extends State<ChapterList> {
 
   bool _showBottomSheet = false;
 
-  bool _chapterClicked = false;
-
   @override
   void initState() {
     controller = Get.find<PlayerController>();
-    _activatedIndex = controller.resourcePlayState.chapterActivatedIndex.value;
+    _activatedIndex =
+        controller.resourcePlayState.chapterGroupActivatedChapterIndex;
     int initialIndex = _activatedIndex > 0 ? _activatedIndex : 0;
     _scrollController = ScrollController();
     if (option.isGrid) {
@@ -50,12 +47,35 @@ class _ChapterListState extends State<ChapterList> {
       )..initialIndex = initialIndex;
     }
 
+    everAll(
+      [
+        controller.resourcePlayState.apiActivatedIndex,
+        controller.resourcePlayState.apiGroupActivatedIndex,
+        controller.resourcePlayState.chapterGroupActivatedIndex,
+      ],
+      (val) {
+        /*if (_chapterClicked) {
+          _chapterClicked = false;
+          return;
+        }*/
+        int index =
+            controller.resourcePlayState.chapterGroupActivatedChapterIndex;
+        if (index < 0) {
+          index = 0;
+        }
+        if (!_showBottomSheet) {
+          _gridObserverController?.jumpTo(index: index, isFixedHeight: true);
+          _observerController?.jumpTo(index: index, isFixedHeight: true);
+        }
+      },
+    );
+
     super.initState();
   }
 
   @override
   void dispose() {
-    int index = controller.resourcePlayState.chapterActivatedIndex.value;
+    int index = controller.resourcePlayState.chapterGroupActivatedChapterIndex;
     index = index >= 0 ? index : 0;
     if (_scrollController != null && index != _activatedIndex) {
       option.onDispose?.call(index);
@@ -252,6 +272,9 @@ class _ChapterListState extends State<ChapterList> {
               ),
               height: WidgetStyleCommons.chapterHeight,
               child: ChapterWidget(
+                key: ValueKey(
+                  "chapter_${option.bottomSheet}_listView_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
+                ),
                 chapter: item,
                 activated: item.index == activeIndex,
                 isCard: true,
@@ -259,7 +282,6 @@ class _ChapterListState extends State<ChapterList> {
                     ? Colors.white
                     : Colors.black,
                 onClick: () {
-                  _chapterClicked = true;
                   controller.resourcePlayState.chapterActivatedIndex.value =
                       item.index;
                 },
@@ -298,6 +320,9 @@ class _ChapterListState extends State<ChapterList> {
           itemBuilder: (context, index) {
             var item = list[index];
             return ChapterWidget(
+              key: ValueKey(
+                "chapter_${option.bottomSheet}_gridView_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
+              ),
               chapter: item,
               activated: item.index == activeIndex,
               isCard: true,
@@ -305,7 +330,6 @@ class _ChapterListState extends State<ChapterList> {
                   ? Colors.white
                   : Colors.black,
               onClick: () {
-                _chapterClicked = true;
                 controller.resourcePlayState.chapterActivatedIndex.value =
                     item.index;
               },
@@ -347,6 +371,9 @@ class _ChapterListState extends State<ChapterList> {
                   child: AspectRatio(
                     aspectRatio: WidgetStyleCommons.chapterGridRatio,
                     child: ChapterWidget(
+                      key: ValueKey(
+                        "chapter_horizontalScroll_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
+                      ),
                       chapter: item,
                       activated: item.index == activeIndex,
                       isCard: true,
@@ -355,7 +382,6 @@ class _ChapterListState extends State<ChapterList> {
                           ? Colors.white
                           : Colors.black,
                       onClick: () {
-                        _chapterClicked = true;
                         controller
                                 .resourcePlayState
                                 .chapterActivatedIndex

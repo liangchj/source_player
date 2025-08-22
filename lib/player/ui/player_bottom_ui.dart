@@ -67,7 +67,7 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
         // 播放/暂停按钮
         _buildPlayPause(),
         Obx(
-          () => controller.resourceState.haveNext
+          () => controller.resourcePlayState.haveNext
               ? IconButton(
                   padding: const EdgeInsets.symmetric(horizontal: 0),
                   color: WidgetStyleCommons.iconColor,

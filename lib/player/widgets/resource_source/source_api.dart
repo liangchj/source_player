@@ -104,7 +104,7 @@ class _SourceApiState extends State<SourceApi> {
                     controller
                             .resourcePlayState
                             .playSourceList
-                            .value![controller
+                            ![controller
                                 .resourcePlayState
                                 .apiActivatedIndex
                                 .value]
@@ -123,7 +123,7 @@ class _SourceApiState extends State<SourceApi> {
       else
         Text(
           controller.playerState.isFullscreen.value
-              ? "播放源(${controller.resourcePlayState.playSourceList.value!.length})："
+              ? "播放源(${controller.resourcePlayState.playSourceList!.length})："
               : "播放源：",
         ),
     ];
@@ -171,7 +171,7 @@ class _SourceApiState extends State<SourceApi> {
               Row(
                 children: [
                   Text(
-                    "${controller.resourcePlayState.playSourceList.value!.length}源",
+                    "${controller.resourcePlayState.playSourceList!.length}源",
                   ),
                   Icon(Icons.keyboard_arrow_right_rounded),
                 ],
@@ -238,13 +238,14 @@ class _SourceApiState extends State<SourceApi> {
             horizontal: WidgetStyleCommons.safeSpace,
             vertical: WidgetStyleCommons.safeSpace,
           ),
-          itemCount: controller.resourcePlayState.playSourceList.value!.length,
+          itemCount: controller.resourcePlayState.playSourceList!.length,
           itemBuilder: (context, index) {
             final item =
-                controller.resourcePlayState.playSourceList.value![index];
+                controller.resourcePlayState.playSourceList![index];
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
+                key: ValueKey("source_api_${option.bottomSheet}_listView_$index"),
                 text: item.api?.apiBaseModel.name ?? "",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -276,7 +277,7 @@ class _SourceApiState extends State<SourceApi> {
             vertical: WidgetStyleCommons.safeSpace,
           ),
           controller: _scrollController,
-          itemCount: controller.resourcePlayState.playSourceList.value!.length,
+          itemCount: controller.resourcePlayState.playSourceList!.length,
           gridDelegate: SliverGridDelegateWithExtentAndRatio(
             crossAxisSpacing: WidgetStyleCommons.safeSpace,
             mainAxisSpacing: WidgetStyleCommons.safeSpace,
@@ -285,8 +286,9 @@ class _SourceApiState extends State<SourceApi> {
           ),
           itemBuilder: (context, index) {
             final item =
-                controller.resourcePlayState.playSourceList.value![index];
+                controller.resourcePlayState.playSourceList![index];
             return ClickableButtonWidget(
+              key: ValueKey("source_api_${option.bottomSheet}_gridView_$index"),
               text: item.api?.apiBaseModel.name ?? "",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -324,15 +326,16 @@ class _SourceApiState extends State<SourceApi> {
             physics: const AlwaysScrollableScrollPhysics(),
             scrollDirection: Axis.horizontal,
             itemCount:
-                controller.resourcePlayState.playSourceList.value!.length,
+                controller.resourcePlayState.playSourceList!.length,
             itemBuilder: (context, index) {
               final item =
-                  controller.resourcePlayState.playSourceList.value![index];
+                  controller.resourcePlayState.playSourceList![index];
               return Container(
                 margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
                 child: AspectRatio(
                   aspectRatio: WidgetStyleCommons.playSourceGridRatio,
                   child: ClickableButtonWidget(
+                    key: ValueKey("source_api_horizontalScroll_$index"),
                     text: item.api?.apiBaseModel.name ?? "",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
