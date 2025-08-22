@@ -18,6 +18,8 @@ class MediaFileModel {
 
   Uint8List? thumbnailUint8List;
 
+  Duration? playHistoryDuration;
+
   MediaFileModel({
     this.file,
     this.fileSourceType = MediaFileSourceType.localFile,
@@ -25,6 +27,7 @@ class MediaFileModel {
     this.subtitlePath,
     this.assetEntity,
     this.thumbnailUint8List,
+    this.playHistoryDuration,
   }) {
     if (file == null && assetEntity != null) {
       assetEntity!.file.then((value) => file = value);
@@ -59,4 +62,6 @@ class MediaFileModel {
   String get fileName => filePathName ?? assetEntity?.title ?? "";
 
   String get suffix => filePath == null ? "" : filePath!.contains(".") ? filePath!.split(".").last : "";
+
+  Duration? get duration => assetEntity?.duration == null ? null : Duration(seconds: assetEntity!.duration.toInt());
 }

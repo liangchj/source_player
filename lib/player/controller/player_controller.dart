@@ -14,12 +14,14 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
+import '../../models/resource_chapter_model.dart';
 import '../../models/video_model.dart';
 import '../commons/player_commons.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../media_kit_player.dart';
-import '../models/buttom_ui_control_item_model.dart';
+import '../models/bottom_ui_control_item_model.dart';
 import '../models/player_overlay_ui_model.dart';
+import '../models/resource_play_state_model.dart';
 import '../state/player_state.dart';
 import '../state/resource_play_state.dart';
 import '../utils/fullscreen_utils.dart';
@@ -28,7 +30,6 @@ class PlayerController extends GetxController {
   var player = Rx<IPlayer?>(null);
 
   NetResourceDetailController? netResourceDetailController;
-
 
   late ResourcePlayState resourcePlayState;
 
@@ -316,7 +317,12 @@ class PlayerController extends GetxController {
   }
 
   // 本地播放
-  void openLocalVideo(VideoModel videoModel, {IPlayer? player}) {
+  void openLocalVideo({
+    IPlayer? player,
+    VideoModel? videoModel,
+    List<ResourceChapterModel>? chapterList,
+    ResourcePlayStateModel? playStateModel,
+  }) {
     onlyFullscreen = true;
     if (player == null) {
       MediaKit.ensureInitialized();
@@ -324,6 +330,15 @@ class PlayerController extends GetxController {
     playerState.autoPlay = false;
     // playerState.autoPlay = true;
     this.player(player ?? MediaKitPlayer());
+    resourcePlayState.playStateModel = playStateModel;
+
+    if (videoModel != null) {
+      resourcePlayState.videoModel.value = videoModel;
+    }
+    if (chapterList != null) {
+      resourcePlayState.chapterList.value = chapterList;
+    }
+
     playerState.isFullscreen(true);
     fullscreenUtils.enterFullscreen(Get.context!);
   }
@@ -504,6 +519,8 @@ class PlayerController extends GetxController {
     playerState.draggingSurplusSecond = dragSecond - dragValue;
     // 更新拖动值
     playerState.draggingSecond(playerState.draggingSecond.value + dragValue);
+    //显示拖动进度UI
+    showUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name], ignoreLimit: true);
   }
 
   // 拖动播放进度结束

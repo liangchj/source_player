@@ -26,6 +26,7 @@ class ResourcePlayState {
         chapterIndex: -1,
       ).obs;
 
+
   // 多级缓存：记录每个上级分组对应的下级激活索引
   // 1. api索引 → 该api下最后激活的apiGroup索引
   final Map<int, int> _apiToApiGroupCache = {};
@@ -38,13 +39,23 @@ class ResourcePlayState {
 
   void initEver() {
     everAll([videoModel, chapterList], (val) {
-      _apiToApiGroupCache[0] = 0;
-      _apiGroupToChapterGroupCache["0-0"] = 0;
-      _chapterGroupToChapterCache["0-0-0"] = 0;
-      apiActivatedIndex.value = 0;
-      apiGroupActivatedIndex.value = 0;
-      chapterGroupActivatedIndex.value = 0;
-      chapterActivatedIndex.value = 0;
+      if (playStateModel == null) {
+        _apiToApiGroupCache[0] = 0;
+        _apiGroupToChapterGroupCache["0-0"] = 0;
+        _chapterGroupToChapterCache["0-0-0"] = 0;
+        apiActivatedIndex.value = 0;
+        apiGroupActivatedIndex.value = 0;
+        chapterGroupActivatedIndex.value = 0;
+        chapterActivatedIndex.value = 0;
+      } else {
+        _apiToApiGroupCache[playStateModel!.apiIndex] = playStateModel!.apiGroupIndex;
+        _apiGroupToChapterGroupCache["${playStateModel!.apiIndex}-${playStateModel!.apiGroupIndex}"] = playStateModel!.chapterGroupIndex;
+        _chapterGroupToChapterCache["${playStateModel!.apiIndex}-${playStateModel!.apiGroupIndex}-${playStateModel!.chapterGroupIndex}"] = playStateModel!.chapterIndex;
+        apiActivatedIndex.value = playStateModel!.apiIndex;
+        apiGroupActivatedIndex.value = playStateModel!.apiGroupIndex;
+        chapterGroupActivatedIndex.value = playStateModel!.chapterGroupIndex;
+        chapterActivatedIndex.value = playStateModel!.chapterIndex;
+      }
     });
     ever(apiActivatedIndex, (val) {
       int apiGroupCacheActivatedIndex = _apiToApiGroupCache[val] ?? -1;
@@ -103,8 +114,7 @@ class ResourcePlayState {
         chapterActivatedIndex.value;
   }
 
-  // 播放源列表
-  // final playSourceList = Rx<List<PlaySourceModel>?>(null);
+  ResourcePlayStateModel? playStateModel;
 
   final videoModel = Rx<VideoModel?>(null);
 
@@ -226,6 +236,17 @@ class ResourcePlayState {
       return playSourceGroupList[resourcePlayingState.value.apiGroupIndex]
           .chapterList;
     }
+  }
+
+  int get maxChapterTitleLen {
+    int max = 0;
+    for (var value in activatedChapterList) {
+      var length = value.name.length;
+      if (length > max) {
+        max = length;
+      }
+    }
+    return max;
   }
 
   ResourceChapterModel? get activatedChapter {

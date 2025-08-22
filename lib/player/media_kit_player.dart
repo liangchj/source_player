@@ -170,13 +170,11 @@ class MediaKitPlayer extends IPlayer {
         (_playerController.resourcePlayState.activatedChapter!.playUrl ?? "")
             .isNotEmpty) {
       try {
-        var httpHeaders = _playerController
+        Map<String, String> httpHeaders = _playerController
             .resourcePlayState
             .activatedChapter!
-            .httpHeaders;
-        if (httpHeaders != null) {
-          httpHeaders = {"user-agent": DioUtils.getRandomUA()};
-        } else if (!httpHeaders!.containsKey("user-agent")) {
+            .httpHeaders ?? {};
+        if (!httpHeaders.containsKey("user-agent")) {
           httpHeaders["user-agent"] = DioUtils.getRandomUA();
         }
         await _videoController.player.open(

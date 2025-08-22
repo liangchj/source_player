@@ -6,4 +6,6 @@ abstract class CacheConst {
   static String playFileList = "sourcePlayer_play_file_list";
   static String mediaFileDanmakuFilePath = "_media_danmaku_path";
   static String mediaFileSubtitleFilePath = "_media_subtitle_path";
+
+  static String playHistory = "_playHistory";
 }

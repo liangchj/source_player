@@ -8,6 +8,7 @@ import 'package:source_player/route/app_routes.dart';
 import 'package:source_player/utils/logger_utils.dart';
 
 import '../models/media_file_model.dart';
+import '../player/utils/time_format_utils.dart';
 import '../utils/bottom_sheet_dialog_utils.dart';
 import '../utils/datetime_utils.dart';
 
@@ -26,16 +27,6 @@ class MediaItemWidget extends StatelessWidget {
   final Widget? subtitleWidget;
   final Widget? trailingWidget;
   final VoidCallback? onTap;
-
-  /*String? get _fullFilePath => fileModel.file?.path;
-  String? get _filePath =>
-      _fullFilePath?.substring(_fullFilePath!.lastIndexOf("/") + 1);
-  String? get _filePathName =>
-      _filePath?.substring(0, _filePath!.lastIndexOf("."));
-
-  String get _fileName => _filePathName ?? fileModel.assetEntity?.title ?? "";
-
-  String get suffix => _filePath == null ? "" : _filePath!.contains(".") ? _filePath!.split(".").last : "";*/
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +47,47 @@ class MediaItemWidget extends StatelessWidget {
   }
 
   _buildLeadingWidget() {
+    var duration = fileModel.assetEntity?.duration;
     return leadingWidget ??
-        SizedBox(width: 80, height: 60, child: _videoThumbnail());
+        SizedBox(
+          width: 80,
+          height: 60,
+          child: Stack(
+            children: [
+              Positioned.fill(child: _videoThumbnail()),
+              Positioned(
+                bottom: 3,
+                right: 0,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  color: Colors.black26.withValues(alpha: 0.5),
+                  child: duration == null
+                      ? null
+                      : Text(
+                          TimeFormatUtils.durationToMinuteAndSecond(
+                            Duration(seconds: duration),
+                          ),
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ),
+              if (fileModel.playHistoryDuration != null && duration != null)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: SizedBox(
+                    height: 3,
+                    child: LinearProgressIndicator(
+                      backgroundColor: Theme.of(Get.context!).primaryColor,
+                      valueColor: AlwaysStoppedAnimation(Colors.blue),
+                      value: fileModel.playHistoryDuration!.inSeconds / duration,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
   }
 
   Widget _videoThumbnail() {
@@ -86,7 +116,11 @@ class MediaItemWidget extends StatelessWidget {
   }
 
   _buildTitle() {
-    return Text(fileModel.fileName, maxLines: 2, overflow: TextOverflow.ellipsis);
+    return Text(
+      fileModel.fileName,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   _buildSubtitle() {

@@ -6,7 +6,7 @@ import 'package:source_player/player/iplayer.dart';
 import '../commons/widget_style_commons.dart';
 import 'controller/player_controller.dart';
 import 'media_kit_player.dart';
-import 'models/buttom_ui_control_item_model.dart';
+import 'models/bottom_ui_control_item_model.dart';
 
 class PlayerView extends StatefulWidget {
   const PlayerView({

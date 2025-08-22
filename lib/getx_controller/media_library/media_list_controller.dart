@@ -3,16 +3,12 @@ import 'package:get/get.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:source_player/models/directory_model.dart';
-import 'package:source_player/utils/logger_utils.dart';
-
+import 'package:source_player/player/models/resource_play_state_model.dart';
 import '../../cache/db/cache_const.dart';
 import '../../cache/shared_preferences_cache.dart';
 import '../../models/loading_state_model.dart';
 import '../../models/media_file_model.dart';
-import '../../models/play_source_group_model.dart';
-import '../../models/play_source_model.dart';
 import '../../models/resource_chapter_model.dart';
-import '../../models/video_model.dart';
 import '../../player/controller/player_controller.dart';
 
 class MediaListController extends GetxController {
@@ -20,12 +16,9 @@ class MediaListController extends GetxController {
 
   int pageSize = 20;
 
+  bool isRefresh = false;
+
   var loadingState = LoadingStateModel().obs;
-
-  // var mediaFileList = <MediaFileModel>[].obs;
-
-  // 暂时使用（播放器中的章节设计不合理，先暂时使用）
-  var videoModel = VideoModel(id: "", name: "", typeId: "", typeName: "");
 
   late PagingController<int, MediaFileModel> pagingController;
 
@@ -88,11 +81,18 @@ class MediaListController extends GetxController {
   }
 
   Future<void> onRefresh() async {
+    isRefresh = true;
+    pagingController.value = pagingController.value.copyWith(
+      isLoading: true,
+      error: null,
+    );
+
+    await _fetchVideosInFolder(1);
+    isRefresh = false;
     pagingController.value = pagingController.value.copyWith(
       isLoading: false,
       error: null,
     );
-    await _fetchVideosInFolder(1);
   }
 
   Future<List<MediaFileModel>> _fetchVideosInFolder(
@@ -123,20 +123,31 @@ class MediaListController extends GetxController {
             fullFilePath +
             CacheConst.mediaFileSubtitleFilePath,
       );
-      mediaFileList.add(MediaFileModel(assetEntity: item, danmakuPath: danmakuPath, subtitlePath: subtitlePath, file: file));
+      mediaFileList.add(
+        MediaFileModel(
+          assetEntity: item,
+          danmakuPath: danmakuPath,
+          subtitlePath: subtitlePath,
+          file: file,
+        ),
+      );
     }
     return mediaFileList;
   }
 
-  Future<void> playVideo(MediaFileModel item) async {
+  Future<void> playVideo(MediaFileModel activatedItem) async {
     var pages = pagingController.pages ?? [];
     if (pages.isEmpty) {
       return;
     }
+    int index = -1;
     List<ResourceChapterModel> chapterList = [];
-    int index = 0;
+    int i = 0;
     for (var list in pages) {
       for (var item in list) {
+        if (activatedItem == item) {
+          index = i;
+        }
         String name = "";
         if (item.file != null) {
           name = item.file!.path.substring(
@@ -151,31 +162,26 @@ class MediaListController extends GetxController {
         chapterList.add(
           ResourceChapterModel(
             name: name,
-            index: index,
+            index: i,
             playUrl: mediaUrl ?? item.file?.path,
             activated: activated,
           ),
         );
-        index++;
+        i++;
       }
-
-      final videoModel = VideoModel(
-        id: "",
-        name: "",
-        typeId: "",
-        typeName: "",
-        playSourceList: [
-          PlaySourceModel(
-            playSourceGroupList: [
-              PlaySourceGroupModel(chapterList: chapterList),
-            ],
-          ),
-        ],
-      );
-      Get.delete<PlayerController>();
-      // 获取播放器控制器并播放视频
-      PlayerController controller = Get.put(PlayerController());
-      controller.openLocalVideo(videoModel);
     }
+
+    Get.delete<PlayerController>();
+    // 获取播放器控制器并播放视频
+    PlayerController controller = Get.put(PlayerController());
+    controller.openLocalVideo(
+      chapterList: chapterList,
+      playStateModel: ResourcePlayStateModel(
+        apiIndex: 0,
+        apiGroupIndex: 0,
+        chapterGroupIndex: 0,
+        chapterIndex: index,
+      ),
+    );
   }
 }

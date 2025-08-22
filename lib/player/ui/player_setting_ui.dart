@@ -10,7 +10,7 @@ import '../../commons/widget_style_commons.dart';
 import '../commons/player_commons.dart';
 import '../controller/player_controller.dart';
 import '../enums/player_ui_key_enum.dart';
-import '../models/buttom_ui_control_item_model.dart';
+import '../models/bottom_ui_control_item_model.dart';
 import '../../utils/bottom_sheet_dialog_utils.dart';
 
 class PlayerSettingUI extends StatefulWidget {

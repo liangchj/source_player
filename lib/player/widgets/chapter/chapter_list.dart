@@ -118,24 +118,25 @@ class _ChapterListState extends State<ChapterList> {
             ? "章节(${controller.resourcePlayState.chapterCount})："
             : "章节：",
       ),
-      IconButton(
-        tooltip: '跳至顶部',
-        icon: Icon(Icons.vertical_align_top),
-        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
-        onPressed: () {},
-      ),
-      IconButton(
-        tooltip: '跳至底部',
-        icon: Icon(Icons.vertical_align_bottom),
-        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
-        onPressed: () {},
-      ),
-      IconButton(
-        tooltip: '跳至当前',
-        icon: Icon(Icons.my_location),
-        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
-        onPressed: () {},
-      ),
+      if (!controller.playerState.isFullscreen.value)
+        IconButton(
+          tooltip: '跳至顶部',
+          icon: Icon(Icons.vertical_align_top),
+          style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
+          onPressed: () {},
+        ),
+        IconButton(
+          tooltip: '跳至底部',
+          icon: Icon(Icons.vertical_align_bottom),
+          style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
+          onPressed: () {},
+        ),
+        IconButton(
+          tooltip: '跳至当前',
+          icon: Icon(Icons.my_location),
+          style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
+          onPressed: () {},
+        ),
     ];
     List<Widget> rights = [
       IconButton(
@@ -234,7 +235,7 @@ class _ChapterListState extends State<ChapterList> {
               ? 0
               : WidgetStyleCommons.safeSpace,
         ),
-        child: option.isGrid ? _gridView(context) : _listView(context),
+        child: option.isGrid && controller.resourcePlayState.maxChapterTitleLen < 8 ? _gridView(context) : _listView(context),
       ),
     );
   }
@@ -242,7 +243,7 @@ class _ChapterListState extends State<ChapterList> {
   // bottomSheet弹出内容
   Widget _bottomSheetList(BuildContext context) {
     return Expanded(
-      child: option.isGrid ? _gridView(context) : _listView(context),
+      child: option.isGrid && controller.resourcePlayState.maxChapterTitleLen < 8 ? _gridView(context) : _listView(context),
     );
   }
 
@@ -268,9 +269,9 @@ class _ChapterListState extends State<ChapterList> {
             var item = list[index];
             return Container(
               padding: EdgeInsets.symmetric(
-                vertical: WidgetStyleCommons.safeSpace / 2,
+                vertical: WidgetStyleCommons.safeSpace / 6,
               ),
-              height: WidgetStyleCommons.chapterHeight,
+              // height: WidgetStyleCommons.chapterHeight,
               child: ChapterWidget(
                 key: ValueKey(
                   "chapter_${option.bottomSheet}_listView_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
