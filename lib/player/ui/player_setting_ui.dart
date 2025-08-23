@@ -84,7 +84,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
         onTap: () {
           Get.closeAllBottomSheets();
           if (controller.playerState.isFullscreen.value) {
-            controller.showUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]);
+            controller.onlyShowUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]);
           } else {
             BottomSheetDialogUtils.openBottomSheet(PlayerSpeedUI(bottomSheet: true));
           }

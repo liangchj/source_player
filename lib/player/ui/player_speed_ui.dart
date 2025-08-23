@@ -27,6 +27,12 @@ class _PlayerSpeedUIState extends State<PlayerSpeedUI> {
   late ListObserverController _listObserverController;
 
   @override
+  void dispose() {
+    controller.uiState.speedSettingUI.animateController?.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     controller = Get.find<PlayerController>();
 
@@ -48,12 +54,6 @@ class _PlayerSpeedUIState extends State<PlayerSpeedUI> {
       controller: _scrollController,
     )..initialIndex = playSpeedIndex;
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override

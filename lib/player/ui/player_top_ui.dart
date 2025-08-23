@@ -99,7 +99,7 @@ class PlayerTopUI extends GetView<PlayerController> {
     if (controller.playerState.isFullscreen.value &&
         size.width < size.height &&
         size.width > 500) {
-      controller.showUIByKeyList([PlayerUIKeyEnum.settingUI.name]);
+      controller.onlyShowUIByKeyList([PlayerUIKeyEnum.settingUI.name]);
       return;
     }
 

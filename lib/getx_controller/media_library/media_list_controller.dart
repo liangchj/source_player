@@ -159,12 +159,16 @@ class MediaListController extends GetxController {
         }
         var mediaUrl = await item.assetEntity?.getMediaUrl();
         bool activated = item.assetEntity?.id == item.assetEntity?.id;
+        /*if (item.danmakuPath == null || item.danmakuPath == "") {
+          item.danmakuPath = "/storage/emulated/0/1/1.xml";
+        }*/
         chapterList.add(
           ResourceChapterModel(
             name: name,
             index: i,
             playUrl: mediaUrl ?? item.file?.path,
             activated: activated,
+            mediaFileModel: item,
           ),
         );
         i++;

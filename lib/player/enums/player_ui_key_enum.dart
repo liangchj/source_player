@@ -11,6 +11,8 @@ enum PlayerUIKeyEnum {
   centerBrightnessUI(),
   centerProgressUI(),
   settingUI(),
+  leftBottomHitUI(),
+  restartUI(),
   centerErrorUI();
 
   const PlayerUIKeyEnum();

@@ -5,7 +5,7 @@ import '../../utils/logger_utils.dart';
 
 class PlayerOverlayUIModel {
   final String key;
-  var ui = Rx<Widget?>(null);
+  final Rx<Widget?> ui = Rx<Widget?>(null);
   var visible = false.obs;
   Widget? child;
   bool useAnimationController;

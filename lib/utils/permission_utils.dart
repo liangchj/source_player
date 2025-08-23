@@ -17,7 +17,7 @@ class PermissionUtils {
     ///遍历当前权限申请列表
     for (Permission permission in permissionList) {
       PermissionStatus status = await permission.status;
-      LoggerUtils.logger.d("status: $status");
+      LoggerUtils.logger.d("status: $status，$permission");
 
       ///如果不是允许状态就添加到新的申请列表中
       if (!status.isGranted) {

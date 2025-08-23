@@ -19,11 +19,17 @@ class PublicCommons {
   static List<Permission> permissionList = [
     Permission.storage,
     Permission.mediaLibrary,
+    Permission.videos,
     Permission.sensors,
     Permission.notification,
     Permission.accessNotificationPolicy,
     Permission.accessMediaLocation,
     Permission.activityRecognition,
+    Permission.manageExternalStorage,
+  ];
+
+  static List<Permission> requiredPermissionList = [
+    Permission.videos,
     Permission.manageExternalStorage,
   ];
 }

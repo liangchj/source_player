@@ -86,7 +86,6 @@ class PlayerState {
     PlayerAspectRatioModel("4:3", 4/3.0)
   ];
 
-  var openDanmaku = false.obs;
 
 
   String playUrl = "asset://assets/video/test.mp4";

@@ -24,7 +24,7 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
       // 在这里执行你的构建之后的操作
       controller.cancelHideTimer();
       if (!controller.uiState.uiLocked.value) {
-        controller.showUIByKeyList(controller.uiState.touchBackgroundShowUIKeyList,);
+        controller.onlyShowUIByKeyList(controller.uiState.touchBackgroundShowUIKeyList,);
         controller.cancelAndRestartTimer();
       }
     });
@@ -62,6 +62,24 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                           controller.uiState.bottomUI
                               .widgetCallback(controller.uiState.bottomUI)),
                     ),
+
+              Obx(() => Positioned(
+                left: 0,
+                right: 0,
+                bottom: controller.uiState.bottomUI.visible.value ? controller.uiState.bottomUIHeight.value : 0,
+                child: Obx(() =>
+                    controller.uiState.restartUI
+                        .widgetCallback(controller.uiState.restartUI)),
+              ),),
+
+              Obx(() => Positioned(
+                left: 0,
+                right: 0,
+                bottom: (controller.uiState.bottomUI.visible.value ? controller.uiState.bottomUIHeight.value : 0) + (controller.uiState.restartUI.visible.value ? 42 : 0),
+                child: Obx(() =>
+                    controller.uiState.leftBottomHitUI
+                        .widgetCallback(controller.uiState.leftBottomHitUI)),
+              ),),
 
               Center(
                 child: Obx(

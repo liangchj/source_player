@@ -41,7 +41,6 @@ class LocalMediaDirectoryListController extends GetxController {
         ),
       )
     );
-    print(permissionState);
 
     if (permissionState == PermissionState.denied) {
       loadingState(loadingState.value.copyWith(

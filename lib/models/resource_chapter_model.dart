@@ -1,6 +1,7 @@
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 
 import '../cache/db/current_configs.dart';
+import 'media_file_model.dart';
 
 class ResourceChapterModel {
   final String name;
@@ -22,6 +23,10 @@ class ResourceChapterModel {
   Duration? start;
   Duration? end;
 
+  MediaFileModel? mediaFileModel;
+
+  Duration? historyDuration;
+
   ResourceChapterModel({
     required this.name,
     this.activated = false,
@@ -32,6 +37,8 @@ class ResourceChapterModel {
     this.httpHeaders,
     this.start,
     this.end,
+    this.mediaFileModel,
+    this.historyDuration,
   });
   factory ResourceChapterModel.fromJson(Map<String, dynamic> json) {
     var activated = json['activated'];

@@ -17,6 +17,8 @@ import '../../getx_controller/net_resource_detail_controller.dart';
 import '../../models/resource_chapter_model.dart';
 import '../../models/video_model.dart';
 import '../commons/player_commons.dart';
+import '../danmaku/my_danmaku_controller.dart';
+import '../danmaku/state/danmaku_state.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../media_kit_player.dart';
 import '../models/bottom_ui_control_item_model.dart';
@@ -52,20 +54,69 @@ class PlayerController extends GetxController {
 
   bool _initialized = false;
 
+  late DanmakuState danmakuState;
+
+  late MyDanmakuController myDanmakuController;
+
   @override
   void onInit() {
     resourcePlayState = ResourcePlayState();
     playerState = PlayerState();
     uiState = PlayerUIState();
     fullscreenUtils = FullscreenUtils(this);
-
+    danmakuState = DanmakuState();
+    myDanmakuController = MyDanmakuController(this, danmakuState);
     _initEver();
 
     _initBottomControlItemList();
-
     // changeVideoUrl(autoPlay: playerState.autoPlay);
+    /*danmakuState.danmakuFilePathMap.value = {
+      "/storage/emulated/0/1/1.xml": false,
+    };*/
+    _initUI();
     super.onInit();
     _initialized = true;
+  }
+
+  _initUI() {
+    uiState.restartUI.ui.value = Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: WidgetStyleCommons.safeSpace,
+      ),
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: Obx(() {
+          if (!(resourcePlayState.activatedChapter == null ||
+              resourcePlayState.activatedChapter!.historyDuration == null)) {
+            return Container();
+          }
+          return TextButton(
+            onPressed: () {},
+            child: Text('重新开始播放', style: TextStyle(color: Colors.white)),
+          );
+        }),
+      ),
+    );
+    uiState.leftBottomHitUI.ui.value = Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: WidgetStyleCommons.safeSpace,
+      ),
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Obx(
+          () =>
+              uiState.bottomLeftMsg.value == null ||
+                  uiState.bottomLeftMsg.value!.isEmpty
+              ? Container()
+              : Text(
+                  uiState.bottomLeftMsg.value!,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: TextStyle(color: Colors.white),
+                ),
+        ),
+      ),
+    );
   }
 
   void _initBottomControlItemList() {
@@ -117,10 +168,10 @@ class PlayerController extends GetxController {
         child: Obx(
           () => IconButton(
             onPressed: () => {
-              playerState.openDanmaku(!playerState.openDanmaku.value),
+              danmakuState.isVisible.value = !danmakuState.isVisible.value,
             },
             icon: Image.asset(
-              playerState.openDanmaku.value
+              danmakuState.isVisible.value
                   ? IconCommons.danmakuOpenImgPath
                   : IconCommons.danmakuCloseImgPath,
               width: IconTheme.of(Get.context!).size ?? 24,
@@ -146,7 +197,7 @@ class PlayerController extends GetxController {
                   padding: const EdgeInsets.symmetric(horizontal: 0),
                   color: WidgetStyleCommons.iconColor,
                   onPressed: () => {
-                    showUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]),
+                    onlyShowUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]),
                   },
                   icon: Icon(Icons.list),
                 )
@@ -159,7 +210,7 @@ class PlayerController extends GetxController {
         priority: 3,
         child: TextButton(
           onPressed: () =>
-              showUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]),
+              onlyShowUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]),
           child: Obx(
             () => Text(
               "${playerState.playSpeed.value}x",
@@ -196,25 +247,57 @@ class PlayerController extends GetxController {
     ever(playerState.isInitialized, (value) {
       if (value && !uiState.uiLocked.value) {
         cancelAndRestartTimer();
-        showUIByKeyList(uiState.touchBackgroundShowUIKeyList);
+        onlyShowUIByKeyList(uiState.touchBackgroundShowUIKeyList);
+      }
+      if (!value) {
+        playerState.isPlaying.value = false;
+        playerState.isBuffering.value = false;
       }
     });
 
-    ever(resourcePlayState.resourcePlayingState, (val) {
-      changeVideoUrl(autoPlay: _initialized ? playerState.autoPlay : true);
+    ever(playerState.isFinished, (value) {
+      if (value) {
+        playerState.isPlaying.value = false;
+        playerState.isBuffering.value = false;
+      }
+    });
+
+    ever(resourcePlayState.resourcePlayingState, (val) async {
+      myDanmakuController.beforeChangePlayUrl();
+      await changeVideoUrl(
+        autoPlay: _initialized ? playerState.autoPlay : true,
+      );
+      playerState.isPlaying.value = false;
+      myDanmakuController.afterChangePlayUrl(
+        resourcePlayState.activatedChapter,
+      );
     });
 
     ever(playerState.isPlaying, (value) {
       if (value) {
         // 播放时保持屏幕唤醒
         WakelockPlus.enable();
+        myDanmakuController.resumeDanmaku();
       } else {
         // 暂停时关闭保持屏幕唤醒
         WakelockPlus.disable();
+        myDanmakuController.pauseDanmaku();
       }
     });
 
     resourcePlayState.initEver();
+
+    ever(danmakuState.isVisible, (value) {
+      if (value) {
+        myDanmakuController.resumeDanmaku();
+      } else {
+        myDanmakuController.pauseDanmaku();
+      }
+    });
+
+    ever(playerState.positionDuration, (value) {
+      myDanmakuController.sendDanmakuByPosition(value);
+    });
   }
 
   @override
@@ -224,6 +307,9 @@ class PlayerController extends GetxController {
     _volumeTimer?.cancel();
     _brightnessTimer?.cancel();
     player.value?.onDisposePlayer();
+
+    // 销毁所有动画控制器
+    uiState.disposeAllAnimationControllers();
     super.onClose();
   }
 
@@ -279,7 +365,7 @@ class PlayerController extends GetxController {
   Future<void> play() async {
     if (!uiState.uiLocked.value) {
       cancelAndRestartTimer();
-      showUIByKeyList(uiState.touchBackgroundShowUIKeyList);
+      onlyShowUIByKeyList(uiState.touchBackgroundShowUIKeyList);
     }
     return player.value?.play();
   }
@@ -290,7 +376,9 @@ class PlayerController extends GetxController {
   }
 
   Future<void> stop() async {
-    return player.value?.stop();
+    myDanmakuController.stopDanmaku();
+    await player.value?.stop();
+    playerState.isPlaying.value = false;
   }
 
   // 暂停或播放
@@ -316,6 +404,12 @@ class PlayerController extends GetxController {
     playerState.isSeeking(false);
   }
 
+  Future<void> beforeSeekTo() async {
+    myDanmakuController.clearDanmaku();
+  }
+
+  Future<void> afterSeekTo() async {}
+
   // 本地播放
   void openLocalVideo({
     IPlayer? player,
@@ -327,8 +421,8 @@ class PlayerController extends GetxController {
     if (player == null) {
       MediaKit.ensureInitialized();
     }
-    playerState.autoPlay = false;
-    // playerState.autoPlay = true;
+    // playerState.autoPlay = false;
+    playerState.autoPlay = true;
     this.player(player ?? MediaKitPlayer());
     resourcePlayState.playStateModel = playStateModel;
 
@@ -358,7 +452,7 @@ class PlayerController extends GetxController {
       );
     } else {
       cancelHideTimer();
-      showUIByKeyList(
+      onlyShowUIByKeyList(
         uiState.uiLocked.value
             ? [PlayerUIKeyEnum.lockCtrUI.name]
             : uiState.touchBackgroundShowUIKeyList,
@@ -374,6 +468,9 @@ class PlayerController extends GetxController {
       if (!ignoreLimit && uiState.notTouchCtrlKeyList.contains(element.key)) {
         continue;
       }
+      if (element.key == uiState.leftBottomHitUI) {
+        print(element.key);
+      }
       if (element.visible.value) {
         flag = true;
         break;
@@ -384,6 +481,7 @@ class PlayerController extends GetxController {
 
   // 根据Key值隐藏ui
   void hideUIByKeyList(List<String> keyList) {
+    print("隐藏ui：$keyList");
     if (keyList.isEmpty) {
       return;
     }
@@ -417,7 +515,7 @@ class PlayerController extends GetxController {
   }
 
   // 只显示指定key值显示UI
-  void showUIByKeyList(List<String> keyList, {bool ignoreLimit = false}) {
+  void onlyShowUIByKeyList(List<String> keyList, {bool ignoreLimit = false}) {
     List<String> hideList = [];
     for (MapEntry<String, PlayerOverlayUIModel> entry
         in uiState.overlayUIMap.entries) {
@@ -440,9 +538,25 @@ class PlayerController extends GetxController {
     }
   }
 
+  void showUIByKeyList(List<String> keyList) {
+    for (var key in keyList) {
+      PlayerOverlayUIModel? element = uiState.overlayUIMap[key];
+      if (element == null) {
+        continue;
+      }
+      element.visible(true);
+      element.ui(element.child);
+      if (element.useAnimationController) {
+        element.animateController?.forward();
+      }
+    }
+  }
+
   void _createUIAnimate(PlayerOverlayUIModel uiOverlay) {
     // 当前UI是否需要动画控制器（有效ui直接使用属性动画）
     if (uiOverlay.useAnimationController) {
+      // 先销毁已存在的控制器（如果有的话）
+      uiOverlay.animateController?.dispose();
       uiOverlay.animateController = AnimationController(
         duration:
             uiOverlay.animationDuration ??
@@ -497,7 +611,9 @@ class PlayerController extends GetxController {
     playerState.dragProgressPositionDuration =
         playerState.positionDuration.value;
     //显示拖动进度UI
-    showUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name], ignoreLimit: true);
+    onlyShowUIByKeyList([
+      PlayerUIKeyEnum.centerProgressUI.name,
+    ], ignoreLimit: true);
   }
 
   // 拖动播放进度条中
@@ -520,7 +636,9 @@ class PlayerController extends GetxController {
     // 更新拖动值
     playerState.draggingSecond(playerState.draggingSecond.value + dragValue);
     //显示拖动进度UI
-    showUIByKeyList([PlayerUIKeyEnum.centerProgressUI.name], ignoreLimit: true);
+    onlyShowUIByKeyList([
+      PlayerUIKeyEnum.centerProgressUI.name,
+    ], ignoreLimit: true);
   }
 
   // 拖动播放进度结束
@@ -583,7 +701,7 @@ class PlayerController extends GetxController {
       hideUIByKeyList([PlayerUIKeyEnum.centerVolumeUI.name]);
     }
     playerState.verticalDragSurplus = 0.0;
-    showUIByKeyList([showUIKey], ignoreLimit: true);
+    onlyShowUIByKeyList([showUIKey], ignoreLimit: true);
   }
 
   // 垂直滑动中
@@ -622,7 +740,7 @@ class PlayerController extends GetxController {
       showUIKey = PlayerUIKeyEnum.centerBrightnessUI.name;
       hideUIByKeyList([PlayerUIKeyEnum.centerVolumeUI.name]);
     }
-    showUIByKeyList([showUIKey], ignoreLimit: true);
+    onlyShowUIByKeyList([showUIKey], ignoreLimit: true);
   }
 
   // 垂直滑动结束
@@ -646,8 +764,6 @@ class PlayerController extends GetxController {
     playerState.isBrightnessDragging(false);
     playerState.isVolumeDragging(false);
     playerState.verticalDragSurplus = 0.0;
-    /*Future.delayed(PlayerCommons.volumeOrBrightnessUIShowDuration).then((value) {
-    });*/
   }
 
   void nextPlay() {

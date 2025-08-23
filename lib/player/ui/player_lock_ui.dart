@@ -15,9 +15,9 @@ class PlayerLockUI extends GetView<PlayerController> {
         onPressed: () {
           controller.uiState.uiLocked(!controller.uiState.uiLocked.value);
           if (controller.uiState.uiLocked.value) {
-            controller.showUIByKeyList(["lockCtrUI"]);
+            controller.onlyShowUIByKeyList(["lockCtrUI"]);
           } else {
-            controller.showUIByKeyList(controller.uiState.touchBackgroundShowUIKeyList);
+            controller.onlyShowUIByKeyList(controller.uiState.touchBackgroundShowUIKeyList);
           }
         },
         style: ButtonStyle(

@@ -46,7 +46,21 @@ class MediaKitPlayer extends IPlayer {
             controls: (state) {
               return Scaffold(
                 backgroundColor: Colors.transparent,
-                body: PlayerUI(),
+                body: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Obx(
+                        () =>
+                            _playerController
+                                .danmakuState
+                                .danmakuView
+                                .value ??
+                            Container(),
+                      ),
+                    ),
+                    Positioned.fill(child: PlayerUI()),
+                  ],
+                ),
               );
             },
           ),
@@ -83,10 +97,12 @@ class MediaKitPlayer extends IPlayer {
 
   @override
   Future<void> seekTo(Duration position) async {
+    await _playerController.beforeSeekTo();
     await _player.seek(position);
     await for (final _ in _player.stream.position.take(1)) {}
     await Future.delayed(const Duration(milliseconds: 100));
     await for (final _ in _player.stream.position.take(1)) {}
+    await _playerController.afterSeekTo();
   }
 
   @override
@@ -170,10 +186,9 @@ class MediaKitPlayer extends IPlayer {
         (_playerController.resourcePlayState.activatedChapter!.playUrl ?? "")
             .isNotEmpty) {
       try {
-        Map<String, String> httpHeaders = _playerController
-            .resourcePlayState
-            .activatedChapter!
-            .httpHeaders ?? {};
+        Map<String, String> httpHeaders =
+            _playerController.resourcePlayState.activatedChapter!.httpHeaders ??
+            {};
         if (!httpHeaders.containsKey("user-agent")) {
           httpHeaders["user-agent"] = DioUtils.getRandomUA();
         }

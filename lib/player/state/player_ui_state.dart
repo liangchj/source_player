@@ -12,8 +12,10 @@ import '../ui/player_lock_ui.dart';
 import '../ui/player_screenshot_ui.dart';
 import '../ui/player_speed_ui.dart';
 import '../ui/player_top_ui.dart';
+import '../widgets/left_bottom_hit_text_widget.dart';
 
 class PlayerUIState {
+
   // 锁住ui
   var uiLocked = false.obs;
   dynamic playerUIState;
@@ -29,9 +31,21 @@ class PlayerUIState {
       PlayerUIKeyEnum.centerBrightnessUI.name: centerBrightnessUI,
       PlayerUIKeyEnum.settingUI.name: settingUI,
       PlayerUIKeyEnum.chapterListUI.name: chapterListUI,
+      PlayerUIKeyEnum.leftBottomHitUI.name: leftBottomHitUI,
+      PlayerUIKeyEnum.restartUI.name: restartUI,
     });
   }
   Map<String, PlayerOverlayUIModel> overlayUIMap = {};
+
+  // 新增方法：销毁所有动画控制器
+  void disposeAllAnimationControllers() {
+    overlayUIMap.forEach((key, uiModel) {
+      if (uiModel.animateController != null) {
+        uiModel.animateController?.dispose();
+        uiModel.animateController = null;
+      }
+    });
+  }
 
   // 点击背景时需要显示的UI列表（一般是顶部、底部、左边锁键和右边截图按钮，在报错情况下只显示顶部）
   List<String> touchBackgroundShowUIKeyList = [
@@ -48,6 +62,8 @@ class PlayerUIState {
     PlayerUIKeyEnum.centerVolumeUI.name,
     PlayerUIKeyEnum.centerBrightnessUI.name,
     PlayerUIKeyEnum.centerErrorUI.name,
+    PlayerUIKeyEnum.leftBottomHitUI.name,
+    PlayerUIKeyEnum.restartUI.name,
   ];
 
   // 拦截路由UI列表
@@ -56,6 +72,9 @@ class PlayerUIState {
     PlayerUIKeyEnum.speedSettingUI.name,
     PlayerUIKeyEnum.chapterListUI.name,
   ];
+
+  final RxDouble bottomUIHeight = 0.0.obs;
+  double? bottomUIOffsetY = 0.0;
 
   var topUI = PlayerOverlayUIModel(
     key: PlayerUIKeyEnum.topUI.name,
@@ -76,8 +95,11 @@ class PlayerUIState {
       begin: const Offset(0.0, 1),
       end: const Offset(0.0, 0.0),
     ),
-    widgetCallback: (uiModel) =>
-        PlayerUITransition.playerUISlideTransition(uiModel),
+    widgetCallback: (uiModel) {
+      // print("底部uiOffset:${uiModel.tween.}")
+      return PlayerUITransition.playerUISlideTransition(uiModel);
+    }
+        ,
   );
 
   var speedSettingUI = PlayerOverlayUIModel(
@@ -182,4 +204,33 @@ class PlayerUIState {
     widgetCallback: (uiModel) =>
         PlayerUITransition.playerUISlideTransition(uiModel),
   );
+
+  var restartUI = PlayerOverlayUIModel(
+    key: PlayerUIKeyEnum.restartUI.name,
+    child: null,
+    useAnimationController: true,
+    tween: Tween<Opacity>(
+      begin: Opacity(opacity: 0.0),
+      end: Opacity(opacity: 1.0),
+    ),
+    animationDuration: Duration.zero,
+    widgetCallback: (uiModel) =>
+        PlayerUITransition.playerUIOpacityAnimation(uiModel),
+  );
+  var leftBottomHitUI = PlayerOverlayUIModel(
+    key: PlayerUIKeyEnum.leftBottomHitUI.name,
+    child: null,
+    useAnimationController: true,
+    tween: Tween<Opacity>(
+      begin: Opacity(opacity: 0.0),
+      end: Opacity(opacity: 1.0),
+    ),
+    animationDuration: Duration.zero,
+    widgetCallback: (uiModel) =>
+        PlayerUITransition.playerUIOpacityAnimation(uiModel),
+  );
+
+
+
+  final Rx<String?> bottomLeftMsg = Rx(null);
 }

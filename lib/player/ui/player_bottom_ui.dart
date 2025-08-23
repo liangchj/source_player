@@ -9,15 +9,9 @@ import '../../utils/logger_utils.dart';
 import '../commons/player_commons.dart';
 import '../utils/time_format_utils.dart';
 
-class PlayerBottomUI extends StatefulWidget {
+class PlayerBottomUI extends GetView<PlayerController> {
   const PlayerBottomUI({super.key});
 
-  @override
-  State<PlayerBottomUI> createState() => _PlayerBottomUIState();
-}
-
-class _PlayerBottomUIState extends State<PlayerBottomUI> {
-  PlayerController get controller => Get.find<PlayerController>();
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -27,7 +21,15 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
         decoration: BoxDecoration(
           gradient: PlayerCommons.bottomUILinearGradient,
         ),
-        child: _buildBottomUI(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // 在下一帧获取实际高度
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              controller.uiState.bottomUIHeight.value = context.size?.height ?? 0;
+            });
+            return _buildBottomUI();
+          },
+        ),
       ),
     );
   }
@@ -83,7 +85,7 @@ class _PlayerBottomUIState extends State<PlayerBottomUI> {
           // 全屏/退出全屏按钮
           IconButton(
             onPressed: () {
-              controller.fullscreenUtils.toggleFullscreen(context: context);
+              controller.fullscreenUtils.toggleFullscreen();
             },
             icon: Obx(
               () => controller.playerState.isFullscreen.value

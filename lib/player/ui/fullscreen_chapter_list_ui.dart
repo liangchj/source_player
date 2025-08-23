@@ -9,27 +9,15 @@ import '../widgets/chapter/chapter_list.dart';
 import '../widgets/resource_source/source_api.dart';
 import '../widgets/resource_source/source_group.dart';
 
-class FullscreenChapterListUI extends StatefulWidget {
+class FullscreenChapterListUI extends GetView<PlayerController> {
   const FullscreenChapterListUI({super.key, this.bottomSheet = false});
   final bool bottomSheet;
 
-  @override
-  State<FullscreenChapterListUI> createState() =>
-      _FullscreenChapterListUIState();
-}
-
-class _FullscreenChapterListUIState extends State<FullscreenChapterListUI> {
-  late PlayerController controller;
-  @override
-  void initState() {
-    controller = Get.find<PlayerController>();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    return !widget.bottomSheet
+    return !bottomSheet
         ? Container(
             width: PlayerCommons.chapterUIDefaultWidth.clamp(
               screenWidth * 0.3,
