@@ -1,7 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:xml/xml.dart';
+
+import '../models/resource_chapter_model.dart';
+import '../player/controller/player_controller.dart';
 
 class PersonalHomePage extends StatefulWidget {
   const PersonalHomePage({super.key});
@@ -14,7 +18,25 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: TextButton(onPressed: () => _loadDanmaku(), child: Text("个人中心", style: TextStyle(color: Colors.black))),
+      child: Column(
+        children: [
+          TextButton(onPressed: () => _loadDanmaku(), child: Text("个人中心", style: TextStyle(color: Colors.black))),
+          TextButton(
+            onPressed: () {
+              PlayerController controller = Get.put(PlayerController());
+              List<ResourceChapterModel> chapterList = [
+                ResourceChapterModel(
+                  name: '1',
+                  index: 0,
+                  playUrl: "asset://assets/video/test.mp4",
+                )
+              ];
+              controller.openLocalVideo(chapterList: chapterList);
+            },
+            child: Text("测试播放视频"),
+          ),
+        ],
+      ),
     );
   }
 

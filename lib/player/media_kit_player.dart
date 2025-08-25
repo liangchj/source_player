@@ -46,21 +46,7 @@ class MediaKitPlayer extends IPlayer {
             controls: (state) {
               return Scaffold(
                 backgroundColor: Colors.transparent,
-                body: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Obx(
-                        () =>
-                            _playerController
-                                .danmakuState
-                                .danmakuView
-                                .value ??
-                            Container(),
-                      ),
-                    ),
-                    Positioned.fill(child: PlayerUI()),
-                  ],
-                ),
+                body: PlayerUI(),
               );
             },
           ),
@@ -162,7 +148,7 @@ class MediaKitPlayer extends IPlayer {
 
     // 监听进度
     stream.position.listen((Duration? position) {
-      if (position != null && !_playerController.playerState.isSeeking.value) {
+      if (position != null && !_playerController.playerState.isSeeking.value && !_videoController.player.state.buffering) {
         var state = _videoController.player.state;
         bool isFinished = state.completed;
         // 监听是否播放完成

@@ -24,7 +24,9 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
       // 在这里执行你的构建之后的操作
       controller.cancelHideTimer();
       if (!controller.uiState.uiLocked.value) {
-        controller.onlyShowUIByKeyList(controller.uiState.touchBackgroundShowUIKeyList,);
+        controller.onlyShowUIByKeyList(
+          controller.uiState.touchBackgroundShowUIKeyList,
+        );
         controller.cancelAndRestartTimer();
       }
     });
@@ -39,6 +41,13 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
         child: ClipRect(
           child: Stack(
             children: [
+              Positioned.fill(
+                child: Obx(
+                  () => controller.danmakuState.isVisible.value
+                      ? controller.danmakuState.danmakuView.value ?? Container()
+                      : Container(),
+                ),
+              ),
               const Positioned.fill(child: BackgroundEventUI()),
 
               // 顶部UI（资源信息）
@@ -55,37 +64,53 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
 
               // 底部UI（进度和控制信息）
               Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Obx(() =>
-                          controller.uiState.bottomUI
-                              .widgetCallback(controller.uiState.bottomUI)),
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Obx(
+                  () => controller.uiState.bottomUI.widgetCallback(
+                    controller.uiState.bottomUI,
+                  ),
+                ),
+              ),
+
+              Obx(
+                () => Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: controller.uiState.bottomUI.visible.value
+                      ? controller.uiState.bottomUIHeight.value
+                      : 0,
+                  child: Obx(
+                    () => controller.uiState.restartUI.widgetCallback(
+                      controller.uiState.restartUI,
                     ),
+                  ),
+                ),
+              ),
 
-              Obx(() => Positioned(
-                left: 0,
-                right: 0,
-                bottom: controller.uiState.bottomUI.visible.value ? controller.uiState.bottomUIHeight.value : 0,
-                child: Obx(() =>
-                    controller.uiState.restartUI
-                        .widgetCallback(controller.uiState.restartUI)),
-              ),),
-
-              Obx(() => Positioned(
-                left: 0,
-                right: 0,
-                bottom: (controller.uiState.bottomUI.visible.value ? controller.uiState.bottomUIHeight.value : 0) + (controller.uiState.restartUI.visible.value ? 42 : 0),
-                child: Obx(() =>
-                    controller.uiState.leftBottomHitUI
-                        .widgetCallback(controller.uiState.leftBottomHitUI)),
-              ),),
+              Obx(
+                () => Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom:
+                      (controller.uiState.bottomUI.visible.value
+                          ? controller.uiState.bottomUIHeight.value
+                          : 0) +
+                      (controller.uiState.restartUI.visible.value ? 42 : 0),
+                  child: Obx(
+                    () => controller.uiState.leftBottomHitUI.widgetCallback(
+                      controller.uiState.leftBottomHitUI,
+                    ),
+                  ),
+                ),
+              ),
 
               Center(
                 child: Obx(
-                      () => controller.playerState.isInitialized.value ?  Container() : CircularProgressIndicator(
-                        color: Colors.white,
-                      ),
+                  () => controller.playerState.isInitialized.value
+                      ? Container()
+                      : CircularProgressIndicator(color: Colors.white),
                 ),
               ),
 
@@ -114,8 +139,19 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                 right: 0,
                 bottom: 0,
                 child: Obx(
-                      () => controller.uiState.settingUI.widgetCallback(
+                  () => controller.uiState.settingUI.widgetCallback(
                     controller.uiState.settingUI,
+                  ),
+                ),
+              ),
+              // 右边弹幕设置（全屏情况显示）
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: 0,
+                child: Obx(
+                  () => controller.uiState.danmakuSettingUI.widgetCallback(
+                    controller.uiState.danmakuSettingUI,
                   ),
                 ),
               ),
@@ -157,15 +193,14 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
               Center(
                 child: Obx(
                   () =>
-                      controller.uiState.centerVolumeUI.ui.value ??
-                      Container(),
+                      controller.uiState.centerVolumeUI.ui.value ?? Container(),
                 ),
               ),
               // 居中亮度
               Center(
                 child: Obx(
-                      () =>
-                  controller.uiState.centerBrightnessUI.ui.value ??
+                  () =>
+                      controller.uiState.centerBrightnessUI.ui.value ??
                       Container(),
                 ),
               ),

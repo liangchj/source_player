@@ -46,6 +46,9 @@ class DanmakuState {
   // 时间调整
   final RxDouble adjustTime = 0.0.obs;
 
+  // ui显示更新
+  final RxDouble uiShowAdjustTime = 0.0.obs;
+
   // 设置
   // 不透明度
   final Rx<DanmakuAlphaRatioModel> danmakuAlphaRatio = DanmakuAlphaRatioModel(
@@ -119,4 +122,7 @@ class DanmakuState {
       closeImageIcon: IconCommons.danmakuColorClose,
     ),
   ];
+
+
+
 }

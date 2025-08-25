@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/enums/player_fit_enum.dart';
+import 'package:source_player/player/ui/danmaku_setting_ui.dart';
 import 'package:source_player/player/ui/fullscreen_chapter_list_ui.dart';
 import 'package:source_player/player/ui/player_speed_ui.dart';
 
@@ -12,6 +13,7 @@ import '../controller/player_controller.dart';
 import '../enums/player_ui_key_enum.dart';
 import '../models/bottom_ui_control_item_model.dart';
 import '../../utils/bottom_sheet_dialog_utils.dart';
+import '../widgets/build_text_widget.dart';
 
 class PlayerSettingUI extends StatefulWidget {
   const PlayerSettingUI({super.key, this.bottomSheet = false});
@@ -54,6 +56,14 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
     ),
   ];
   List<Widget> danmakuList = [
+    InkWell(
+      onTap: () {
+        print("弹幕设置");
+        BottomSheetDialogUtils.closeBottomSheet();
+        BottomSheetDialogUtils.openBottomSheet(DanmakuSettingUI(bottomSheet: true));
+      },
+      child: Text("弹幕设置"),
+    ),
     InkWell(
       onTap: () {
         print("弹幕轨");
@@ -293,23 +303,3 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
   }
 }
 
-/// 文本框Widget
-class BuildTextWidget extends StatelessWidget {
-  const BuildTextWidget({
-    super.key,
-    required this.text,
-    this.style,
-    this.edgeInsets,
-  });
-  final String text;
-  final TextStyle? style;
-  final EdgeInsets? edgeInsets;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: edgeInsets ?? const EdgeInsets.only(left: 5, right: 5),
-      child: Text(text, style: style ?? const TextStyle(color: Colors.white)),
-    );
-  }
-}

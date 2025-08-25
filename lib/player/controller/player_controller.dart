@@ -292,12 +292,15 @@ class PlayerController extends GetxController {
         myDanmakuController.resumeDanmaku();
       } else {
         myDanmakuController.pauseDanmaku();
+        myDanmakuController.clearDanmaku();
       }
     });
 
     ever(playerState.positionDuration, (value) {
       myDanmakuController.sendDanmakuByPosition(value);
     });
+
+    myDanmakuController.initEver();
   }
 
   @override
@@ -399,6 +402,7 @@ class PlayerController extends GetxController {
   Future<void> seekTo(Duration position) async {
     playerState.positionDuration(position);
     playerState.isSeeking(true);
+    playerState.positionDuration(position); // 立即更新UI位置
     await player.value?.seekTo(position);
     playerState.beforeSeekToIsPlaying = false;
     playerState.isSeeking(false);

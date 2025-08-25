@@ -10,6 +10,18 @@ class DanmakuSpeedModel {
     _speed = speed.round().toDouble();
   }
 
+  DanmakuSpeedModel copyWith({
+    double? min,
+    double? max,
+    double? speed
+  }) {
+    return DanmakuSpeedModel(
+      min: min ?? this.min,
+      max: max ?? this.max,
+      speed: speed ?? this.speed,
+    );
+  }
+
   set speed(double s) {
     _speed = s.round().toDouble();
   }

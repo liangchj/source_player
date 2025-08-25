@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:source_player/player/ui/danmaku_setting_ui.dart';
 import 'package:source_player/player/ui/player_setting_ui.dart';
 
 import '../enums/player_ui_key_enum.dart';
@@ -15,7 +16,6 @@ import '../ui/player_top_ui.dart';
 import '../widgets/left_bottom_hit_text_widget.dart';
 
 class PlayerUIState {
-
   // 锁住ui
   var uiLocked = false.obs;
   dynamic playerUIState;
@@ -33,6 +33,7 @@ class PlayerUIState {
       PlayerUIKeyEnum.chapterListUI.name: chapterListUI,
       PlayerUIKeyEnum.leftBottomHitUI.name: leftBottomHitUI,
       PlayerUIKeyEnum.restartUI.name: restartUI,
+      PlayerUIKeyEnum.danmakuSettingUI.name: danmakuSettingUI,
     });
   }
   Map<String, PlayerOverlayUIModel> overlayUIMap = {};
@@ -98,8 +99,7 @@ class PlayerUIState {
     widgetCallback: (uiModel) {
       // print("底部uiOffset:${uiModel.tween.}")
       return PlayerUITransition.playerUISlideTransition(uiModel);
-    }
-        ,
+    },
   );
 
   var speedSettingUI = PlayerOverlayUIModel(
@@ -195,7 +195,7 @@ class PlayerUIState {
 
   var chapterListUI = PlayerOverlayUIModel(
     key: PlayerUIKeyEnum.chapterListUI.name,
-    child: const FullscreenChapterListUI(bottomSheet: false,),
+    child: const FullscreenChapterListUI(bottomSheet: false),
     useAnimationController: true,
     tween: Tween<Offset>(
       begin: const Offset(1.0, 0.0),
@@ -230,7 +230,17 @@ class PlayerUIState {
         PlayerUITransition.playerUIOpacityAnimation(uiModel),
   );
 
-
+  var danmakuSettingUI = PlayerOverlayUIModel(
+    key: PlayerUIKeyEnum.danmakuSettingUI.name,
+    child: const DanmakuSettingUI(bottomSheet: false),
+    useAnimationController: true,
+    tween: Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: const Offset(0.0, 0.0),
+    ),
+    widgetCallback: (uiModel) =>
+        PlayerUITransition.playerUISlideTransition(uiModel),
+  );
 
   final Rx<String?> bottomLeftMsg = Rx(null);
 }

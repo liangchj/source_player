@@ -113,10 +113,12 @@ class PlayerCommons {
   static const double chapterUIDefaultWidth = 300.0;
 
   static const double settingUIDefaultWidth = 300.0;
+  static const double danmakuSettingUIDefaultWidth = 300.0;
 
   // 音量和亮度UI大小
   static const Size volumeOrBrightnessUISize = Size(80, 70);
   static const Size playProgressUISize = Size(100, 70);
 
   static Duration uiShowDuration = const Duration(seconds: 5);
+
 }

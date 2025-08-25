@@ -13,6 +13,7 @@ enum PlayerUIKeyEnum {
   settingUI(),
   leftBottomHitUI(),
   restartUI(),
+  danmakuSettingUI(),
   centerErrorUI();
 
   const PlayerUIKeyEnum();

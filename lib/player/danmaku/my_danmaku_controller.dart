@@ -1,5 +1,6 @@
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 import 'package:source_player/models/resource_chapter_model.dart';
 
 import '../../commons/logger_tag_commons.dart';
@@ -20,6 +21,21 @@ class MyDanmakuController {
   DanmakuController? danmakuController;
 
   bool get videoIsPlaying => playerController.playerState.isPlaying.value;
+
+  initEver(){
+    everAll([state.danmakuAlphaRatio, state.danmakuArea, state.danmakuFontSize, state.danmakuSpeed], (value) {
+      if (danmakuController == null) {
+        return;
+      }
+      DanmakuOption option = danmakuController!.option.copyWith(
+          opacity: state.danmakuAlphaRatio.value.ratio / 100.0,
+          area: state.danmakuArea.value.danmakuAreaItemList[state.danmakuArea.value.areaIndex].area,
+          fontSize: state.danmakuFontSize.value.ratio,
+          duration: state.danmakuSpeed.value.speed.floor(),
+      );
+      danmakuController!.updateOption(option);
+    });
+  }
 
   // 读取弹幕文件
   Future<void> readDanmakuListByFilePath({bool readAll = true}) async {
@@ -167,12 +183,18 @@ class MyDanmakuController {
   // 发送弹幕
   void sendDanmakuByPosition(Duration value) {
     if (danmakuController == null ||
-        !videoIsPlaying ||
+        !videoIsPlaying || !playerController.playerState.isSeeking.value ||
         !state.isVisible.value ||
         state.danmakuMap.value.isEmpty) {
       return;
     }
     var inSeconds = value.inSeconds;
+    // 添加时间合理性检查
+    var currentPosition = playerController.playerState.positionDuration.value;
+    if (currentPosition.inSeconds != inSeconds) {
+      // 时间不匹配，可能是过时的事件
+      return;
+    }
     if (state.prevSendSecond == inSeconds) {
       return;
     }
@@ -188,7 +210,7 @@ class MyDanmakuController {
 
   void sendDanmaku(DanmakuItemModel item) {
     if (danmakuController == null ||
-        !videoIsPlaying ||
+        !videoIsPlaying || !playerController.playerState.isSeeking.value ||
         !state.isVisible.value) {
       return;
     }

@@ -12,6 +12,16 @@ class DanmakuAreaModel {
         : "";
   }
 
+  DanmakuAreaModel copyWith({
+    List<DanmakuAreaItemModel>? danmakuAreaItemList,
+    int? areaIndex,
+  }) {
+    return DanmakuAreaModel(
+      danmakuAreaItemList: danmakuAreaItemList ?? this.danmakuAreaItemList,
+      areaIndex: areaIndex ?? _areaIndex,
+    );
+  }
+
   set areaIndex(int i) {
     _areaIndex = i;
     name = danmakuAreaItemList.length > _areaIndex
