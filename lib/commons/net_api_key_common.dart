@@ -66,7 +66,7 @@ class NetApiDefaultKeyCommon {
         "resDataKey": "class",
         "resultConvertDyFn": {
           "dynamicFunctionEnum": "js",
-          "fn": 'function convertJson(map){let statusCode=map["code"]+"";if(statusCode!=="1"){return{"statusCode":statusCode,"data":[],"msg":"请求失败"}}let topTypeId=map["topTypeId"]||"";let typeList=[];let classMap={};let list=map["class"]||[];for(let item of list){let parentId=item["type_pid"]+"";let typeId=item["type_id"]+"";let name=item["type_name"]+"";if(parentId===topTypeId){typeList.push({id:typeId,name:name,parentId:parentId});continue}let childList=classMap[parentId]||[];childList.push({value:typeId,label:name,parentValue:parentId});classMap[parentId]=childList}for(let item of typeList){let classList=classMap[item["id"]]||[];item["childType"]={"enName":"typeId","name":"类型","filterCriteriaItemList":classList}}return{"statusCode":statusCode,"data":typeList}}'
+          "fn": 'function convertJson(map){let statusCode=map["code"]+"";if(statusCode!=="1"){return{"statusCode":statusCode,"data":[],"msg":"请求失败"}}let topTypeId=(map["topTypeId"]??"")+"";let typeList=[];let classMap={};let list=map["class"]||[];for(let item of list){let parentId=(item["type_pid"]??"")+"";let typeId=item["type_id"]+"";let name=item["type_name"]+"";if(parentId===topTypeId){typeList.push({id:typeId,name:name,parentId:parentId});continue}let childList=classMap[parentId]||[];childList.push({value:typeId,label:name,parentValue:parentId});classMap[parentId]=childList}for(let item of typeList){let classList=classMap[item["id"]]||[];item["childType"]={"enName":"typeId","name":"类型","filterCriteriaItemList":classList}}return{"statusCode":statusCode,"data":typeList}}'
         }
         /*"resultKeyMap": {
           "id": "type_id",

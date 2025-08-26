@@ -560,7 +560,7 @@ class PlayerController extends GetxController {
     // 当前UI是否需要动画控制器（有效ui直接使用属性动画）
     if (uiOverlay.useAnimationController) {
       // 先销毁已存在的控制器（如果有的话）
-      uiOverlay.animateController?.dispose();
+      // uiOverlay.animateController?.dispose();
       uiOverlay.animateController = AnimationController(
         duration:
             uiOverlay.animationDuration ??

@@ -20,9 +20,10 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
     return Center(
       child: Column(
         children: [
-          TextButton(onPressed: () => _loadDanmaku(), child: Text("个人中心", style: TextStyle(color: Colors.black))),
+          TextButton(onPressed: () => _loadDanmaku(), child: Text("个人中心")),
           TextButton(
             onPressed: () {
+              Get.delete<PlayerController>();
               PlayerController controller = Get.put(PlayerController());
               List<ResourceChapterModel> chapterList = [
                 ResourceChapterModel(
