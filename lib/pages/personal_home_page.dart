@@ -6,6 +6,7 @@ import 'package:xml/xml.dart';
 
 import '../models/resource_chapter_model.dart';
 import '../player/controller/player_controller.dart';
+import '../utils/logger_utils.dart';
 
 class PersonalHomePage extends StatefulWidget {
   const PersonalHomePage({super.key});
@@ -61,13 +62,13 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
       // 使用compute将解析工作放到后台isolate中
       final result = await compute(parseDanmaku, data);
       var end = DateTime.now();
-      print("解析弹幕耗时: ${end.difference(start)}");
-      print("结果：");
+      LoggerUtils.logger.d("解析弹幕耗时: ${end.difference(start)}");
+      LoggerUtils.logger.d("结果：");
       for (var item in result) {
-        print(item);
+        LoggerUtils.logger.d(item);
       }
     } catch (e) {
-      print("读取弹幕失败: $e");
+      LoggerUtils.logger.d("读取弹幕失败: $e");
     }
   }
 

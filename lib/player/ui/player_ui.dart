@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/controller/player_controller.dart';
-import 'package:source_player/player/ui/player_bottom_ui.dart';
-import 'package:source_player/player/ui/player_top_ui.dart';
 
 import 'background_event_ui.dart';
 

@@ -49,7 +49,7 @@ class BackgroundEventUI extends GetView<PlayerController> {
           LoggerUtils.logger.d("滑动屏幕 拖动结束 纵向: $details");
           controller.volumeOrBrightnessOnVerticalDragEnd();
         }
-        print("滑动结束");
+        LoggerUtils.logger.d("滑动结束");
       },
       child: Container(
         color: Colors.transparent,

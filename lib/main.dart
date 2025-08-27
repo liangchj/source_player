@@ -1,11 +1,10 @@
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import 'cache/shared_preferences_cache.dart';
 import 'getx_controller/theme_controller.dart';
+import 'hive/storage.dart';
 import 'http/dio_utils.dart';
 import 'pages/app_home_page.dart';
 import 'route/app_pages.dart';
@@ -13,7 +12,8 @@ import 'route/app_pages.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 初始化SharedPreferences
-  SharedPreferencesCache();
+  // SharedPreferencesCache();
+  await GStorage.init();
   // 初始化dio
   DioUtils();
   await Future.wait(

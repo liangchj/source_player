@@ -9,7 +9,7 @@ import 'package:source_player/models/loading_state_model.dart';
 import 'package:source_player/models/video_type_model.dart';
 import 'package:source_player/pages/net_resource_list_page.dart';
 
-import '../cache/db/current_configs.dart';
+import '../cache/current_configs.dart';
 import '../http/dio_utils.dart';
 import '../models/filter_criteria_item_model.dart';
 import '../models/video_model.dart';
@@ -68,8 +68,9 @@ class NetResourceHomeController extends GetxController
           apiConfigLoadingState.value.copyWith(errorMsg: "当前未设置api"),
         );
       } else {
-        CurrentConfigs.currentApi = CurrentConfigs.enNameToApiMap.values.first;
-        CurrentConfigs.updateCurrentApiInfo();
+        CurrentConfigs.updateCurrentApi(CurrentConfigs.enNameToApiMap.values.first);
+        // CurrentConfigs.currentApi = CurrentConfigs.enNameToApiMap.values.first;
+        // CurrentConfigs.updateCurrentApiInfo();
       }
     } else {
       // 加载其他api

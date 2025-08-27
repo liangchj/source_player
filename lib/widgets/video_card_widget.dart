@@ -73,10 +73,10 @@ class VideoCardWidget extends StatelessWidget {
   }
 
   Widget _buildCoverWidget() {
-    // return const Image(
-    //     height: double.infinity,
-    //     fit: BoxFit.fitHeight,
-    //     image: AssetImage("assets/images/1.jpg"));
+    return const Image(
+        height: double.infinity,
+        fit: BoxFit.fitHeight,
+        image: AssetImage("assets/images/1.jpg"));
     if (videoModel.coverUrl == null || videoModel.coverUrl!.isEmpty) {
       return const Image(
           height: double.infinity,

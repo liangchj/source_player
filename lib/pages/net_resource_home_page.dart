@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/pages/api_select_list_page.dart';
 
-import '../cache/db/current_configs.dart';
 import '../getx_controller/net_resource_home_controller.dart';
 import '../widgets/loading_widget.dart';
 
@@ -26,20 +25,26 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
       () => controller.apiConfigLoadingState.value.loading
           ? const Center(child: LoadingWidget(textWidget: Text("加载api配置中...")))
           : !controller.apiConfigLoadingState.value.loadedSuc
-          ? Center(child: Text("加载api配置失败：${controller.apiConfigLoadingState.value.errorMsg}"))
+          ? Center(
+              child: Text(
+                "加载api配置失败：${controller.apiConfigLoadingState.value.errorMsg}",
+              ),
+            )
           : Scaffold(
-            body: Padding(
-              padding: EdgeInsets.only(top: statusBarHeight),
-              child: Column(
+              body: Padding(
+                padding: EdgeInsets.only(top: statusBarHeight),
+                child: Column(
                   children: [
                     _customAppBar(),
                     Expanded(
-                      child: _buildTypeTabBar(content: _buildTypeResourceList()),
+                      child: _buildTypeTabBar(
+                        content: _buildTypeResourceList(),
+                      ),
                     ),
                   ],
                 ),
+              ),
             ),
-          ),
     );
   }
 
@@ -51,9 +56,14 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          TextButton(onPressed: () {
-            Get.to(()=>ApiSelectListPage(), );
-          }, child: Obx(() => Text(controller.currentApi.value?.apiBaseModel.name ?? ""))),
+          TextButton(
+            onPressed: () {
+              Get.to(() => ApiSelectListPage());
+            },
+            child: Obx(
+              () => Text(controller.currentApi.value?.apiBaseModel.name ?? ""),
+            ),
+          ),
           _customAppBarRightButtons(),
         ],
       ),
@@ -79,7 +89,9 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
         );
       }
       if (!controller.typeLoadingState.value.loadedSuc) {
-        return Center(child: Text("加载视频类型失败：${controller.typeLoadingState.value.errorMsg}"));
+        return Center(
+          child: Text("加载视频类型失败：${controller.typeLoadingState.value.errorMsg}"),
+        );
       }
       if (controller.videoTypeList.isEmpty) {
         return Center(child: Text("当前api无数据"));
@@ -115,8 +127,9 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
   // 构建类型下的资源列表
   Widget _buildTypeResourceList() {
     return TabBarView(
-        controller: controller.tabController.value,
-        children: controller.typeTabBarViews);
+      controller: controller.tabController.value,
+      children: controller.typeTabBarViews,
+    );
   }
 
   @override

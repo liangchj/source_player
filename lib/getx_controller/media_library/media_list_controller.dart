@@ -4,8 +4,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:source_player/models/directory_model.dart';
 import 'package:source_player/player/models/resource_play_state_model.dart';
-import '../../cache/db/cache_const.dart';
-import '../../cache/shared_preferences_cache.dart';
+import '../../hive/storage.dart';
 import '../../models/loading_state_model.dart';
 import '../../models/media_file_model.dart';
 import '../../models/resource_chapter_model.dart';
@@ -111,18 +110,19 @@ class MediaListController extends GetxController {
     for (var item in assetEntityList) {
       var file = await item.file;
       String fullFilePath = file?.path ?? "";
+      if (fullFilePath.isEmpty) {
+        continue;
+      }
+      String key = "--$fullFilePath-0";
       // 获取绑定的弹幕文件
-      var danmakuPath = await SharedPreferencesCache.asyncPrefs.getString(
-        CacheConst.cachePrev +
-            fullFilePath +
-            CacheConst.mediaFileDanmakuFilePath,
-      );
+      var danmakuPaths = GStorage.danmakuPaths.get(key);
+      var danmakuPath = danmakuPaths?.localPath;
+
+      print("弹幕路径读取，key:$key，路径: $danmakuPath");
+
       // 获取绑定的字幕文件
-      var subtitlePath = await SharedPreferencesCache.asyncPrefs.getString(
-        CacheConst.cachePrev +
-            fullFilePath +
-            CacheConst.mediaFileSubtitleFilePath,
-      );
+      var subtitlePaths = GStorage.subtitlePaths.get(key);
+      var subtitlePath = subtitlePaths?.path;
       mediaFileList.add(
         MediaFileModel(
           assetEntity: item,

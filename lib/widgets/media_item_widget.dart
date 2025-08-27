@@ -81,7 +81,8 @@ class MediaItemWidget extends StatelessWidget {
                     child: LinearProgressIndicator(
                       backgroundColor: Theme.of(Get.context!).primaryColor,
                       valueColor: AlwaysStoppedAnimation(Colors.blue),
-                      value: fileModel.playHistoryDuration!.inSeconds / duration,
+                      value:
+                          fileModel.playHistoryDuration!.inSeconds / duration,
                     ),
                   ),
                 ),
@@ -223,7 +224,7 @@ class MediaItemWidget extends StatelessWidget {
     // name 重命名 字幕 弹幕 添加到播放列表 删除
     final ButtonStyle buttonStyle = ButtonStyle(
       alignment: Alignment.centerLeft,
-      foregroundColor: MaterialStateProperty.all(Colors.black87),
+      foregroundColor: WidgetStateProperty.all(Colors.black87),
     );
     Widget renameWidget = TextButton.icon(
       style: buttonStyle,
@@ -384,8 +385,7 @@ class MediaItemWidget extends StatelessWidget {
             if (newName != oldName) {
               File file = fileModel.file!;
               try {
-                // String dir = _fullFilePath == null ? "" : _fullFilePath!.substring(0, _fullFilePath!.lastIndexOf("/"));
-                String dir = fileModel.file!.parent.path ?? "";
+                String dir = fileModel.file!.parent.path;
                 LoggerUtils.logger.d(
                   "重命名,$dir${Platform.pathSeparator}$newName${fileModel.suffix.isEmpty ? '' : '.${fileModel.suffix}'}}",
                 );

@@ -63,7 +63,7 @@ class MediaKitPlayer extends IPlayer {
     _playerController.playerState.playerView(Container());
     try {
       await _player.dispose();
-    } catch (ignore) {}
+    } catch (_) {}
   }
 
   @override

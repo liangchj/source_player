@@ -3,16 +3,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/enums/player_fit_enum.dart';
-import 'package:source_player/player/ui/danmaku_setting_ui.dart';
-import 'package:source_player/player/ui/fullscreen_chapter_list_ui.dart';
 import 'package:source_player/player/ui/player_speed_ui.dart';
 
 import '../../commons/widget_style_commons.dart';
+import '../../utils/logger_utils.dart';
 import '../commons/player_commons.dart';
 import '../controller/player_controller.dart';
-import '../enums/player_ui_key_enum.dart';
 import '../models/bottom_ui_control_item_model.dart';
-import '../../utils/bottom_sheet_dialog_utils.dart';
 import '../widgets/build_text_widget.dart';
 
 class PlayerSettingUI extends StatefulWidget {
@@ -26,82 +23,9 @@ class PlayerSettingUI extends StatefulWidget {
 class _PlayerSettingUIState extends State<PlayerSettingUI> {
   late PlayerController controller;
 
-  List<Widget> chapterList = [
-    InkWell(
-      onTap: () {
-        BottomSheetDialogUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
-      },
-      child: Text("章节列表"),
-    ),
-  ];
-
-  List<Widget> subtitleList = [
-    InkWell(
-      onTap: () {
-        print("字幕轨");
-      },
-      child: Text("字幕轨"),
-    ),
-    InkWell(
-      onTap: () {
-        print("字幕样式");
-      },
-      child: Text("字幕样式"),
-    ),
-    InkWell(
-      onTap: () {
-        print("字幕时间");
-      },
-      child: Text("字幕时间"),
-    ),
-  ];
-  List<Widget> danmakuList = [
-    InkWell(
-      onTap: () {
-        print("弹幕设置");
-        BottomSheetDialogUtils.closeBottomSheet();
-        BottomSheetDialogUtils.openBottomSheet(DanmakuSettingUI(bottomSheet: true));
-      },
-      child: Text("弹幕设置"),
-    ),
-    InkWell(
-      onTap: () {
-        print("弹幕轨");
-      },
-      child: Text("弹幕轨"),
-    ),
-    InkWell(
-      onTap: () {
-        print("弹幕源");
-      },
-      child: Text("弹幕源"),
-    ),
-    InkWell(
-      onTap: () {
-        print("弹幕时间");
-      },
-      child: Text("弹幕时间"),
-    ),
-  ];
-
-  List<Widget> speedList = [];
-
   @override
   void initState() {
     controller = Get.find<PlayerController>();
-    speedList.add(
-      InkWell(
-        onTap: () {
-          Get.closeAllBottomSheets();
-          if (controller.playerState.isFullscreen.value) {
-            controller.onlyShowUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]);
-          } else {
-            BottomSheetDialogUtils.openBottomSheet(PlayerSpeedUI(bottomSheet: true));
-          }
-        },
-        child: Text("播放倍数"),
-      ),
-    );
     super.initState();
   }
 
@@ -122,13 +46,19 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
               children: [
                 _createAspectRatio(),
                 _createChapter(),
-                _settingItem("字幕", subtitleList),
+                _settingItem(
+                  "字幕",
+                  controller.uiState.settingsUIMap["subtitleList"],
+                ),
                 _createDanmaku(),
                 // _settingItem("倍数", speedList),
-                _settingPlayerSpeed(PlayerCommons.settingUIDefaultWidth.clamp(
-                  screenWidth * 0.3,
-                  screenWidth * 0.8,
-                ), fontSize: fontSize),
+                _settingPlayerSpeed(
+                  PlayerCommons.settingUIDefaultWidth.clamp(
+                    screenWidth * 0.3,
+                    screenWidth * 0.8,
+                  ),
+                  fontSize: fontSize,
+                ),
               ],
             ),
           )
@@ -136,7 +66,10 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
             children: [
               _createAspectRatio(),
               _createChapter(),
-              _settingItem("字幕", subtitleList),
+              _settingItem(
+                "字幕",
+                controller.uiState.settingsUIMap["subtitleList"],
+              ),
               _createDanmaku(),
               // _settingItem("倍数", speedList),
               _settingPlayerSpeed(screenWidth, fontSize: fontSize),
@@ -207,9 +140,13 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
               dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
             ),
             child: SizedBox(
-                width: width,
-                height: (fontSize ?? 14) + WidgetStyleCommons.safeSpace,
-                child: PlayerSpeedUI(bottomSheet:  true, singleHorizontalScroll:  true, )),
+              width: width,
+              height: (fontSize ?? 14) + WidgetStyleCommons.safeSpace,
+              child: PlayerSpeedUI(
+                bottomSheet: true,
+                singleHorizontalScroll: true,
+              ),
+            ),
           ),
         ],
       ),
@@ -227,7 +164,10 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
       if (chapter == null || chapter.visible.value) {
         return Container();
       }
-      return _settingItem("章节信息", chapterList);
+      return _settingItem(
+        "章节信息",
+        controller.uiState.settingsUIMap["chapterList"],
+      );
     });
   }
 
@@ -237,21 +177,27 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
         (item) => item.type == ControlType.sendDanmaku,
       );
       if (sendDanmaku == null || sendDanmaku.visible.value) {
-        return _settingItem("弹幕", danmakuList);
+        return _settingItem(
+          "弹幕",
+          controller.uiState.settingsUIMap["danmakuList"],
+        );
       }
       return _settingItem("弹幕", [
         InkWell(
           onTap: () {
-            print("发送弹幕");
+            LoggerUtils.logger.d("发送弹幕");
           },
           child: Text("发送弹幕"),
         ),
-        ...danmakuList,
+        ...controller.uiState.settingsUIMap["danmakuList"] ?? [],
       ]);
     });
   }
 
-  Widget _settingItem(String text, List<Widget> childrenList) {
+  Widget _settingItem(String text, List<Widget>? childrenList) {
+    if (childrenList == null || childrenList.isEmpty) {
+      return Container();
+    }
     return _createSettingItem(
       text,
       Row(
@@ -302,4 +248,3 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
     );
   }
 }
-

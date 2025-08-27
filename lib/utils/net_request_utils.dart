@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 
-import '../cache/db/current_configs.dart';
+import '../cache/current_configs.dart';
 import '../commons/public_commons.dart';
 import '../http/dio_utils.dart';
 

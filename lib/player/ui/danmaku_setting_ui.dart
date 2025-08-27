@@ -12,6 +12,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData themeData = Theme.of(context);
     List<Widget> listWidget = [
       _settingList(),
       Padding(
@@ -45,7 +46,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                               fontSize: PlayerCommons.titleTextSize,
                               color: filterType.filter.value
                                   ? WidgetStyleCommons.primaryColor
-                                  : PlayerCommons.textColor,
+                                  : null,
                             ),
                           ),
                         ],
@@ -70,9 +71,9 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                 onPressed: () =>
                     controller.danmakuState.uiShowAdjustTime.value =
                         controller.danmakuState.uiShowAdjustTime.value - 0.5,
-                icon: const Icon(
+                icon: Icon(
                   Icons.remove_circle_rounded,
-                  color: WidgetStyleCommons.iconColor,
+                  color:themeData.primaryColor,
                 ),
               ),
               Container(
@@ -86,9 +87,8 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                       controller.danmakuState.uiShowAdjustTime.toStringAsFixed(
                         1,
                       ),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: PlayerCommons.titleTextSize,
-                        color: PlayerCommons.textColor,
                       ),
                     ),
                   ),
@@ -100,7 +100,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                         controller.danmakuState.uiShowAdjustTime.value + 0.5,
                 icon: Icon(
                   Icons.add_circle_rounded,
-                  color: WidgetStyleCommons.iconColor,
+                  color: themeData.primaryColor,
                 ),
               ),
             ],
@@ -128,7 +128,6 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                 "同步弹幕时间",
                 style: TextStyle(
                   fontSize: PlayerCommons.titleTextSize,
-                  color: PlayerCommons.textBlackColor,
                 ),
               ),
             ),
@@ -166,7 +165,6 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                 "弹幕屏蔽管理",
                 style: TextStyle(
                   fontSize: PlayerCommons.titleTextSize,
-                  color: PlayerCommons.textBlackColor,
                 ),
               ),
             ),
@@ -203,7 +201,6 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                 "查看弹幕列表",
                 style: TextStyle(
                   fontSize: PlayerCommons.titleTextSize,
-                  color: PlayerCommons.textBlackColor,
                 ),
               ),
             ),
@@ -294,7 +291,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
           ),
 
           // 右边进度提示
-          _rightTipText("${controller.danmakuState.danmakuAlphaRatio.value}%"),
+          _rightTipText("${controller.danmakuState.danmakuAlphaRatio.value.ratio}%"),
         ],
       ),
     );
@@ -431,7 +428,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
     return Text(
       text,
       style: TextStyle(
-        color: PlayerCommons.textColor,
+        // color: PlayerCommons.textColor,
         fontSize: PlayerCommons.titleTextSize,
       ),
       strutStyle: const StrutStyle(forceStrutHeight: true),
@@ -452,7 +449,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
         Text(
           text,
           style: TextStyle(
-            color: PlayerCommons.textColor,
+            // color: PlayerCommons.textColor,
             fontSize: PlayerCommons.titleTextSize,
           ),
           strutStyle: const StrutStyle(forceStrutHeight: true),
@@ -467,7 +464,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
       child: BuildTextWidget(
         text: text,
         style: const TextStyle(
-          color: PlayerCommons.textColor,
+          // color: PlayerCommons.textColor,
           fontSize: PlayerCommons.titleTextSize,
         ),
         edgeInsets: const EdgeInsets.all(0),

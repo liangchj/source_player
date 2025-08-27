@@ -45,7 +45,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   // late PlayerController playerController;
   @override
   void initState() {
-    print("entry initState");
+    LoggerUtils.logger.d("entry initState");
     // playerController = Get.put(PlayerController());
     controller = Get.put(
       NetResourceDetailController(widget.resourceId),
@@ -64,7 +64,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   }
 
   void listener() {
-    print(
+    LoggerUtils.logger.d(
       "listener， offset:${controller.nestedScrollController?.offset}, "
       "position：${controller.nestedScrollController?.position}, "
       "initialScrollOffset：${controller.nestedScrollController?.initialScrollOffset}"
@@ -79,7 +79,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    print("渲染");
+    LoggerUtils.logger.d("渲染");
     return PopScope(
       canPop: controller.canPopScope(),
       child: Obx(
@@ -327,42 +327,6 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
 
   Widget _createCommentView() {
     return Column(children: [Text("评论信息")]);
-  }
-
-  Widget _createDetailAndPlay() {
-    return DefaultTabController(
-      length: 1,
-      child: Column(
-        children: [
-          TabBar(tabs: [Tab(text: "资源信息")]),
-          Expanded(
-            child: TabBarView(
-              children: [
-                // 资源信息
-                _createResourceDetailInfo(),
-                // 资源播放控件按钮
-                _createResourceControlBtn(),
-                // 资源播放信息
-                // Expanded(
-                //   child: Padding(
-                //     padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                //     /*child: ResourceFromChapterWidget(controller: controller,
-                //     apiLayout: ResourceFromLayout.select,
-                //       apiModuleLayout: ResourceFromLayout.select,
-                //       chapterScrollDirection: Axis.horizontal,
-                //       chapterTopWidgetList: [
-                //         ChapterSortButton(controller: controller,),
-                //         ChapterTotalAndOpenListIcon(controller: controller,)
-                //       ],
-                //     ),*/
-                //   ),
-                // ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   /// 创建播放器

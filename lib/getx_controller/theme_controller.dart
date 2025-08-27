@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 
-import '../cache/db/cache_const.dart';
-import '../cache/shared_preferences_cache.dart';
+import '../hive/storage.dart';
+
 
 class ThemeController extends GetxController {
   // 1. 响应式状态：主题色种子（用户选择的颜色）、主题模式
   final Rx<Color> selectedColorSeed = Colors.green.obs; // 默认绿色
   final Rx<ThemeMode> themeMode = ThemeMode.system.obs; // 默认深色模式
+
+  Box<dynamic> setting = GStorage.setting;
 
   // 2. 生成Light主题（根据当前selectedColorSeed）
   ThemeData get lightTheme => ThemeData(
@@ -43,18 +46,15 @@ class ThemeController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-
     // 读取保存的主题色种子（默认绿色）
-    final savedColorValue = await SharedPreferencesCache.asyncPrefs.getInt(
-      CacheConst.colorSeedKey,
-    );
+    var savedColorValue = setting.get("${SettingBoxKey.cachePrev}-${SettingBoxKey.colorSeedKey}");
+
     if (savedColorValue != null) {
       selectedColorSeed.value = Color(savedColorValue);
     }
     // 读取保存的主题模式（默认深色）
-    final savedThemeMode = await SharedPreferencesCache.asyncPrefs.getInt(
-      CacheConst.themeModeKey,
-    );
+    var savedThemeMode = setting.get("${SettingBoxKey.cachePrev}-${SettingBoxKey.themeModeKey}");
+
     if (savedThemeMode != null) {
       themeMode.value = ThemeMode.values[savedThemeMode];
     }
@@ -64,18 +64,12 @@ class ThemeController extends GetxController {
   Future<void> updateThemeColor(Color newColor) async {
     selectedColorSeed.value = newColor;
     // 保存到SharedPreferences
-    await SharedPreferencesCache.asyncPrefs.setInt(
-      CacheConst.colorSeedKey,
-      newColor.toARGB32(),
-    );
+    setting.put("${SettingBoxKey.cachePrev}-${SettingBoxKey.colorSeedKey}", newColor.toARGB32);
   }
 
   // 7. 切换主题模式（亮/暗/系统，可选）
   Future<void> toggleThemeMode(ThemeMode newMode) async {
     themeMode.value = newMode;
-    await SharedPreferencesCache.asyncPrefs.setInt(
-      CacheConst.themeModeKey,
-      newMode.index,
-    );
+    setting.put("${SettingBoxKey.cachePrev}-${SettingBoxKey.themeModeKey}", newMode.index);
   }
 }

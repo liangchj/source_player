@@ -6,11 +6,9 @@ import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:source_player/player/controller/player_controller.dart';
 
 import '../../../commons/widget_style_commons.dart';
-import '../../../models/play_source_model.dart';
 import '../../../utils/auto_compute_sliver_grid_count.dart';
 import '../../../widgets/clickable_button_widget.dart';
 import '../../models/play_source_option_model.dart';
-import '../../models/resource_state_model.dart';
 
 /// 资源api排版
 class SourceApi extends StatefulWidget {
@@ -103,8 +101,7 @@ class _SourceApiState extends State<SourceApi> {
                   return Text(
                     controller
                             .resourcePlayState
-                            .playSourceList
-                            ![controller
+                            .playSourceList![controller
                                 .resourcePlayState
                                 .apiActivatedIndex
                                 .value]
@@ -240,12 +237,13 @@ class _SourceApiState extends State<SourceApi> {
           ),
           itemCount: controller.resourcePlayState.playSourceList!.length,
           itemBuilder: (context, index) {
-            final item =
-                controller.resourcePlayState.playSourceList![index];
+            final item = controller.resourcePlayState.playSourceList![index];
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
-                key: ValueKey("source_api_${option.bottomSheet}_listView_$index"),
+                key: ValueKey(
+                  "source_api_${option.bottomSheet}_listView_$index",
+                ),
                 text: item.api?.apiBaseModel.name ?? "",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -285,8 +283,7 @@ class _SourceApiState extends State<SourceApi> {
             childAspectRatio: WidgetStyleCommons.playSourceGridRatio,
           ),
           itemBuilder: (context, index) {
-            final item =
-                controller.resourcePlayState.playSourceList![index];
+            final item = controller.resourcePlayState.playSourceList![index];
             return ClickableButtonWidget(
               key: ValueKey("source_api_${option.bottomSheet}_gridView_$index"),
               text: item.api?.apiBaseModel.name ?? "",
@@ -325,11 +322,9 @@ class _SourceApiState extends State<SourceApi> {
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             scrollDirection: Axis.horizontal,
-            itemCount:
-                controller.resourcePlayState.playSourceList!.length,
+            itemCount: controller.resourcePlayState.playSourceList!.length,
             itemBuilder: (context, index) {
-              final item =
-                  controller.resourcePlayState.playSourceList![index];
+              final item = controller.resourcePlayState.playSourceList![index];
               return Container(
                 margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
                 child: AspectRatio(

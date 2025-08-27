@@ -13,7 +13,6 @@ import '../ui/player_lock_ui.dart';
 import '../ui/player_screenshot_ui.dart';
 import '../ui/player_speed_ui.dart';
 import '../ui/player_top_ui.dart';
-import '../widgets/left_bottom_hit_text_widget.dart';
 
 class PlayerUIState {
   // 锁住ui
@@ -42,7 +41,9 @@ class PlayerUIState {
   void disposeAllAnimationControllers() {
     overlayUIMap.forEach((key, uiModel) {
       if (uiModel.animateController != null) {
-        uiModel.animateController?.dispose();
+        try {
+          uiModel.animateController?.dispose();
+        } catch (_) {}
         uiModel.animateController = null;
       }
     });
@@ -243,4 +244,6 @@ class PlayerUIState {
   );
 
   final Rx<String?> bottomLeftMsg = Rx(null);
+
+  Map<String, List<Widget>> settingsUIMap = {};
 }

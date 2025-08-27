@@ -5,7 +5,7 @@ import 'package:source_player/models/video_model.dart';
 import 'package:source_player/models/video_type_model.dart';
 import 'package:source_player/widgets/video_card_widget.dart';
 
-import '../cache/db/current_configs.dart';
+import '../cache/current_configs.dart';
 import '../getx_controller/net_resource_list_controller.dart';
 import '../widgets/custom_first_page_error.dart';
 import '../widgets/filter_criteria_widget.dart';

@@ -16,6 +16,7 @@ import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
 import '../../models/resource_chapter_model.dart';
 import '../../models/video_model.dart';
+import '../../utils/bottom_sheet_dialog_utils.dart';
 import '../commons/player_commons.dart';
 import '../danmaku/my_danmaku_controller.dart';
 import '../danmaku/state/danmaku_state.dart';
@@ -26,6 +27,9 @@ import '../models/player_overlay_ui_model.dart';
 import '../models/resource_play_state_model.dart';
 import '../state/player_state.dart';
 import '../state/resource_play_state.dart';
+import '../ui/danmaku_setting_ui.dart';
+import '../ui/fullscreen_chapter_list_ui.dart';
+import '../ui/player_speed_ui.dart';
 import '../utils/fullscreen_utils.dart';
 
 class PlayerController extends GetxController {
@@ -117,6 +121,93 @@ class PlayerController extends GetxController {
         ),
       ),
     );
+
+    uiState.settingsUIMap["chapterList"] = [
+      InkWell(
+        onTap: () {
+          BottomSheetDialogUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
+        },
+        child: Text("章节列表"),
+      ),
+    ];
+    uiState.settingsUIMap["subtitleList"] = [
+      InkWell(
+        onTap: () {
+          LoggerUtils.logger.d("字幕轨");
+        },
+        child: Text("字幕轨"),
+      ),
+      InkWell(
+        onTap: () {
+          LoggerUtils.logger.d("字幕样式");
+        },
+        child: Text("字幕样式"),
+      ),
+      InkWell(
+        onTap: () {
+          LoggerUtils.logger.d("字幕时间");
+        },
+        child: Text("字幕时间"),
+      ),
+    ];
+
+    uiState.settingsUIMap["danmakuList"] = [
+      InkWell(
+        onTap: () {
+          LoggerUtils.logger.d("弹幕设置");
+          BottomSheetDialogUtils.closeBottomSheet();
+          BottomSheetDialogUtils.openBottomSheet(
+            DefaultTextStyle(
+              style: TextStyle(
+                color: playerState.isFullscreen.value
+                    ? Colors.white
+                    : Colors.black,
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
+                child: DanmakuSettingUI(bottomSheet: true),
+              ),
+            ),
+            closeBtnShow: !playerState.isFullscreen.value,
+            backgroundColor: playerState.isFullscreen.value
+                ? PlayerCommons.playerUIBackgroundColor
+                : Colors.white,
+          );
+        },
+        child: Text("弹幕设置"),
+      ),
+      InkWell(
+        onTap: () {
+          LoggerUtils.logger.d("弹幕轨");
+        },
+        child: Text("弹幕轨"),
+      ),
+      InkWell(
+        onTap: () {
+          LoggerUtils.logger.d("弹幕源");
+        },
+        child: Text("弹幕源"),
+      ),
+      InkWell(
+        onTap: () {
+          LoggerUtils.logger.d("弹幕时间");
+        },
+        child: Text("弹幕时间"),
+      ),
+    ];
+    uiState.settingsUIMap["speedList"] = [
+      InkWell(
+        onTap: () {
+          Get.closeAllBottomSheets();
+          if (playerState.isFullscreen.value) {
+            onlyShowUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]);
+          } else {
+            BottomSheetDialogUtils.openBottomSheet(PlayerSpeedUI(bottomSheet: true));
+          }
+        },
+        child: Text("播放倍数"),
+      )
+    ];
   }
 
   void _initBottomControlItemList() {
@@ -472,8 +563,8 @@ class PlayerController extends GetxController {
       if (!ignoreLimit && uiState.notTouchCtrlKeyList.contains(element.key)) {
         continue;
       }
-      if (element.key == uiState.leftBottomHitUI) {
-        print(element.key);
+      if (element.key == uiState.leftBottomHitUI.key) {
+        LoggerUtils.logger.d(element.key);
       }
       if (element.visible.value) {
         flag = true;
@@ -485,7 +576,7 @@ class PlayerController extends GetxController {
 
   // 根据Key值隐藏ui
   void hideUIByKeyList(List<String> keyList) {
-    print("隐藏ui：$keyList");
+    LoggerUtils.logger.d("隐藏ui：$keyList");
     if (keyList.isEmpty) {
       return;
     }
@@ -560,7 +651,11 @@ class PlayerController extends GetxController {
     // 当前UI是否需要动画控制器（有效ui直接使用属性动画）
     if (uiOverlay.useAnimationController) {
       // 先销毁已存在的控制器（如果有的话）
-      // uiOverlay.animateController?.dispose();
+      if (uiOverlay.animateController != null) {
+        try {
+          uiOverlay.animateController?.dispose();
+        } catch (_) {}
+      }
       uiOverlay.animateController = AnimationController(
         duration:
             uiOverlay.animationDuration ??

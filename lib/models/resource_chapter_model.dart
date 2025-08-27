@@ -1,6 +1,5 @@
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 
-import '../cache/db/current_configs.dart';
 import 'media_file_model.dart';
 
 class ResourceChapterModel {
@@ -49,28 +48,28 @@ class ResourceChapterModel {
     if (extrasVar != null) {
       try {
         extras = DataTypeConvertUtils.toMapStrDyMap(extrasVar);
-      } catch (e) {}
+      } catch (_) {}
     }
     var httpHeadersVar = json['httpHeaders'];
     Map<String, String>? httpHeaders;
     if (httpHeadersVar != null) {
       try {
         httpHeaders = Map<String, String>.from(httpHeadersVar);
-      } catch (e) {}
+      } catch (_) {}
     }
     var startVar = json['start'];
     Duration? start;
     if (startVar != null) {
       try {
         start = Duration(seconds: startVar);
-      } catch (e) {}
+      } catch (_) {}
     }
     var endVar = json['end'];
     Duration? end;
     if (endVar != null) {
       try {
         end = Duration(seconds: endVar);
-      } catch (e) {}
+      } catch (_) {}
     }
 
     return ResourceChapterModel(

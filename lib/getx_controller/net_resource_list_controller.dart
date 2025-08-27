@@ -6,7 +6,7 @@ import 'package:source_player/models/loading_state_model.dart';
 import 'package:source_player/models/video_model.dart';
 import 'package:source_player/models/video_type_model.dart';
 
-import '../cache/db/current_configs.dart';
+import '../cache/current_configs.dart';
 import '../models/filter_criteria_item_model.dart';
 import '../models/filter_criteria_list_model.dart';
 import '../utils/net_request_utils.dart';

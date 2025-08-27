@@ -1,7 +1,8 @@
 
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
+import 'package:source_player/hive/storage.dart';
 
-import '../../models/filter_criteria_list_model.dart';
+import '../models/filter_criteria_list_model.dart';
 
 /// 当前运行的配置信息
 class CurrentConfigs {
@@ -18,6 +19,12 @@ class CurrentConfigs {
 
   // 通用的过滤条件
   static Map<String, FilterCriteriaListModel> commonFilterMap = {};
+
+  static updateCurrentApi(ApiConfigModel? api) {
+    CurrentConfigs.currentApi = api;
+    GStorage.setting.put("${SettingBoxKey.cachePrev}-${SettingBoxKey.currentApiKey}", CurrentConfigs.currentApi?.toJson());
+    CurrentConfigs.updateCurrentApiInfo();
+  }
 
 
   static updateCurrentApiInfo() {

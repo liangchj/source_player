@@ -7,6 +7,7 @@ import 'package:source_player/getx_controller/search_danmaku_subtitle_controller
 import 'package:source_player/utils/bottom_sheet_dialog_utils.dart';
 
 import '../enums/file_format.dart';
+import '../enums/file_source_enums.dart';
 import '../widgets/media_item_widget.dart';
 import '../widgets/my_file_selector.dart';
 
@@ -390,7 +391,7 @@ class SearchDanmakuSubtitlePage
               directory: externalStorageDirectory,
               fileFormat: FileFormat.xml,
               onTapFile: (file) {
-                controller.bindDanmaku(file.path);
+                controller.bindDanmaku(file.path, FileSourceEnums.localFile);
                 //关闭对话框
                 BottomSheetDialogUtils.closeBottomSheetAndDialog();
               },

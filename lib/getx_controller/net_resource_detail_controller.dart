@@ -6,8 +6,9 @@ import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
 import 'package:source_player/models/video_model.dart';
+import 'package:source_player/utils/logger_utils.dart';
 
-import '../cache/db/current_configs.dart';
+import '../cache/current_configs.dart';
 import '../models/loading_state_model.dart';
 import '../player/controller/player_controller.dart';
 import '../player/player_view.dart';
@@ -225,7 +226,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
         return;
       }
 
-      print("资源信息: ${videoModel.value?.toJson()}");
+      LoggerUtils.logger.d("资源信息: ${videoModel.value?.toJson()}");
     } catch (e) {
       loadingState(loadingState.value.copyWith(loading: false, loadedSuc: false, errorMsg: "加载资源报错：${e.toString()}" ,));
     }

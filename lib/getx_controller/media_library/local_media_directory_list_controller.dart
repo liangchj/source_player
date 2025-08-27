@@ -88,7 +88,6 @@ class LocalMediaDirectoryListController extends GetxController {
       type: RequestType.video,
     );
     List<DirectoryModel> list = [];
-    print(assetPathList);
     for (AssetPathEntity assetPath in assetPathList) {
       // print(assetPath.name);
       if (assetPath.isAll) {

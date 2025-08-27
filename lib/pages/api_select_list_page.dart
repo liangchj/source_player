@@ -3,7 +3,7 @@ import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
-import '../cache/db/current_configs.dart';
+import '../cache/current_configs.dart';
 import '../getx_controller/net_resource_home_controller.dart';
 
 class ApiSelectListPage extends StatefulWidget {
@@ -15,7 +15,7 @@ class ApiSelectListPage extends StatefulWidget {
 
 class _ApiSelectListPageState extends State<ApiSelectListPage> {
   late final NetResourceHomeController controller;
-  var _activeApi = Rx<ApiConfigModel?>(null);
+  final _activeApi = Rx<ApiConfigModel?>(null);
   late ListObserverController observerController;
   late ScrollController scrollController;
   @override
@@ -54,8 +54,9 @@ class _ApiSelectListPageState extends State<ApiSelectListPage> {
                         .allApiJson[controller.currentApiKey.value]);
                 Get.find<NetResourceHomeController>().loadingApiConfig();
                 Get.back();*/
-                CurrentConfigs.currentApi = _activeApi.value;
-                CurrentConfigs.updateCurrentApiInfo();
+                // CurrentConfigs.currentApi = _activeApi.value;
+                // CurrentConfigs.updateCurrentApiInfo();
+                CurrentConfigs.updateCurrentApi(_activeApi.value);
                 controller.currentApi(_activeApi.value);
                 Get.back();
               },

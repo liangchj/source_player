@@ -2,11 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
-import 'package:flutter_dynamic_api/utils/json_to_model_utils.dart';
+import 'package:source_player/hive/storage.dart';
 
-import '../cache/db/current_configs.dart';
-import '../cache/shared_preferences_cache.dart';
-import '../commons/cache_key_commons.dart';
+import '../cache/current_configs.dart';
 import '../commons/net_api_key_common.dart';
 import '../commons/public_commons.dart';
 
@@ -15,15 +13,18 @@ class ApiUtils {
   static Future<String> loadCurrentApi() async {
     String msg = "";
     // 从缓存中获取
-    String? apiJsonStr = await SharedPreferencesCache()
-        .getAsyncPrefs()
-        .getString(CacheKeyCommons.currentApiKey);
+    String? apiJsonStr = GStorage.setting.get(
+      "${SettingBoxKey.cachePrev}-${SettingBoxKey.currentApiKey}",
+    )?.toString();
+
     if (apiJsonStr != null && apiJsonStr.isNotEmpty) {
       try {
         Map<String, dynamic> apiJson = json.decode(apiJsonStr);
         handleDefaultApiKeyInfo(apiJson);
-        CurrentConfigs.currentApi = ApiConfigModel.fromJson(apiJson);
-        CurrentConfigs.updateCurrentApiInfo();
+        var apiConfigModel = ApiConfigModel.fromJson(apiJson);
+        CurrentConfigs.updateCurrentApi(apiConfigModel);
+        // CurrentConfigs.currentApi = ApiConfigModel.fromJson(apiJson);
+        // CurrentConfigs.updateCurrentApiInfo();
       } catch (e) {
         msg = "解析当前api出错：$e";
       }
@@ -37,9 +38,9 @@ class ApiUtils {
   /// 将api转成json字符串，然后以英文名作为key生成map，再转成字符串存入
   static getAllApiFromCache() async {
     // 从缓存中获取
-    String? apiJsonStr = await SharedPreferencesCache()
-        .getAsyncPrefs()
-        .getString(CacheKeyCommons.apiKey);
+    String? apiJsonStr = GStorage.setting.get(
+      "${SettingBoxKey.cachePrev}-${SettingBoxKey.customAddApiKey}",
+    )?.toString();
     if (apiJsonStr != null && apiJsonStr.isNotEmpty) {
       try {
         Map<String, dynamic> map = json.decode(apiJsonStr);
@@ -54,8 +55,7 @@ class ApiUtils {
               apiJson.addAll(DataTypeConvertUtils.toMapStrDyMap(value));
             } catch (e2) {
               PublicCommons.logger.e(
-                "从缓存中获取api解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry
-                    .value}",
+                "从缓存中获取api解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry.value}",
               );
               continue;
             }
@@ -66,7 +66,8 @@ class ApiUtils {
           CurrentConfigs.enNameToApiJsonMap[entry.key] = apiJson;
           try {
             ApiConfigModel apiModel = ApiConfigModel.fromJson(apiJson);
-            CurrentConfigs.enNameToApiMap[apiModel.apiBaseModel.enName] = apiModel;
+            CurrentConfigs.enNameToApiMap[apiModel.apiBaseModel.enName] =
+                apiModel;
           } catch (e1) {
             PublicCommons.logger.e(
               "从缓存中获取api解析具体内容错误，数据（已合并默认内容）：$apiJson，报错：$e1",
@@ -116,9 +117,7 @@ class ApiUtils {
           }
           handleDefaultApiKeyInfo(apiJson);
           CurrentConfigs.enNameToApiJsonMap[entry.key] = apiJson;
-          var validateResult = ApiConfigModel.validateField(
-            apiJson,
-          );
+          var validateResult = ApiConfigModel.validateField(apiJson);
           if (!validateResult.flag) {
             PublicCommons.logger.e(
               "读取路径：$filePath的json文件解析具体内容验证不通过，数据（已合并默认内容）：$apiJson，验证信息：${JsonToModelUtils.getValidateResultMsg(validateResult)}",
@@ -127,7 +126,8 @@ class ApiUtils {
           }
           try {
             ApiConfigModel apiModel = ApiConfigModel.fromJson(apiJson);
-            CurrentConfigs.enNameToApiMap[apiModel.apiBaseModel.enName] = apiModel;
+            CurrentConfigs.enNameToApiMap[apiModel.apiBaseModel.enName] =
+                apiModel;
           } catch (e1) {
             PublicCommons.logger.e(
               "读取路径：$filePath的json文件解析具体内容错误，数据（已合并默认内容）：$apiJson，报错：$e1",
@@ -145,17 +145,17 @@ class ApiUtils {
     );
   }
 
-
   static handleDefaultApiKeyInfo(Map<String, dynamic> map) {
     String apiKeyConfig = map["apiKeyConfig"] ?? "";
     if (apiKeyConfig.isEmpty) {
       return;
     }
-    Map<String, dynamic> apiKeyConfigMap = NetApiDefaultKeyCommon.apiKeys[apiKeyConfig] ?? {};
+    Map<String, dynamic> apiKeyConfigMap =
+        NetApiDefaultKeyCommon.apiKeys[apiKeyConfig] ?? {};
     if (apiKeyConfigMap.isEmpty) {
       return;
     }
-    Map<String ,dynamic> netApiMap = map["netApiMap"] ?? {};
+    Map<String, dynamic> netApiMap = map["netApiMap"] ?? {};
     if (netApiMap.isEmpty) {
       return;
     }
@@ -198,14 +198,17 @@ class ApiUtils {
     }*/
   }
 
-
-  static void mergeMapInfo(Map<String, dynamic> targetMap, Map<String, dynamic> sourceMap) {
+  static void mergeMapInfo(
+    Map<String, dynamic> targetMap,
+    Map<String, dynamic> sourceMap,
+  ) {
     for (var entry in sourceMap.entries) {
       if (entry.key == "filterCriteriaList") {
         if (entry.value == null) {
           continue;
         }
-        List<Map<String, dynamic>> filterCriteriaList = DataTypeConvertUtils.toListMapStrDyMap(entry.value);
+        List<Map<String, dynamic>> filterCriteriaList =
+            DataTypeConvertUtils.toListMapStrDyMap(entry.value);
         if (filterCriteriaList.isEmpty) {
           continue;
         }
@@ -215,7 +218,9 @@ class ApiUtils {
           continue;
         } else {
           try {
-            targetFilterCriteriaList = DataTypeConvertUtils.toListMapStrDyMap(targetMap[entry.key]);
+            targetFilterCriteriaList = DataTypeConvertUtils.toListMapStrDyMap(
+              targetMap[entry.key],
+            );
           } catch (e) {
             continue;
           }
@@ -224,9 +229,14 @@ class ApiUtils {
           targetMap[entry.key] = filterCriteriaList;
           continue;
         }
-        List<String> targetFilterCriteriaKeyList = targetFilterCriteriaList.map((item) => (item["enName"] ?? item["name"] ?? "").toString()).toList();
+        List<String> targetFilterCriteriaKeyList = targetFilterCriteriaList
+            .map((item) => (item["enName"] ?? item["name"] ?? "").toString())
+            .toList();
         for (var filterCriteria in filterCriteriaList) {
-          if (!targetFilterCriteriaKeyList.contains((filterCriteria["enName"] ?? filterCriteria["name"] ?? "").toString())) {
+          if (!targetFilterCriteriaKeyList.contains(
+            (filterCriteria["enName"] ?? filterCriteria["name"] ?? "")
+                .toString(),
+          )) {
             targetFilterCriteriaList.add(filterCriteria);
           }
         }
@@ -237,7 +247,9 @@ class ApiUtils {
         if (entry.value.isEmpty) {
           continue;
         }
-        Map<String, dynamic> config = DataTypeConvertUtils.toMapStrDyMap(entry.value);
+        Map<String, dynamic> config = DataTypeConvertUtils.toMapStrDyMap(
+          entry.value,
+        );
         Map<String, dynamic> map = {};
         if (targetMap[entry.key] == null) {
           map = {};

@@ -7,7 +7,6 @@ import '../../commons/icon_commons.dart';
 import '../../commons/widget_style_commons.dart';
 import '../../utils/logger_utils.dart';
 import '../commons/player_commons.dart';
-import '../utils/time_format_utils.dart';
 
 class PlayerBottomUI extends GetView<PlayerController> {
   const PlayerBottomUI({super.key});
@@ -25,7 +24,8 @@ class PlayerBottomUI extends GetView<PlayerController> {
           builder: (context, constraints) {
             // 在下一帧获取实际高度
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              controller.uiState.bottomUIHeight.value = context.size?.height ?? 0;
+              controller.uiState.bottomUIHeight.value =
+                  context.size?.height ?? 0;
             });
             return _buildBottomUI();
           },
@@ -112,45 +112,6 @@ class PlayerBottomUI extends GetView<PlayerController> {
                   ? IconCommons.bottomPauseIcon
                   : IconCommons.bottomPlayIcon);
       }),
-    );
-  }
-
-  /// 已播放时长
-  Widget _buildPlayPositionDuration({EdgeInsetsGeometry? padding}) {
-    return Obx(
-      () => Text(
-        TimeFormatUtils.durationToMinuteAndSecond(
-          controller.playerState.positionDuration.value,
-        ),
-      ),
-    );
-    return Padding(
-      padding:
-          padding ??
-          EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
-      child: Obx(
-        () => Text(
-          TimeFormatUtils.durationToMinuteAndSecond(
-            controller.playerState.positionDuration.value,
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 总时长
-  Widget _buildTotalDuration({EdgeInsetsGeometry? padding}) {
-    return Padding(
-      padding:
-          padding ??
-          EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
-      child: Obx(
-        () => Text(
-          TimeFormatUtils.durationToMinuteAndSecond(
-            controller.playerState.duration.value,
-          ),
-        ),
-      ),
     );
   }
 

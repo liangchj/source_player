@@ -100,7 +100,7 @@ class MediaListPage extends GetView<MediaListController> {
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: Colors.grey.withOpacity(0.2), //边框颜色
+            color: Colors.grey.withValues(alpha: 0.2), //边框颜色
             width: 1, //边框宽度
           ), // 边色与边宽度
           color: Colors.white, // 底色
@@ -108,7 +108,7 @@ class MediaListPage extends GetView<MediaListController> {
             BoxShadow(
               blurRadius: 10, //阴影范围
               spreadRadius: 0.1, //阴影浓度
-              color: Colors.grey.withOpacity(0.2), //阴影颜色
+              color: Colors.grey.withValues(alpha: 0.2), //阴影颜色
             ),
           ],
         ),

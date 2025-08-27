@@ -46,20 +46,20 @@ class FullscreenUtils {
     OverlayState? overlay;
     try {
       overlay = Overlay.of(context, rootOverlay: true);
-    } catch (e) {}
+    } catch (_) {}
 
     try {
       // 如果失败，尝试使用 Navigator 获取上下文
       final navigatorContext = Navigator.of(context).context;
       overlay = Overlay.of(navigatorContext, rootOverlay: true);
-    } catch (e) {}
+    } catch (_) {}
 
     try {
       // 使用 GetX 提供的 overlayContext
       if (Get.overlayContext != null) {
         overlay = Overlay.of(Get.overlayContext!, rootOverlay: true);
       }
-    } catch (e) {}
+    } catch (_) {}
     if (overlay != null) {
       _enterWithOverlay(context, overlay);
     } else {
