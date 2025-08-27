@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:source_player/models/video_type_model.dart';
 
 import '../getx_controller/net_resource_list_controller.dart';
 import '../models/filter_criteria_list_model.dart';
