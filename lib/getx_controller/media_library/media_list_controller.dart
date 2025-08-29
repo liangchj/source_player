@@ -118,8 +118,6 @@ class MediaListController extends GetxController {
       var danmakuPaths = GStorage.danmakuPaths.get(key);
       var danmakuPath = danmakuPaths?.localPath;
 
-      print("弹幕路径读取，key:$key，路径: $danmakuPath");
-
       // 获取绑定的字幕文件
       var subtitlePaths = GStorage.subtitlePaths.get(key);
       var subtitlePath = subtitlePaths?.path;

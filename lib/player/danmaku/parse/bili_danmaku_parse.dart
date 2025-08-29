@@ -104,7 +104,7 @@ class BiliDanmakuParse {
   }
 
   // xpath方式读取（文件内容多会很慢，推荐使用逐级方式读取）
-  Future<Map<int, List<DanmakuItemModel>>> parseDanmakuByXmlForXpath(
+  Future<Map<double, List<DanmakuItemModel>>> parseDanmakuByXmlForXpath(
     BiliDanmakuParseOptions options,
   ) async {
     XmlDocument? document;
@@ -116,7 +116,7 @@ class BiliDanmakuParse {
     if (document == null) {
       return {};
     }
-    Map<int, List<DanmakuItemModel>> danmakuMap = {};
+    Map<double, List<DanmakuItemModel>> danmakuMap = {};
     if (document.childElements.isNotEmpty) {
       Iterable<XmlNode> iterable = document.xpath(
         options.xpath ?? xpathParseXml,
@@ -139,10 +139,14 @@ class BiliDanmakuParse {
           xmlNode.innerText,
         );
         if (danmakuItem != null) {
-          var inSeconds = Duration(milliseconds: danmakuItem.time).inSeconds;
-          var list = danmakuMap[inSeconds] ?? [];
+          var duration = Duration(milliseconds: danmakuItem.time);
+          var inSeconds = duration.inSeconds;
+          var inMilliseconds = duration.inMilliseconds;
+          var balance = inMilliseconds - inSeconds * 1000;
+          double key = inSeconds + (balance >= 500 ? 0.5 : 0);
+          var list = danmakuMap[key] ?? [];
           list.add(danmakuItem);
-          danmakuMap[inSeconds] = list;
+          danmakuMap[key] = list;
         }
       }
     }
@@ -150,7 +154,7 @@ class BiliDanmakuParse {
   }
 
   // 逐级方式读取
-  Future<Map<int, List<DanmakuItemModel>>> parseDanmakuByXml(
+  Future<Map<double, List<DanmakuItemModel>>> parseDanmakuByXml(
     BiliDanmakuParseOptions options,
   ) async {
     XmlDocument? document;
@@ -159,7 +163,7 @@ class BiliDanmakuParse {
     } else {
       document = readXmlFromPath(options.xmlPath);
     }
-    Map<int, List<DanmakuItemModel>> danmakuMap = {};
+    Map<double, List<DanmakuItemModel>> danmakuMap = {};
     if (document == null) {
       return danmakuMap;
     }
@@ -175,10 +179,14 @@ class BiliDanmakuParse {
             splitChar: options.splitChar,
           );
           if (danmakuItem != null) {
-            var inSeconds = Duration(milliseconds: danmakuItem.time).inSeconds;
-            var list = danmakuMap[inSeconds] ?? [];
+            var duration = Duration(milliseconds: danmakuItem.time);
+            var inSeconds = duration.inSeconds;
+            var inMilliseconds = duration.inMilliseconds;
+            var balance = inMilliseconds - inSeconds * 1000;
+            double key = inSeconds + (balance >= 500 ? 0.5 : 0);
+            var list = danmakuMap[key] ?? [];
             list.add(danmakuItem);
-            danmakuMap[inSeconds] = list;
+            danmakuMap[key] = list;
           }
         }
       } else {
@@ -190,10 +198,14 @@ class BiliDanmakuParse {
           splitChar: options.splitChar,
         );
         if (danmakuItem != null) {
-          var inSeconds = Duration(milliseconds: danmakuItem.time).inSeconds;
-          var list = danmakuMap[inSeconds] ?? [];
+          var duration = Duration(milliseconds: danmakuItem.time);
+          var inSeconds = duration.inSeconds;
+          var inMilliseconds = duration.inMilliseconds;
+          var balance = inMilliseconds - inSeconds * 1000;
+          double key = inSeconds + (balance >= 500 ? 0.5 : 0);
+          var list = danmakuMap[key] ?? [];
           list.add(danmakuItem);
-          danmakuMap[inSeconds] = list;
+          danmakuMap[key] = list;
         }
       }
     }

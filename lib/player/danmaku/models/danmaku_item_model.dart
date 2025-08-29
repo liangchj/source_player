@@ -10,7 +10,7 @@ class DanmakuItemModel extends DanmakuContentItem {
     this.createTime,
     this.poolType,
     this.sendUserId,
-        required this.danmakuId,
+    required this.danmakuId,
     this.level,
   });
 

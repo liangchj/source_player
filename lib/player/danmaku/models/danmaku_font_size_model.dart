@@ -6,32 +6,32 @@ class DanmakuFontSizeModel {
   final double size;
   final double min;
   final double max;
-  double? _ratio;
-  double get ratio => _ratio ?? min;
+  double? _fontSize;
+  double get fontSize => _fontSize ?? min;
 
   DanmakuFontSizeModel(
       {this.size = 16.0,
         required this.min,
         required this.max,
-        required double ratio}) {
-    _ratio = ratio.round().toDouble();
+        required double fontSize}) {
+    _fontSize = fontSize.round().toDouble();
   }
 
   DanmakuFontSizeModel copyWith({
     double? size,
     double? min,
     double? max,
-    double? ratio,
+    double? fontSize,
   }) {
     return DanmakuFontSizeModel(
       size: size ?? this.size,
       min: min ?? this.min,
       max: max ?? this.max,
-      ratio: ratio ?? this.ratio,
+      fontSize: fontSize ?? this.fontSize,
     );
   }
 
-  set ratio(double d) {
-    _ratio = d.round().toDouble();
+  set fontSize(double d) {
+    _fontSize = d.round().toDouble();
   }
 }

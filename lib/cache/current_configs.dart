@@ -22,6 +22,7 @@ class CurrentConfigs {
 
   static updateCurrentApi(ApiConfigModel? api) {
     CurrentConfigs.currentApi = api;
+    // GStorage.setting.put("${SettingBoxKey.cachePrev}-${SettingBoxKey.currentApiKey}", {CurrentConfigs.currentApi?.apiBaseModel.enName: CurrentConfigs.currentApi?.toJson()});
     GStorage.setting.put("${SettingBoxKey.cachePrev}-${SettingBoxKey.currentApiKey}", CurrentConfigs.currentApi?.toJson());
     CurrentConfigs.updateCurrentApiInfo();
   }

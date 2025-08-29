@@ -22,19 +22,31 @@ class MyDanmakuController {
 
   bool get videoIsPlaying => playerController.playerState.isPlaying.value;
 
-  initEver(){
-    everAll([state.danmakuAlphaRatio, state.danmakuArea, state.danmakuFontSize, state.danmakuSpeed], (value) {
-      if (danmakuController == null) {
-        return;
-      }
-      DanmakuOption option = danmakuController!.option.copyWith(
+  initEver() {
+    everAll(
+      [
+        state.danmakuAlphaRatio,
+        state.danmakuArea,
+        state.danmakuFontSize,
+        state.danmakuSpeed,
+      ],
+      (value) {
+        if (danmakuController == null) {
+          return;
+        }
+        DanmakuOption option = danmakuController!.option.copyWith(
           opacity: state.danmakuAlphaRatio.value.ratio / 100.0,
-          area: state.danmakuArea.value.danmakuAreaItemList[state.danmakuArea.value.areaIndex].area,
-          fontSize: state.danmakuFontSize.value.ratio,
-          duration: state.danmakuSpeed.value.speed.floor(),
-      );
-      danmakuController!.updateOption(option);
-    });
+          area: state
+              .danmakuArea
+              .value
+              .danmakuAreaItemList[state.danmakuArea.value.areaIndex]
+              .area,
+          fontSize: state.danmakuFontSize.value.fontSize,
+          duration: state.danmakuSpeed.value.speed,
+        );
+        danmakuController!.updateOption(option);
+      },
+    );
   }
 
   // 读取弹幕文件
@@ -48,7 +60,7 @@ class MyDanmakuController {
       return;
     }
     List<String> parseErrorList = [];
-    Map<int, List<DanmakuItemModel>> danmakuMap = readAll
+    Map<double, List<DanmakuItemModel>> danmakuMap = readAll
         ? {}
         : state.danmakuMap.value;
     for (var entry in state.danmakuFilePathMap.value!.entries) {
@@ -101,7 +113,16 @@ class MyDanmakuController {
           createdController: (DanmakuController e) {
             danmakuController = e;
           },
-          option: DanmakuOption(),
+          option: (danmakuController?.option ?? DanmakuOption()).copyWith(
+            opacity: state.danmakuAlphaRatio.value.ratio / 100.0,
+            area: state
+                .danmakuArea
+                .value
+                .danmakuAreaItemList[state.danmakuArea.value.areaIndex]
+                .area,
+            fontSize: state.danmakuFontSize.value.fontSize,
+            duration: state.danmakuSpeed.value.speed,
+          ),
         ),
       );
       return Future.value();
@@ -183,22 +204,27 @@ class MyDanmakuController {
   // 发送弹幕
   void sendDanmakuByPosition(Duration value) {
     if (danmakuController == null ||
-        !videoIsPlaying || !playerController.playerState.isSeeking.value ||
+        !videoIsPlaying ||
+        playerController.playerState.isSeeking.value ||
         !state.isVisible.value ||
         state.danmakuMap.value.isEmpty) {
       return;
     }
     var inSeconds = value.inSeconds;
+    var inMilliseconds = value.inMilliseconds;
     // 添加时间合理性检查
     var currentPosition = playerController.playerState.positionDuration.value;
-    if (currentPosition.inSeconds != inSeconds) {
+    if (currentPosition.inMilliseconds != inMilliseconds) {
       // 时间不匹配，可能是过时的事件
       return;
     }
-    if (state.prevSendSecond == inSeconds) {
+    var balance = inMilliseconds - (inSeconds * 1000);
+    double time = inSeconds + (balance >= 500 ? 0.0 : 0.5);
+
+    if (state.prevSendSecond == time) {
       return;
     }
-    var list = state.danmakuMap.value[inSeconds] ?? [];
+    var list = state.danmakuMap.value[time] ?? [];
     if (list.isEmpty) {
       return;
     }
@@ -210,7 +236,8 @@ class MyDanmakuController {
 
   void sendDanmaku(DanmakuItemModel item) {
     if (danmakuController == null ||
-        !videoIsPlaying || !playerController.playerState.isSeeking.value ||
+        !videoIsPlaying ||
+        playerController.playerState.isSeeking.value ||
         !state.isVisible.value) {
       return;
     }

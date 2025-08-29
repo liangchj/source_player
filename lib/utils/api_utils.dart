@@ -13,18 +13,25 @@ class ApiUtils {
   static Future<String> loadCurrentApi() async {
     String msg = "";
     // 从缓存中获取
-    String? apiJsonStr = GStorage.setting.get(
+    var apiJson = GStorage.setting.get(
       "${SettingBoxKey.cachePrev}-${SettingBoxKey.currentApiKey}",
-    )?.toString();
+    );
 
-    if (apiJsonStr != null && apiJsonStr.isNotEmpty) {
+    if (apiJson != null && apiJson.isNotEmpty) {
       try {
-        Map<String, dynamic> apiJson = json.decode(apiJsonStr);
-        handleDefaultApiKeyInfo(apiJson);
-        var apiConfigModel = ApiConfigModel.fromJson(apiJson);
+        Map<String, dynamic> map = {};
+        if (apiJson is Map) {
+          if (apiJson is Map<String, dynamic>) {
+            map = apiJson;
+          } else {
+            map = DataTypeConvertUtils.toMapStrDyMap(apiJson);
+          }
+        } else {
+          map = json.decode(apiJson.toString());
+        }
+        handleDefaultApiKeyInfo(map);
+        var apiConfigModel = ApiConfigModel.fromJson(map);
         CurrentConfigs.updateCurrentApi(apiConfigModel);
-        // CurrentConfigs.currentApi = ApiConfigModel.fromJson(apiJson);
-        // CurrentConfigs.updateCurrentApiInfo();
       } catch (e) {
         msg = "解析当前api出错：$e";
       }
@@ -38,12 +45,21 @@ class ApiUtils {
   /// 将api转成json字符串，然后以英文名作为key生成map，再转成字符串存入
   static getAllApiFromCache() async {
     // 从缓存中获取
-    String? apiJsonStr = GStorage.setting.get(
+    var apiJson = GStorage.setting.get(
       "${SettingBoxKey.cachePrev}-${SettingBoxKey.customAddApiKey}",
-    )?.toString();
-    if (apiJsonStr != null && apiJsonStr.isNotEmpty) {
+    );
+    if (apiJson != null && apiJson.isNotEmpty) {
       try {
-        Map<String, dynamic> map = json.decode(apiJsonStr);
+        Map<String, dynamic> map = {};
+        if (apiJson is Map) {
+          if (apiJson is Map<String, dynamic>) {
+            map = apiJson;
+          } else {
+            map = DataTypeConvertUtils.toMapStrDyMap(apiJson);
+          }
+        } else {
+          map = json.decode(apiJson.toString());
+        }
         if (map.isEmpty) {
           return;
         }

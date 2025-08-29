@@ -368,7 +368,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
           // 中间进度指示器
           Expanded(
             child: Slider(
-              value: controller.danmakuState.danmakuFontSize.value.ratio,
+              value: controller.danmakuState.danmakuFontSize.value.fontSize,
               min: controller.danmakuState.danmakuFontSize.value.min,
               max: controller.danmakuState.danmakuFontSize.value.max,
               onChanged: (value) {
@@ -376,14 +376,14 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                     .danmakuState
                     .danmakuFontSize
                     .value
-                    .copyWith(ratio: value.truncateToDouble());
+                    .copyWith(fontSize: value);
               },
             ),
           ),
 
           // 右边进度提示
           _rightTipText(
-            "${controller.danmakuState.danmakuFontSize.value.ratio}%",
+            "${controller.danmakuState.danmakuFontSize.value.fontSize}",
           ),
         ],
       ),
@@ -411,7 +411,7 @@ class DanmakuSettingUI extends GetView<PlayerController> {
                     .danmakuState
                     .danmakuSpeed
                     .value
-                    .copyWith(speed: value.truncateToDouble());
+                    .copyWith(speed: value);
               },
             ),
           ),

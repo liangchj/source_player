@@ -13,7 +13,7 @@ class DanmakuState {
   // 弹幕组件
   final Rx<Widget?> danmakuView = Rx<Widget?>(null);
 
-  int prevSendSecond = -1;
+  double prevSendSecond = -1.0;
 
   // 弹幕文件路径
   final Rx<Map<String, bool>?> danmakuFilePathMap = Rx<Map<String, bool>?>(null);
@@ -26,7 +26,7 @@ class DanmakuState {
   }
 
   // 弹幕列表
-  final Rx<Map<int, List<DanmakuItemModel>>> danmakuMap = Rx<Map<int, List<DanmakuItemModel>>>({});
+  final Rx<Map<double, List<DanmakuItemModel>>> danmakuMap = Rx<Map<double, List<DanmakuItemModel>>>({});
 
   // 弹幕文件读取去重
   final RxBool readFileDeduplication = true.obs;
@@ -72,9 +72,9 @@ class DanmakuState {
   // 弹幕字体大小，显示百分比， 区间[20, 200]
   final Rx<DanmakuFontSizeModel> danmakuFontSize = DanmakuFontSizeModel(
     size: 16.0,
-    min: 20,
-    max: 200,
-    ratio: 80,
+    min: 8,
+    max: 30,
+    fontSize: 16,
   ).obs;
 
   // 弹幕播放速度（最终速度仍需要与视频速度计算而得）

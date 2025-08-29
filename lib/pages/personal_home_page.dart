@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:xml/xml.dart';
 
+import '../models/media_file_model.dart';
 import '../models/resource_chapter_model.dart';
 import '../player/controller/player_controller.dart';
 import '../utils/logger_utils.dart';
@@ -31,6 +32,9 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                   name: '1',
                   index: 0,
                   playUrl: "asset://assets/video/test.mp4",
+                  mediaFileModel: MediaFileModel(
+                    danmakuPath: "assets/danmaku/1.xml",
+                  ),
                 )
               ];
               controller.openLocalVideo(chapterList: chapterList);
