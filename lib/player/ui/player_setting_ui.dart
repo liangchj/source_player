@@ -141,7 +141,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
             ),
             child: SizedBox(
               width: width,
-              height: (fontSize ?? 14) + WidgetStyleCommons.safeSpace,
+              height: (fontSize ?? 14) + WidgetStyleCommons.safeSpace * 2,
               child: PlayerSpeedUI(
                 bottomSheet: true,
                 singleHorizontalScroll: true,

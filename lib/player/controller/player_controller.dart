@@ -391,6 +391,7 @@ class PlayerController extends GetxController {
       myDanmakuController.sendDanmakuByPosition(value);
     });
 
+
     myDanmakuController.initEver();
   }
 
@@ -651,11 +652,11 @@ class PlayerController extends GetxController {
     // 当前UI是否需要动画控制器（有效ui直接使用属性动画）
     if (uiOverlay.useAnimationController) {
       // 先销毁已存在的控制器（如果有的话）
-      if (uiOverlay.animateController != null) {
+      /*if (uiOverlay.animateController != null) {
         try {
           uiOverlay.animateController?.dispose();
         } catch (_) {}
-      }
+      }*/
       uiOverlay.animateController = AnimationController(
         duration:
             uiOverlay.animationDuration ??

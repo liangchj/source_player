@@ -23,7 +23,7 @@ class _ApiSelectListPageState extends State<ApiSelectListPage> {
     controller = Get.find<NetResourceHomeController>();
     scrollController = ScrollController();
     observerController = ListObserverController();
-    _activeApi(controller.currentApi.value);
+    _activeApi(controller.activatedApi.value);
     super.initState();
   }
 
@@ -57,7 +57,7 @@ class _ApiSelectListPageState extends State<ApiSelectListPage> {
                 // CurrentConfigs.currentApi = _activeApi.value;
                 // CurrentConfigs.updateCurrentApiInfo();
                 CurrentConfigs.updateCurrentApi(_activeApi.value);
-                controller.currentApi(_activeApi.value);
+                controller.activatedApi(_activeApi.value);
                 Get.back();
               },
               child: Text("确定")),

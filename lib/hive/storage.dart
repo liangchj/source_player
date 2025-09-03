@@ -60,6 +60,6 @@ class SettingBoxKey {
           "custom_add_api",
           /// 当前配置选择的api
           currentApiKey =
-          "current_api",
+          "activated_api4",
       playDirectoryList = "play_directory_list";
 }

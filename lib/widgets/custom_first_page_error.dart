@@ -15,7 +15,7 @@ class CustomFirstPageError extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '刷新失败 :(',
+              '加载失败 :(',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge,
             ),

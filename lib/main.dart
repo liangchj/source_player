@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 import 'getx_controller/theme_controller.dart';
@@ -46,6 +47,8 @@ Future<void> main() async {
         getPages: AppPages.pages,
         scrollBehavior: const TouchBehaviour(),
         home: const AppHomePage(),
+        navigatorObservers: [FlutterSmartDialog.observer],
+        builder: FlutterSmartDialog.init(),
       );
     }),
   );

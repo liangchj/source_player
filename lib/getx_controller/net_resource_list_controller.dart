@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:flutter_dynamic_api/models/dynamic_params_model.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:source_player/models/loading_state_model.dart';
@@ -28,7 +30,6 @@ class NetResourceListController extends GetxController {
 
   late PagingController<int, VideoModel> pagingController;
   // 资源列表
-  // var resourceListErrorMsg = "".obs;
   NetApiModel? listApi;
 
   List<String> notFilterCriteriaKey = [
@@ -38,6 +39,8 @@ class NetResourceListController extends GetxController {
     "totalCount",
     "keyword",
   ];
+
+  bool hasChildType = false;
 
   @override
   Future<void> onInit() async {
@@ -77,12 +80,16 @@ class NetResourceListController extends GetxController {
     // 当前视频类型下是否存在子类型
     FilterCriteriaListModel? classFilterCriteria =
         CurrentConfigs.currentApiVideoTypeMap[videoType.id];
-    if (classFilterCriteria != null) {
-      filterCriteriaList.add(classFilterCriteria.copyWidth(
-        enName: classFilterCriteria.enName,
-        name: classFilterCriteria.name,
-        filterCriteriaItemList: classFilterCriteria.filterCriteriaItemList,
-      ));
+    if (classFilterCriteria != null &&
+        classFilterCriteria.filterCriteriaItemList.isNotEmpty) {
+      hasChildType = true;
+      filterCriteriaList.add(
+        classFilterCriteria.copyWidth(
+          enName: classFilterCriteria.enName,
+          name: classFilterCriteria.name,
+          filterCriteriaItemList: classFilterCriteria.filterCriteriaItemList,
+        ),
+      );
     }
     // 获取当前视频类型下的过滤条件
     if (listApi == null || listApi!.requestParams.dynamicParams == null) {
@@ -112,11 +119,14 @@ class NetResourceListController extends GetxController {
         name: filterCriteria.name,
         filterCriteriaItemList: [],
       );
-      if (classFilterCriteria != null && classFilterCriteria.enName == model.enName && classFilterCriteria.filterCriteriaItemList.isNotEmpty) {
+      if (classFilterCriteria != null &&
+          classFilterCriteria.enName == model.enName &&
+          classFilterCriteria.filterCriteriaItemList.isNotEmpty) {
         continue;
       }
-      if (filterCriteria.netApi == null && (filterCriteria.filterCriteriaParamsList == null ||
-          filterCriteria.filterCriteriaParamsList!.isEmpty)) {
+      if (filterCriteria.netApi == null &&
+          (filterCriteria.filterCriteriaParamsList == null ||
+              filterCriteria.filterCriteriaParamsList!.isEmpty)) {
         continue;
       }
       if (filterCriteria.netApi != null) {
@@ -198,16 +208,23 @@ class NetResourceListController extends GetxController {
       isLoading: false,
       error: null,
     );
-    listLoadingState(listLoadingState.value.copyWith(isRefresh: true));
-    await loadTypeResource(1);
+    await loadTypeResource(1, isRefresh: true);
   }
 
   Future<List<VideoModel>> loadTypeResource(
     int page, {
     int limit = 20,
     String? search,
+    bool isRefresh = false,
   }) async {
-    listLoadingState(listLoadingState.value.copyWith(loading: true, loadedSuc: false, errorMsg: null,));
+    listLoadingState(
+      listLoadingState.value.copyWith(
+        loading: true,
+        loadedSuc: false,
+        errorMsg: null,
+        isRefresh: isRefresh,
+      ),
+    );
     List<VideoModel> list = [];
     try {
       Map<String, dynamic> params = {};
@@ -219,7 +236,8 @@ class NetResourceListController extends GetxController {
           // String value = entry.value;
           String key = entry.value.requestKey;
           dynamic paramValue;
-          if (entry.value.dataSource == DynamicParamsDataSourceEnum.filterCriteria) {
+          if (entry.value.dataSource ==
+              DynamicParamsDataSourceEnum.filterCriteria) {
             FilterCriteriaListModel? filterCriteria = filterCriteriaList
                 .firstWhereOrNull((e) => e.enName == entry.key);
             if (filterCriteria != null) {
@@ -247,6 +265,16 @@ class NetResourceListController extends GetxController {
             }
           }
         }
+
+        if (!hasChildType) {
+          var dynamicParam = dynamicParams["typeId"];
+          if (dynamicParam != null) {
+            var key = dynamicParam.requestKey;
+            if (key.isNotEmpty) {
+              params[key] = videoType.id;
+            }
+          }
+        }
       }
       var res = await NetRequestUtils.loadPageResource<VideoModel>(
         CurrentConfigs.listApi!,
@@ -267,9 +295,32 @@ class NetResourceListController extends GetxController {
         );
       }
       list = res.modelList ?? [];
-      listLoadingState(listLoadingState.value.copyWith(loading: false, loadedSuc: true, errorMsg: null,));
+      listLoadingState(
+        listLoadingState.value.copyWith(
+          loading: false,
+          loadedSuc: true,
+          errorMsg: null,
+        ),
+      );
     } catch (e) {
-      listLoadingState(listLoadingState.value.copyWith(loading: false, loadedSuc: false, errorMsg: "加载资源报错：${e.toString()}" ,));
+      pagingController.value = pagingController.value.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      if (listLoadingState.value.isRefresh) {
+        SmartDialog.showToast(
+          '刷新失败',
+          alignment: Alignment.center,
+          maskColor: Colors.red,
+        );
+      }
+      listLoadingState(
+        listLoadingState.value.copyWith(
+          loading: false,
+          loadedSuc: false,
+          errorMsg: "加载资源报错：${e.toString()}",
+        ),
+      );
     }
     return list;
   }

@@ -1,5 +1,6 @@
 import 'package:flutter_dynamic_api/flutter_dynamic_api.dart';
 import 'package:source_player/models/play_source_model.dart';
+import 'package:source_player/utils/logger_utils.dart';
 
 import '../player/models/video_base_model.dart';
 import '../utils/map_data_utils.dart';
@@ -76,9 +77,24 @@ class VideoModel extends VideoBaseModel {
     List<PlaySourceModel>? playSourceList;
     var playSourceListVar = json['playSourceList'];
     if (playSourceListVar != null) {
-      List<Map<String, dynamic>> playSources = DataTypeConvertUtils.toListMapStrDyMap(playSourceListVar);
-      playSourceList = playSources.map((e) => PlaySourceModel.fromJson(e))
+      List<Map<String, dynamic>> playSources =
+          DataTypeConvertUtils.toListMapStrDyMap(playSourceListVar);
+      playSourceList = playSources
+          .map((e) => PlaySourceModel.fromJson(e))
           .toList();
+    }
+
+    DateTime? addTime;
+    try {
+      addTime = MapDataUtils.getDateTimeFromMap(json, "addTime");
+    } catch (e) {
+      LoggerUtils.logger.e("${json["name"] ?? ""}解析添加时间报错：$e");
+    }
+    DateTime? modTime;
+    try {
+      modTime = MapDataUtils.getDateTimeFromMap(json, "modTime");
+    } catch (e) {
+      LoggerUtils.logger.e("${json["name"] ?? ""}解析更新时间报错：$e");
     }
     return VideoModel(
       id: (json["id"] ?? "").toString(),
@@ -87,23 +103,23 @@ class VideoModel extends VideoBaseModel {
       typeId: (json["typeId"] ?? "").toString(),
       typeName: (json["typeName"] ?? "").toString(),
       parentTypeId: (json["parentTypeId"] ?? "").toString(),
-      classList:  MapDataUtils.getListFromMap(json, "classList"),
+      classList: MapDataUtils.getListFromMap(json, "classList"),
       coverUrl: json["coverUrl"],
       blurb: json["blurb"],
       detailContent: json["detailContent"],
-      directorList:  MapDataUtils.getListFromMap(json, "directorList"),
-      actorList:  MapDataUtils.getListFromMap(json, "actorList"),
-      remark:  json["remark"],
-      total:  MapDataUtils.getIntFromMap(json, "total"),
-      duration:  MapDataUtils.getDurationFromMap(json, "duration"),
-      score:  MapDataUtils.getDoubleFromMap(json, "score"),
-      area:  json["area"],
-      languageList:  MapDataUtils.getListFromMap(json, "languageList"),
-      year:  json["year"],
-      version:  json["version"],
-      addTime:  MapDataUtils.getDateTimeFromMap(json, "addTime"),
-      modTime:  MapDataUtils.getDateTimeFromMap(json, "modTime"),
-        playSourceList: playSourceList,
+      directorList: MapDataUtils.getListFromMap(json, "directorList"),
+      actorList: MapDataUtils.getListFromMap(json, "actorList"),
+      remark: json["remark"],
+      total: MapDataUtils.getIntFromMap(json, "total"),
+      duration: MapDataUtils.getDurationFromMap(json, "duration"),
+      score: MapDataUtils.getDoubleFromMap(json, "score"),
+      area: json["area"],
+      languageList: MapDataUtils.getListFromMap(json, "languageList"),
+      year: json["year"],
+      version: json["version"],
+      addTime: addTime,
+      modTime: modTime,
+      playSourceList: playSourceList,
     );
   }
 

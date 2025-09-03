@@ -164,7 +164,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                                       controller
                                           .extendedNestedScrollViewOffset
                                           .value <=
-                                  pinnedHeaderHeight * 2
+                                  pinnedHeaderHeight
                           ? Container(
                               color: Colors.black,
                               height: double.infinity,

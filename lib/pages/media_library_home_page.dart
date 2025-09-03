@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:source_player/getx_controller/media_library_controller.dart';
 
@@ -32,6 +33,7 @@ class _MediaLibraryHomePageState extends State<MediaLibraryHomePage> with Automa
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          SmartDialog.showToast('test toast ---- }');
         },
         tooltip: 'getVideo',
         child: const Icon(Icons.add),

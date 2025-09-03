@@ -41,11 +41,16 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
             children: [
               Positioned.fill(
                 child: Obx(
+                      () => controller.danmakuState.danmakuView.value ?? Container(),
+                ),
+              ),
+              /*Positioned.fill(
+                child: Obx(
                   () => controller.danmakuState.isVisible.value
                       ? controller.danmakuState.danmakuView.value ?? Container()
                       : Container(),
                 ),
-              ),
+              ),*/
               const Positioned.fill(child: BackgroundEventUI()),
 
               // 顶部UI（资源信息）

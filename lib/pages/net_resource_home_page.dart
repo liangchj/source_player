@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/pages/api_select_list_page.dart';
-
 import '../getx_controller/net_resource_home_controller.dart';
+import '../widgets/error_hit_widget.dart';
 import '../widgets/loading_widget.dart';
 
 class NetResourceHomePage extends StatefulWidget {
@@ -17,71 +17,71 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
   final NetResourceHomeController controller = Get.put(
     NetResourceHomeController(),
   );
+
   @override
   Widget build(BuildContext context) {
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
     super.build(context);
-    return Obx(
-      () => controller.apiConfigLoadingState.value.loading
-          ? const Center(child: LoadingWidget(textWidget: Text("加载api配置中...")))
-          : !controller.apiConfigLoadingState.value.loadedSuc
-          ? Center(
-              child: Text(
-                "加载api配置失败：${controller.apiConfigLoadingState.value.errorMsg}",
-              ),
-            )
-          : Scaffold(
-              body: Padding(
-                padding: EdgeInsets.only(top: statusBarHeight),
-                child: Column(
-                  children: [
-                    _customAppBar(),
-                    Expanded(
-                      child: _buildTypeTabBar(
-                        content: _buildTypeResourceList(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-    );
-  }
-
-  // 自定义头部
-  Widget _customAppBar() {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TextButton(
-            onPressed: () {
+    return Obx(() {
+      if (controller.activatedApiConfigLoadingState.value.loading ||
+          controller.apiConfigLoadingState.value.loading) {
+        return const Center(
+          child: LoadingWidget(textWidget: Text("加载api配置中...")),
+        );
+      }
+      if (!controller.activatedApiConfigLoadingState.value.loadedSuc) {
+        return ErrorHitWidget(
+          errorMsg:
+              "加载api配置失败：${controller.activatedApiConfigLoadingState.value.errorMsg}；${controller.apiConfigLoadingState.value.errorMsg}",
+          refreshButtonTitle: "重新加载api",
+        );
+      }
+      return Scaffold(
+        appBar: AppBar(
+          title: InkWell(
+            onTap: () {
               Get.to(() => ApiSelectListPage());
             },
             child: Obx(
-              () => Text(controller.currentApi.value?.apiBaseModel.name ?? ""),
+              () => Text(
+                controller.activatedApi.value == null
+                    ? controller
+                              .activatedApiConfigLoadingState
+                              .value
+                              .errorMsg ??
+                          "（未设置）"
+                    : controller.activatedApi.value?.apiBaseModel.name ?? "（空）",
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: TextAlign.start,
+              ),
             ),
           ),
-          _customAppBarRightButtons(),
-        ],
-      ),
-    );
+          actions: [
+            IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+          ],
+          toolbarHeight: 36,
+        ),
+        body: controller.activatedApi.value == null
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("未设置api"),
+                    TextButton(
+                      onPressed: () {
+                        Get.to(() => ApiSelectListPage());
+                      },
+                      child: Text("点击设置"),
+                    ),
+                  ],
+                ),
+              )
+            : _buildResource(),
+      );
+    });
   }
 
-  // 头部右边按钮
-  Widget _customAppBarRightButtons() {
-    return Row(
-      children: [
-        IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
-      ],
-    );
-  }
-
-  // 构建类型
-  Widget _buildTypeTabBar({Widget? content}) {
+  Widget _buildResource() {
     return Obx(() {
       if (controller.typeLoadingState.value.loading) {
         return const Center(
@@ -89,17 +89,26 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
         );
       }
       if (!controller.typeLoadingState.value.loadedSuc) {
-        return Center(
-          child: Text("加载视频类型失败：${controller.typeLoadingState.value.errorMsg}"),
+        return ErrorHitWidget(
+          errorMsg: "加载视频类型失败：${controller.typeLoadingState.value.errorMsg}",
+          refreshButtonTitle: "重新加载",
+          onRefresh: () {
+            controller.loadInfo();
+          },
         );
       }
       if (controller.videoTypeList.isEmpty) {
         return Center(child: Text("当前api无数据"));
       }
       if (controller.tabController.value == null) {
-        return Center(child: Text("构建失败，请重试！"));
+        return ErrorHitWidget(
+          errorMsg: "构建失败，请重试！",
+          refreshButtonTitle: "重新构建",
+          onRefresh: () {
+            controller.createTabBarViews();
+          },
+        );
       }
-
       return DefaultTabController(
         length: controller.videoTypeList.length,
         child: Column(
@@ -117,7 +126,7 @@ class _NetResourceHomePageState extends State<NetResourceHomePage>
                     .toList(),
               ),
             ),
-            Expanded(child: content ?? Container()),
+            Expanded(child: _buildTypeResourceList()),
           ],
         ),
       );

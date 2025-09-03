@@ -262,7 +262,7 @@ class ResourcePlayState {
         name = videoModel.value!.enName ?? "";
       }
       if (name.isNotEmpty) {
-        title = "$name${title.isEmpty ? "" : "[$title]"}";
+        title = "$name${title.isEmpty ? "" : " [$title]"}";
       }
     }
     return title;

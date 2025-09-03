@@ -43,7 +43,8 @@ class ApiUtils {
 
   /// 从缓存中获取所有的api
   /// 将api转成json字符串，然后以英文名作为key生成map，再转成字符串存入
-  static getAllApiFromCache() async {
+  static Future<List<String>> getAllApiFromCache() async {
+    List<String> errorList = [];
     // 从缓存中获取
     var apiJson = GStorage.setting.get(
       "${SettingBoxKey.cachePrev}-${SettingBoxKey.customAddApiKey}",
@@ -61,7 +62,7 @@ class ApiUtils {
           map = json.decode(apiJson.toString());
         }
         if (map.isEmpty) {
-          return;
+          return errorList;
         }
         for (var entry in map.entries) {
           var value = entry.value;
@@ -72,6 +73,9 @@ class ApiUtils {
             } catch (e2) {
               PublicCommons.logger.e(
                 "从缓存中获取api解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry.value}",
+              );
+              errorList.add(
+                "[${entry.key}]:从缓存中获取api解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry.value}",
               );
               continue;
             }
@@ -88,33 +92,39 @@ class ApiUtils {
             PublicCommons.logger.e(
               "从缓存中获取api解析具体内容错误，数据（已合并默认内容）：$apiJson，报错：$e1",
             );
+            errorList.add(
+              "[${entry.key}]:从缓存中获取api解析具体内容错误，数据（已合并默认内容）：$apiJson，报错：$e1",
+            );
           }
         }
       } catch (e) {
         PublicCommons.logger.e("从缓存中获取api解析错误：$e");
+        errorList.add("从缓存中获取api解析错误：$e");
       }
     }
     PublicCommons.logger.d(
       "从缓存中获取api信息：enNameToApiJsonMap：${CurrentConfigs.enNameToApiJsonMap}, enNameToApiMap: ${CurrentConfigs.enNameToApiMap}",
     );
+    return errorList;
   }
 
   /// 从自定义json文件中获取
-  static getAllApiFromCustomJsonFile() async {
+  static Future<List<String>> getAllApiFromCustomJsonFile() async {
+    List<String> errorList = [];
     String filePath = PublicCommons.apiJsonFilePath;
     if (filePath.isEmpty) {
-      return;
+      return errorList;
     }
     try {
       Map<String, dynamic> resultMap = {};
       String jsonStr = await rootBundle.loadString(filePath);
       if (jsonStr.isEmpty) {
-        return;
+        return errorList;
       }
       try {
         resultMap = jsonDecode(jsonStr);
         if (resultMap.isEmpty) {
-          return;
+          return errorList;
         }
         for (var entry in resultMap.entries) {
           var value = entry.value;
@@ -126,6 +136,7 @@ class ApiUtils {
               PublicCommons.logger.e(
                 "读取路径：$filePath的json文件解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry.value}",
               );
+              errorList.add("[${entry.key}]：读取路径：$filePath的json文件解析具体内容不是Map<String, dynamic>类型，无法解析，数据：${entry.value}");
               continue;
             }
           } else {
@@ -138,6 +149,7 @@ class ApiUtils {
             PublicCommons.logger.e(
               "读取路径：$filePath的json文件解析具体内容验证不通过，数据（已合并默认内容）：$apiJson，验证信息：${JsonToModelUtils.getValidateResultMsg(validateResult)}",
             );
+            errorList.add("[${entry.key}]：读取路径：$filePath的json文件解析具体内容验证不通过，数据（已合并默认内容）：$apiJson，验证信息：${JsonToModelUtils.getValidateResultMsg(validateResult)}");
             continue;
           }
           try {
@@ -148,6 +160,7 @@ class ApiUtils {
             PublicCommons.logger.e(
               "读取路径：$filePath的json文件解析具体内容错误，数据（已合并默认内容）：$apiJson，报错：$e1",
             );
+            errorList.add("[${entry.key}]：读取路径：$filePath的json文件解析具体内容错误，数据（已合并默认内容）：$apiJson，报错：$e1");
           }
         }
       } catch (e) {
@@ -155,10 +168,12 @@ class ApiUtils {
       }
     } catch (ee) {
       PublicCommons.logger.e("读取路径：$filePath的json文件报错：$ee");
+      errorList.add("读取路径：$filePath的json文件报错：$ee");
     }
     PublicCommons.logger.d(
       "读取路径：$filePath的json文件后api信息：enNameToApiJsonMap：${CurrentConfigs.enNameToApiJsonMap}, enNameToApiMap: ${CurrentConfigs.enNameToApiMap}",
     );
+    return errorList;
   }
 
   static handleDefaultApiKeyInfo(Map<String, dynamic> map) {

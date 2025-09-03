@@ -42,6 +42,7 @@ class BottomSheetDialogUtils {
           topEnd: Radius.circular(10),
         ),
       ),
+      useRootNavigator: true,
     );
   }
 
