@@ -91,34 +91,30 @@ class _SourceGroupState extends State<SourceGroup> {
     List<Widget> lefts = [
       if (option.isSelect)
         Expanded(
-          child: Row(
-            children: [
-              Text("播放组："),
-              Expanded(
-                child: Obx(() {
-                  return Text(
-                    controller.resourcePlayState.activatedSourceGroup?.name ??
-                        "无",
-                    textAlign: TextAlign.start,
-                    overflow: TextOverflow.ellipsis,
-                  );
-                }),
-              ),
-            ],
-          ),
+          child: Obx(() {
+            return Text(
+              "播放组：${controller.resourcePlayState.activatedSourceGroup?.name ?? "无"}",
+              textAlign: TextAlign.start,
+              overflow: TextOverflow.ellipsis,
+            );
+          }),
         )
       else
-        Text(
-          controller.playerState.isFullscreen.value
-              ? "播放组(${controller.resourcePlayState.sourceGroupList.length})："
-              : "播放组：",
+        Expanded(
+          child: Text(
+            controller.playerState.isFullscreen.value
+                ? "播放组(${controller.resourcePlayState.sourceGroupList.length})："
+                : "播放组：",
+            textAlign: TextAlign.start,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
     ];
     List<Widget> rights = [
       if (!controller.playerState.isFullscreen.value &&
           (option.singleHorizontalScroll || option.isSelect))
-        TextButton(
-          onPressed: () {
+        InkWell(
+          onTap: () {
             _showBottomSheet = true;
             controller.netResourceDetailController?.bottomSheetController =
                 controller.netResourceDetailController?.childKey.currentState
@@ -155,15 +151,17 @@ class _SourceGroupState extends State<SourceGroup> {
                     );
           },
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    "${controller.resourcePlayState.sourceGroupList.length}组",
-                  ),
-                  Icon(Icons.keyboard_arrow_right_rounded),
-                ],
+              Text(
+                "${controller.resourcePlayState.sourceGroupList.length}组",
+                style: TextStyle(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Icon(
+                Icons.keyboard_arrow_right_rounded,
+                color: theme.primaryColor,
               ),
             ],
           ),
@@ -228,15 +226,15 @@ class _SourceGroupState extends State<SourceGroup> {
             horizontal: WidgetStyleCommons.safeSpace,
             vertical: WidgetStyleCommons.safeSpace,
           ),
-          itemCount:
-              controller.resourcePlayState.sourceGroupList.length,
+          itemCount: controller.resourcePlayState.sourceGroupList.length,
           itemBuilder: (context, index) {
-            final item =
-                controller.resourcePlayState.sourceGroupList[index];
+            final item = controller.resourcePlayState.sourceGroupList[index];
             return SizedBox(
               height: 44,
               child: ClickableButtonWidget(
-                key: ValueKey("source_group_${option.bottomSheet}_listView_${controller.resourcePlayState.apiActivatedIndex.value}_$index"),
+                key: ValueKey(
+                  "source_group_${option.bottomSheet}_listView_${controller.resourcePlayState.apiActivatedIndex.value}_$index",
+                ),
                 text: item.name ?? "未知分组",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -270,8 +268,7 @@ class _SourceGroupState extends State<SourceGroup> {
             vertical: WidgetStyleCommons.safeSpace,
           ),
           controller: _scrollController,
-          itemCount:
-              controller.resourcePlayState.sourceGroupList.length,
+          itemCount: controller.resourcePlayState.sourceGroupList.length,
           gridDelegate: SliverGridDelegateWithExtentAndRatio(
             crossAxisSpacing: WidgetStyleCommons.safeSpace,
             mainAxisSpacing: WidgetStyleCommons.safeSpace,
@@ -279,10 +276,11 @@ class _SourceGroupState extends State<SourceGroup> {
             childAspectRatio: WidgetStyleCommons.playSourceGridRatio,
           ),
           itemBuilder: (context, index) {
-            final item =
-                controller.resourcePlayState.sourceGroupList[index];
+            final item = controller.resourcePlayState.sourceGroupList[index];
             return ClickableButtonWidget(
-              key: ValueKey("source_group_${option.bottomSheet}_gridView_${controller.resourcePlayState.apiActivatedIndex.value}_$index"),
+              key: ValueKey(
+                "source_group_${option.bottomSheet}_gridView_${controller.resourcePlayState.apiActivatedIndex.value}_$index",
+              ),
               text: item.name ?? "未知分组",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -322,18 +320,18 @@ class _SourceGroupState extends State<SourceGroup> {
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               scrollDirection: Axis.horizontal,
-              itemCount:
-                  controller.resourcePlayState.sourceGroupList.length,
+              itemCount: controller.resourcePlayState.sourceGroupList.length,
               itemBuilder: (context, index) {
-                final item = controller
-                    .resourcePlayState
-                    .sourceGroupList[index];
+                final item =
+                    controller.resourcePlayState.sourceGroupList[index];
                 return Container(
                   margin: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
                   child: AspectRatio(
                     aspectRatio: WidgetStyleCommons.playSourceGridRatio,
                     child: ClickableButtonWidget(
-                      key: ValueKey("source_group_${option.bottomSheet}_horizontalScroll_${controller.resourcePlayState.apiActivatedIndex.value}_$index"),
+                      key: ValueKey(
+                        "source_group_${option.bottomSheet}_horizontalScroll_${controller.resourcePlayState.apiActivatedIndex.value}_$index",
+                      ),
                       text: item.name ?? "未知分组",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

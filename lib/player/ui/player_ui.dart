@@ -41,7 +41,8 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
             children: [
               Positioned.fill(
                 child: Obx(
-                      () => controller.danmakuState.danmakuView.value ?? Container(),
+                  () =>
+                      controller.danmakuState.danmakuView.value ?? Container(),
                 ),
               ),
               /*Positioned.fill(
@@ -114,6 +115,14 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                   () => controller.playerState.isInitialized.value
                       ? Container()
                       : CircularProgressIndicator(color: Colors.white),
+                ),
+              ),
+
+              Center(
+                child: Obx(
+                  () => controller.playerState.isBuffering.value
+                      ? CircularProgressIndicator(color: Theme.of(context).primaryColor)
+                      : Container(),
                 ),
               ),
 

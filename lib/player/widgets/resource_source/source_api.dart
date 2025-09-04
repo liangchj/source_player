@@ -93,42 +93,30 @@ class _SourceApiState extends State<SourceApi> {
     List<Widget> lefts = [
       if (option.isSelect)
         Expanded(
-          child: Row(
-            children: [
-              Text("播放源："),
-              Expanded(
-                child: Obx(() {
-                  return Text(
-                    controller
-                            .resourcePlayState
-                            .playSourceList![controller
-                                .resourcePlayState
-                                .apiActivatedIndex
-                                .value]
-                            .api
-                            ?.apiBaseModel
-                            .name ??
-                        "无",
-                    textAlign: TextAlign.start,
-                    overflow: TextOverflow.ellipsis,
-                  );
-                }),
-              ),
-            ],
-          ),
+          child: Obx(() {
+            return Text(
+              "播放源：${controller.resourcePlayState.playSourceList![controller.resourcePlayState.apiActivatedIndex.value].api?.apiBaseModel.name ?? "无"}",
+              textAlign: TextAlign.start,
+              overflow: TextOverflow.ellipsis,
+            );
+          }),
         )
       else
-        Text(
-          controller.playerState.isFullscreen.value
-              ? "播放源(${controller.resourcePlayState.playSourceList!.length})："
-              : "播放源：",
+        Expanded(
+          child: Text(
+            controller.playerState.isFullscreen.value
+                ? "播放源(${controller.resourcePlayState.playSourceList!.length})："
+                : "播放源：",
+            textAlign: TextAlign.start,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
     ];
     List<Widget> rights = [
       if (!controller.playerState.isFullscreen.value &&
           (option.singleHorizontalScroll || option.isSelect))
-        TextButton(
-          onPressed: () {
+        InkWell(
+          onTap: () {
             controller.netResourceDetailController?.bottomSheetController =
                 controller.netResourceDetailController?.childKey.currentState
                     ?.showBottomSheet(
@@ -163,15 +151,17 @@ class _SourceApiState extends State<SourceApi> {
                     );
           },
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    "${controller.resourcePlayState.playSourceList!.length}源",
-                  ),
-                  Icon(Icons.keyboard_arrow_right_rounded),
-                ],
+              Text(
+                "${controller.resourcePlayState.playSourceList!.length}源",
+                style: TextStyle(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Icon(
+                Icons.keyboard_arrow_right_rounded,
+                color: theme.primaryColor,
               ),
             ],
           ),

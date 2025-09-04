@@ -26,10 +26,8 @@ class PlayerTopUI extends GetView<PlayerController> {
           IconButton(
             color: WidgetStyleCommons.iconColor,
             onPressed: () {
-              // controller.fullscreenUtils.exitFullscreen();
               controller.fullscreenUtils.toggleFullscreen(exit: true);
             },
-            // icon: const Icon(Icons.arrow_back_ios_new_rounded)),
             icon: IconCommons.backIcon,
           ),
           if (pauseScroll)
@@ -120,16 +118,6 @@ class PlayerTopUI extends GetView<PlayerController> {
           ? PlayerCommons.playerUIBackgroundColor
           : Colors.white,
     );
-
-    /*openBottomSheet(
-        DefaultTextStyle(
-          style: TextStyle(color: controller.playerState.isFullscreen.value ? Colors.white : Colors.black),
-          child: Padding(
-            padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
-            child: PlayerSettingUI(bottomSheet: true,),
-          ),
-        )
-    );*/
   }
 
   /// 打开底部窗口

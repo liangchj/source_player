@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
@@ -28,7 +30,6 @@ class _PlayerSpeedUIState extends State<PlayerSpeedUI> {
 
   @override
   void dispose() {
-    controller.uiState.speedSettingUI.animateController?.dispose();
     super.dispose();
   }
 
@@ -75,59 +76,90 @@ class _PlayerSpeedUIState extends State<PlayerSpeedUI> {
   }
 
   Widget _createList() {
-    return ListViewObserver(
-      controller: _listObserverController,
-      child: ListView.builder(
-        scrollDirection: widget.singleHorizontalScroll ? Axis.horizontal : Axis.vertical,
-        controller: _scrollController,
-        shrinkWrap: true,
-        itemCount: PlayerCommons.playSpeedList.length,
-        itemBuilder: (ctx, index) {
-          var value = PlayerCommons.playSpeedList[index];
-          return Obx(
-            () => widget.singleHorizontalScroll ?
-            Container(
-              decoration: BoxDecoration(
-                color: value == controller.playerState.playSpeed.value ? WidgetStyleCommons.primaryColor.withValues(alpha: 0.2) : null,
-                //设置四周圆角 角度
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(WidgetStyleCommons.borderRadius),
-                ),
-              ),
-              child: TextButton(
-                onPressed: () {
-                  controller.playerState.playSpeed(value);
-                },
-                child: Text(
-                  "${value.toString()}x",
-                  style: TextStyle(color: value == controller.playerState.playSpeed.value ? WidgetStyleCommons.primaryColor : controller.playerState.isFullscreen.value
-                      ? Colors.white
-                      : Colors.black),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ) : Padding(
-              padding: EdgeInsets.symmetric(vertical: WidgetStyleCommons.safeSpace / 6),
-              child: ClickableButtonWidget(
-                text: "${value.toString()}x",
-                textAlign: TextAlign.center,
-                activated: value == controller.playerState.playSpeed.value,
-                isCard: true,
-                showBorder: false,
-                unActivatedTextColor: controller.playerState.isFullscreen.value
-                    ? Colors.white
-                    : Colors.black,
-                padding: EdgeInsets.symmetric(
-                  vertical: WidgetStyleCommons.safeSpace / 2,
-                  horizontal: 0,
-                ),
-                onClick: () {
-                  controller.playerState.playSpeed(value);
-                },
-              ),
-            ),
-          );
-        },
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(
+        dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
+        scrollbars: false,
+      ),
+      child: ListViewObserver(
+        controller: _listObserverController,
+        child: ListView.builder(
+          scrollDirection: widget.singleHorizontalScroll
+              ? Axis.horizontal
+              : Axis.vertical,
+          controller: _scrollController,
+          shrinkWrap: true,
+          itemCount: PlayerCommons.playSpeedList.length,
+          itemBuilder: (ctx, index) {
+            var value = PlayerCommons.playSpeedList[index];
+            return Obx(
+              () => widget.singleHorizontalScroll
+                  ? Container(
+                      decoration: BoxDecoration(
+                        color: value == controller.playerState.playSpeed.value
+                            ? WidgetStyleCommons.primaryColor.withValues(
+                                alpha: 0.2,
+                              )
+                            : null,
+                        //设置四周圆角 角度
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(WidgetStyleCommons.borderRadius),
+                        ),
+                      ),
+                      child: TextButton(
+                        onPressed: () {
+                          controller.playerState.playSpeed(value);
+                        },
+                        style: ButtonStyle(
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                WidgetStyleCommons.borderRadius,
+                              ),
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          "${value.toString()}x",
+                          style: TextStyle(
+                            color:
+                                value == controller.playerState.playSpeed.value
+                                ? WidgetStyleCommons.primaryColor
+                                : controller.playerState.isFullscreen.value
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  : Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: WidgetStyleCommons.safeSpace / 6,
+                      ),
+                      child: ClickableButtonWidget(
+                        text: "${value.toString()}x",
+                        textAlign: TextAlign.center,
+                        activated:
+                            value == controller.playerState.playSpeed.value,
+                        isCard: true,
+                        showBorder: false,
+                        unActivatedTextColor:
+                            controller.playerState.isFullscreen.value
+                            ? Colors.white
+                            : Colors.black,
+                        padding: EdgeInsets.symmetric(
+                          vertical: WidgetStyleCommons.safeSpace / 2,
+                          horizontal: 0,
+                        ),
+                        onClick: () {
+                          controller.playerState.playSpeed(value);
+                        },
+                      ),
+                    ),
+            );
+          },
+        ),
       ),
     );
   }

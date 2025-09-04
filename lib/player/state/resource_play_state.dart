@@ -26,7 +26,6 @@ class ResourcePlayState {
         chapterIndex: -1,
       ).obs;
 
-
   // 多级缓存：记录每个上级分组对应的下级激活索引
   // 1. api索引 → 该api下最后激活的apiGroup索引
   final Map<int, int> _apiToApiGroupCache = {};
@@ -48,9 +47,12 @@ class ResourcePlayState {
         chapterGroupActivatedIndex.value = 0;
         chapterActivatedIndex.value = 0;
       } else {
-        _apiToApiGroupCache[playStateModel!.apiIndex] = playStateModel!.apiGroupIndex;
-        _apiGroupToChapterGroupCache["${playStateModel!.apiIndex}-${playStateModel!.apiGroupIndex}"] = playStateModel!.chapterGroupIndex;
-        _chapterGroupToChapterCache["${playStateModel!.apiIndex}-${playStateModel!.apiGroupIndex}-${playStateModel!.chapterGroupIndex}"] = playStateModel!.chapterIndex;
+        _apiToApiGroupCache[playStateModel!.apiIndex] =
+            playStateModel!.apiGroupIndex;
+        _apiGroupToChapterGroupCache["${playStateModel!.apiIndex}-${playStateModel!.apiGroupIndex}"] =
+            playStateModel!.chapterGroupIndex;
+        _chapterGroupToChapterCache["${playStateModel!.apiIndex}-${playStateModel!.apiGroupIndex}-${playStateModel!.chapterGroupIndex}"] =
+            playStateModel!.chapterIndex;
         apiActivatedIndex.value = playStateModel!.apiIndex;
         apiGroupActivatedIndex.value = playStateModel!.apiGroupIndex;
         chapterGroupActivatedIndex.value = playStateModel!.chapterGroupIndex;
@@ -284,5 +286,12 @@ class ResourcePlayState {
   bool get haveNext {
     List<ResourceChapterModel> chapters = activatedChapterList;
     return resourcePlayingState.value.chapterIndex < chapters.length - 1;
+  }
+
+  void jumpToPlay() {
+    apiActivatedIndex.value = resourcePlayingState.value.apiIndex;
+    apiGroupActivatedIndex.value = resourcePlayingState.value.apiGroupIndex;
+    chapterGroupActivatedIndex.value =
+        resourcePlayingState.value.chapterGroupIndex;
   }
 }

@@ -13,7 +13,6 @@ class FullscreenChapterListUI extends GetView<PlayerController> {
   const FullscreenChapterListUI({super.key, this.bottomSheet = false});
   final bool bottomSheet;
 
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -26,34 +25,8 @@ class FullscreenChapterListUI extends GetView<PlayerController> {
             height: double.infinity,
             color: PlayerCommons.playerUIBackgroundColor,
             padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
-            child: Column(
-              children: [
-                SourceApi(
-                  option: PlaySourceOptionModel(singleHorizontalScroll: true),
-                ),
-
-                SourceGroup(
-                  option: PlaySourceOptionModel(singleHorizontalScroll: true),
-                ),
-                Expanded(
-                  child: ChapterList(
-                    option: PlaySourceOptionModel(isGrid: true),
-                  ),
-                ),
-              ],
-            ),
+            child: ChapterList(option: PlaySourceOptionModel(isGrid: true)),
           )
-        : Column(
-            children: [
-              SourceApi(
-                option: PlaySourceOptionModel(singleHorizontalScroll: true),
-              ),
-
-              SourceGroup(
-                option: PlaySourceOptionModel(singleHorizontalScroll: true),
-              ),
-              Expanded(child: ChapterList(option: PlaySourceOptionModel())),
-            ],
-          );
+        : ChapterList(option: PlaySourceOptionModel(isGrid: true));
   }
 }

@@ -91,10 +91,10 @@ class _NetResourceListPageState extends State<NetResourceListPage> {
                 state: state,
                 fetchNextPage: fetchNextPage,
                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                  childAspectRatio: 3 / 4,
+                  childAspectRatio: 3 / 4.5,
                   crossAxisSpacing: WidgetStyleCommons.safeSpace,
                   mainAxisSpacing: WidgetStyleCommons.safeSpace,
-                  maxCrossAxisExtent: 200,
+                  maxCrossAxisExtent: 150,
                 ),
                 builderDelegate: PagedChildBuilderDelegate<VideoModel>(
                   animateTransitions: true,

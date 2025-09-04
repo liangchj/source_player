@@ -120,22 +120,12 @@ class _ChapterListState extends State<ChapterList> {
       ),
       if (!controller.playerState.isFullscreen.value)
         IconButton(
-          tooltip: '跳至顶部',
-          icon: Icon(Icons.vertical_align_top),
-          style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
-          onPressed: () {},
-        ),
-        IconButton(
-          tooltip: '跳至底部',
-          icon: Icon(Icons.vertical_align_bottom),
-          style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
-          onPressed: () {},
-        ),
-        IconButton(
           tooltip: '跳至当前',
           icon: Icon(Icons.my_location),
           style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
-          onPressed: () {},
+          onPressed: () {
+            controller.resourcePlayState.jumpToPlay();
+          },
         ),
     ];
     List<Widget> rights = [
@@ -153,52 +143,47 @@ class _ChapterListState extends State<ChapterList> {
       ),
       if (option.singleHorizontalScroll &&
           !controller.playerState.isFullscreen.value)
-        TextButton(
-          onPressed: () {
+        InkWell(
+          onTap: () {
             _showBottomSheet = true;
             controller.netResourceDetailController?.bottomSheetController =
                 controller.netResourceDetailController?.childKey.currentState
                     ?.showBottomSheet(
-                      backgroundColor: Colors.transparent,
+                  backgroundColor: Colors.transparent,
                       (context) => Container(
-                        color: Colors.white,
-                        child: Center(
-                          child: ChapterList(
-                            option: PlaySourceOptionModel(
-                              onClose: () {
-                                controller
-                                    .netResourceDetailController
-                                    ?.bottomSheetController
-                                    ?.close();
-                                _showBottomSheet = false;
-                              },
-                              bottomSheet: true,
-                              isGrid: true,
-                              onDispose: (index) {
-                                _gridObserverController?.jumpTo(
-                                  index: index,
-                                  isFixedHeight: true,
-                                );
-                                _observerController?.jumpTo(
-                                  index: index,
-                                  isFixedHeight: true,
-                                );
-                              },
-                            ),
-                          ),
+                    color: Colors.white,
+                    child: Center(
+                      child: ChapterList(
+                        option: PlaySourceOptionModel(
+                          onClose: () {
+                            controller
+                                .netResourceDetailController
+                                ?.bottomSheetController
+                                ?.close();
+                            _showBottomSheet = false;
+                          },
+                          bottomSheet: true,
+                          isGrid: true,
+                          onDispose: (index) {
+                            _gridObserverController?.jumpTo(
+                              index: index,
+                              isFixedHeight: true,
+                            );
+                            _observerController?.jumpTo(
+                              index: index,
+                              isFixedHeight: true,
+                            );
+                          },
                         ),
                       ),
-                    );
+                    ),
+                  ),
+                );
           },
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text("${controller.resourcePlayState.chapterCount}集"),
-                  Icon(Icons.keyboard_arrow_right_rounded),
-                ],
-              ),
+              Text("${controller.resourcePlayState.chapterCount}集", style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w500),),
+              Icon(Icons.keyboard_arrow_right_rounded, color: theme.primaryColor,),
             ],
           ),
         ),
@@ -222,7 +207,17 @@ class _ChapterListState extends State<ChapterList> {
                 ),
               ),
       ),
-      child: Row(children: [...lefts, const Spacer(), ...rights]),
+      child: LayoutBuilder(builder: (context, constraints) {
+        return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: constraints.maxWidth,
+                ),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [Row(children: lefts),  Row(children: rights)])));
+      }),
     );
   }
 

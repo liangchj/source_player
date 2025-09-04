@@ -28,7 +28,7 @@ class NetResourceDetailController extends GetxController with GetSingleTickerPro
   PersistentBottomSheetController? bottomSheetController;
 
   // 详情页面的子页面的key
-  late GlobalKey<ScaffoldState> childKey;
+  late final GlobalKey<ScaffoldState> childKey;
   // 详情页的tab控制器
   late TabController tabController;
   final List<Widget> tabs = [

@@ -17,6 +17,7 @@ class ThemeController extends GetxController {
     useMaterial3: true,
     brightness: Brightness.light,
     colorSchemeSeed: selectedColorSeed.value, // 用响应式颜色种子
+    scaffoldBackgroundColor: Colors.white,
     // 可补充其他主题配置（如TextButtonTheme），确保基于colorScheme
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(

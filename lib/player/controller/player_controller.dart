@@ -122,7 +122,13 @@ class PlayerController extends GetxController {
       ),
     );
 
-    uiState.settingsUIMap["chapterList"] = [
+    uiState.settingsUIMap["resourceChapterList"] = [
+      InkWell(
+        onTap: () {
+          // BottomSheetDialogUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
+        },
+        child: Text("资源列表"),
+      ),
       InkWell(
         onTap: () {
           BottomSheetDialogUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
@@ -155,6 +161,7 @@ class PlayerController extends GetxController {
       InkWell(
         onTap: () {
           LoggerUtils.logger.d("弹幕设置");
+          hideUIByKeyList([PlayerUIKeyEnum.settingUI.name]);
           BottomSheetDialogUtils.closeBottomSheet();
           BottomSheetDialogUtils.openBottomSheet(
             DefaultTextStyle(
@@ -315,7 +322,7 @@ class PlayerController extends GetxController {
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 1,
         child: Obx(
-          () => playerState.isFullscreen.value
+          () => playerState.isFullscreen.value && !onlyFullscreen
               ? IconButton(
                   padding: const EdgeInsets.symmetric(horizontal: 0),
                   color: WidgetStyleCommons.iconColor,
@@ -762,6 +769,7 @@ class PlayerController extends GetxController {
     _progressTimer = Timer.periodic(
       PlayerCommons.volumeOrBrightnessUIShowDuration,
       (timer) {
+        _progressTimer?.cancel();
         playerState.draggingSecond(0);
         playerState.dragProgressPositionDuration =
             playerState.positionDuration.value;
@@ -852,12 +860,14 @@ class PlayerController extends GetxController {
       _brightnessTimer = Timer(
         PlayerCommons.volumeOrBrightnessUIShowDuration,
         () {
+          _brightnessTimer?.cancel();
           hideUIByKeyList([PlayerUIKeyEnum.centerBrightnessUI.name]);
         },
       );
     }
     if (playerState.isVolumeDragging.value) {
       _volumeTimer = Timer(PlayerCommons.volumeOrBrightnessUIShowDuration, () {
+        _volumeTimer?.cancel();
         hideUIByKeyList([PlayerUIKeyEnum.centerVolumeUI.name]);
       });
     }

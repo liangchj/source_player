@@ -39,7 +39,6 @@ class _AppHomePageState extends State<AppHomePage> {
             dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
           ),
           child: TabBarView(
-            // 你现有的 TabBarView 配置
             physics: const NeverScrollableScrollPhysics(),
             controller: controller.tabController,
             children: controller.tabPageList,

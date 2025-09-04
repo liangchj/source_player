@@ -45,7 +45,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
             child: ListView(
               children: [
                 _createAspectRatio(),
-                _createChapter(),
+                _createResourceChapter(),
                 _settingItem(
                   "字幕",
                   controller.uiState.settingsUIMap["subtitleList"],
@@ -65,7 +65,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
         : ListView(
             children: [
               _createAspectRatio(),
-              _createChapter(),
+              _createResourceChapter(),
               _settingItem(
                 "字幕",
                 controller.uiState.settingsUIMap["subtitleList"],
@@ -135,17 +135,12 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
             padding: EdgeInsets.only(bottom: WidgetStyleCommons.safeSpace / 2),
             child: _createTitle("倍数"),
           ),
-          ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(
-              dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
-            ),
-            child: SizedBox(
-              width: width,
-              height: (fontSize ?? 14) + WidgetStyleCommons.safeSpace * 2,
-              child: PlayerSpeedUI(
-                bottomSheet: true,
-                singleHorizontalScroll: true,
-              ),
+          SizedBox(
+            width: width,
+            height: (fontSize ?? 14) + WidgetStyleCommons.safeSpace * 2,
+            child: PlayerSpeedUI(
+              bottomSheet: true,
+              singleHorizontalScroll: true,
             ),
           ),
         ],
@@ -153,22 +148,15 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
     );
   }
 
-  Widget _createChapter() {
-    return Obx(() {
-      if (!controller.playerState.isFullscreen.value) {
-        return Container();
-      }
-      var chapter = controller.fullscreenBottomUIItemList.firstWhereOrNull(
-        (item) => item.type == ControlType.chapter,
-      );
-      if (chapter == null || chapter.visible.value) {
-        return Container();
-      }
-      return _settingItem(
-        "章节信息",
-        controller.uiState.settingsUIMap["chapterList"],
-      );
-    });
+  Widget _createResourceChapter() {
+    return Obx(
+      () => controller.playerState.isFullscreen.value
+          ? _settingItem(
+              "资源章节信息",
+              controller.uiState.settingsUIMap["resourceChapterList"],
+            )
+          : Container(),
+    );
   }
 
   Widget _createDanmaku() {
@@ -221,6 +209,7 @@ class _PlayerSettingUIState extends State<PlayerSettingUI> {
           ScrollConfiguration(
             behavior: ScrollConfiguration.of(context).copyWith(
               dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
+              scrollbars: false,
             ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,

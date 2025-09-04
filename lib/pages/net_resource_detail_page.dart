@@ -28,25 +28,16 @@ class NetResourceDetailPage extends StatefulWidget {
 
 class _NetResourceDetailPageState extends State<NetResourceDetailPage>
     with TickerProviderStateMixin {
-  /// 横向padding
-  final double horizontalPadding = 14.0;
-
-  /// 纵向padding
-  final double verticalPadding = 10.0;
-
   /// 二级文字字体大小
   final double secondaryTextFontSize = 12.0;
-  final double secondaryTextHorizontalPadding = 8.0;
   late NetResourceDetailController controller;
 
   final double _playerAspectRatio = 9 / 16.0;
   final double _minPlayerHeight = 60;
 
-  // late PlayerController playerController;
   @override
   void initState() {
     LoggerUtils.logger.d("entry initState");
-    // playerController = Get.put(PlayerController());
     controller = Get.put(
       NetResourceDetailController(widget.resourceId),
       tag: widget.resourceId,
@@ -105,8 +96,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                 )
               : controller.videoModel.value == null
               ? const Center(child: Text("获取资源为空"))
-              // : SizedBox(width: double.infinity, child: _createDetailAndPlay()),
-              : _createDetailScrollView(),
+              : SafeArea(top: true, child: _createDetailScrollView()),
         ),
       ),
     );
@@ -189,9 +179,6 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                                   pinnedHeaderHeight
                           ? Container(
                               color: Colors.black,
-                              padding: EdgeInsets.only(
-                                top: WidgetStyleCommons.safeSpace,
-                              ),
                               child: PlayerTopUI(pauseScroll: true),
                             )
                           : Container(),
@@ -204,8 +191,6 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         ];
       },
       pinnedHeaderSliverHeightBuilder: () {
-        final double statusBarHeight = MediaQuery.of(context).padding.top;
-        final double pinnedHeaderHeight = statusBarHeight + kToolbarHeight;
         var offset = controller.nestedScrollController?.offset;
         // 检查是否正在播放
         final isPlaying =
@@ -214,16 +199,14 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
 
         if (isPlaying) {
           // 播放时固定返回最大高度
-          return MediaQuery.of(context).size.width * _playerAspectRatio +
-              statusBarHeight;
+          return MediaQuery.of(context).size.width * _playerAspectRatio;
         } else if (controller.bottomSheetController != null) {
-          // 未播放但有滚动时，根据偏移量计算
-          return MediaQuery.of(context).size.width * _playerAspectRatio -
-              controller.nestedScrollController!.offset +
-              statusBarHeight;
+          return (MediaQuery.of(context).size.width * _playerAspectRatio -
+                  controller.nestedScrollController!.offset)
+              .clamp(_minPlayerHeight, double.infinity);
         }
         controller.extendedNestedScrollViewOffset(offset);
-        return pinnedHeaderHeight;
+        return kToolbarHeight;
       },
       body: Scaffold(
         key: controller.childKey,
@@ -274,53 +257,6 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                   option: PlaySourceOptionModel(singleHorizontalScroll: true),
                 ),
         ),
-        /*Obx(() {
-          if (controller.playerController.value == null ||
-              controller.playerController.value?.sourceAdapter == null) {
-          return  Container();
-          }
-
-          return Container(
-            height: 80,
-            child: controller.playerController.value?.sourceAdapter
-                ?.sourceUIList()[0],
-          );
-        }
-    )*/
-
-        /*PlaySourceApiWidget(
-          controller: controller,
-          isSelect: true,
-          // isGrid:  true,
-          singleHorizontalScroll: true,
-          // isSelect:  true,
-        ),*/
-        /*Obx(
-          () =>
-              controller
-                      .sourceChapterState
-                      .currentPlayedSourceGroupList
-                      .length >
-                  1
-              ? PlaySourceGroupWidget(
-                  controller: controller,
-                  singleHorizontalScroll: true,
-                )
-              : Container(),
-        ),*/
-
-        /*Container(
-          padding: EdgeInsetsGeometry.symmetric(
-            // horizontal: WidgetStyleCommons.safeSpace,
-          ),
-          margin: EdgeInsetsGeometry.only(
-            bottom: WidgetStyleCommons.safeSpace / 2,
-          ),
-          child: ChapterLayoutWidget(
-            controller: controller,
-            singleHorizontalScroll: true,
-          ),
-        ),*/
       ],
     );
   }
@@ -332,11 +268,6 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   /// 创建播放器
   _createPlayer() {
     return Obx(() => controller.playerWidget.value ?? Container());
-    /*return PlayerView(
-      onCreatePlayerController: (c) {
-        controller.playerController = c;
-      },
-    );*/
   }
 
   /// 资源信息
@@ -347,56 +278,65 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
       }
       return Padding(
         padding: EdgeInsets.symmetric(
-          vertical: verticalPadding,
-          horizontal: horizontalPadding,
+          vertical: WidgetStyleCommons.safeSpace,
+          horizontal: WidgetStyleCommons.safeSpace,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    controller.videoModel.value!.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: WidgetStyleCommons.safeSpace / 2,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      controller.videoModel.value!.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    controller.bottomSheetController = controller
-                        .childKey
-                        .currentState
-                        ?.showBottomSheet(
-                          backgroundColor: Colors.transparent,
-                          (context) => Container(
-                            color: Colors.white,
-                            child: ResourceDetailInfoWidget(
-                              controller: controller,
+                  InkWell(
+                    onTap: () {
+                      controller.bottomSheetController = controller
+                          .childKey
+                          .currentState
+                          ?.showBottomSheet(
+                            backgroundColor: Colors.transparent,
+                            (context) => Container(
+                              color: Colors.white,
+                              child: ResourceDetailInfoWidget(
+                                controller: controller,
+                              ),
                             ),
+                          );
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "详情",
+                          style: TextStyle(
+                            color: Theme.of(Get.context!).primaryColor,
                           ),
-                        );
-                  },
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        "详情",
-                        style: TextStyle(fontSize: secondaryTextFontSize),
-                      ),
-                      Icon(
-                        Icons.keyboard_arrow_right_rounded,
-                        size: secondaryTextFontSize * 1.5,
-                      ),
-                    ],
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_right_rounded,
+                          size: secondaryTextFontSize * 1.5,
+                          color: Theme.of(Get.context!).primaryColor,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(
               width: double.infinity,
               child: ScrollConfiguration(
                 behavior: ScrollConfiguration.of(context).copyWith(
+                  scrollbars: false,
                   dragDevices: {
                     PointerDeviceKind.mouse,
                     PointerDeviceKind.touch,
@@ -405,6 +345,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // 评分
                       Text(
@@ -416,13 +357,13 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                       // 地区
                       Container(
                         padding: EdgeInsets.only(
-                          left: secondaryTextHorizontalPadding,
+                          left: WidgetStyleCommons.safeSpace / 2,
                         ),
                         child: Row(
                           children: [
                             Padding(
                               padding: EdgeInsets.only(
-                                right: secondaryTextHorizontalPadding,
+                                right: WidgetStyleCommons.safeSpace / 2,
                               ),
                               child: Text(
                                 "|",
@@ -443,13 +384,13 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                       // 时间
                       Container(
                         padding: EdgeInsets.only(
-                          left: secondaryTextHorizontalPadding,
+                          left: WidgetStyleCommons.safeSpace / 2,
                         ),
                         child: Row(
                           children: [
                             Padding(
                               padding: EdgeInsets.only(
-                                right: secondaryTextHorizontalPadding,
+                                right: WidgetStyleCommons.safeSpace / 2,
                               ),
                               child: Text(
                                 "|",
@@ -471,13 +412,13 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                       // 类型
                       Container(
                         padding: EdgeInsets.only(
-                          left: secondaryTextHorizontalPadding,
+                          left: WidgetStyleCommons.safeSpace / 2,
                         ),
                         child: Row(
                           children: [
                             Padding(
                               padding: EdgeInsets.only(
-                                right: secondaryTextHorizontalPadding,
+                                right: WidgetStyleCommons.safeSpace / 2,
                               ),
                               child: Text(
                                 "|",
@@ -515,63 +456,82 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
 
   // 资源播放控件按钮
   _createResourceControlBtn() {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: verticalPadding,
-        horizontal: horizontalPadding,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          InkWell(
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Icon(Icons.favorite_outline_rounded, size: 30),
-                  Text("收藏"),
-                ],
-              ),
-            ),
-            onTap: () {},
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(
+            horizontal: WidgetStyleCommons.safeSpace,
           ),
-          InkWell(
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Icon(Icons.downloading_rounded, size: 30),
-                  Text("下载"),
-                ],
-              ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: constraints.maxWidth - WidgetStyleCommons.safeSpace * 2,
             ),
-            onTap: () {},
-          ),
-          InkWell(
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                children: [Icon(Icons.share_rounded, size: 30), Text("分享")],
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Icon(Icons.favorite_outline_rounded, size: 30),
+                        Text("收藏"),
+                      ],
+                    ),
+                  ),
+                  onTap: () {},
+                ),
+                InkWell(
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Icon(Icons.downloading_rounded, size: 30),
+                        Text("下载"),
+                      ],
+                    ),
+                  ),
+                  onTap: () {},
+                ),
+                InkWell(
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Icon(Icons.share_rounded, size: 30),
+                        Text("分享"),
+                      ],
+                    ),
+                  ),
+                  onTap: () {},
+                ),
+                InkWell(
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Icon(Icons.link_rounded, size: 30),
+                        Text("链接"),
+                      ],
+                    ),
+                  ),
+                  onTap: () {
+                    // logger.d("当前播放章节：${playingChapterIndex.value}，链接：${playUrl.value}");
+                    var chapterUrl = controller
+                        .playerController
+                        .value
+                        ?.resourcePlayState
+                        .activatedChapter
+                        ?.playUrl;
+                    LoggerUtils.logger.d("当前播放章节链接：$chapterUrl");
+                  },
+                ),
+              ],
             ),
-            onTap: () {},
           ),
-          InkWell(
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                children: [Icon(Icons.link_rounded, size: 30), Text("链接")],
-              ),
-            ),
-            onTap: () {
-              // logger.d("当前播放章节：${playingChapterIndex.value}，链接：${playUrl.value}");
-              var chapterUrl =
-                  controller.playerController.value?.resourcePlayState.activatedChapter?.playUrl;
-              LoggerUtils.logger.d("当前播放章节链接：$chapterUrl");
-            },
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
