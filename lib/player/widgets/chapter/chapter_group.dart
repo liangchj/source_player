@@ -57,7 +57,10 @@ class _ChapterGroupState extends State<ChapterGroup> {
                     ? Colors.white
                     : Colors.black,
               ),
-              child: _chapterGroup(context),
+              child: Padding(
+                padding: EdgeInsets.only(top: controller.playerState.isFullscreen.value ? WidgetStyleCommons.safeSpace : 0),
+                child: _chapterGroup(context),
+              ),
             )
           : Container(),
     );
@@ -81,6 +84,7 @@ class _ChapterGroupState extends State<ChapterGroup> {
             controller.resourcePlayState.chapterGroupActivatedIndex.value;
         return ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(
+            scrollbars: false,
             dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
           ),
           child: ListViewObserver(

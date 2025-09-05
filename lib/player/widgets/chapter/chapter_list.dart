@@ -54,12 +54,11 @@ class _ChapterListState extends State<ChapterList> {
         controller.resourcePlayState.chapterGroupActivatedIndex,
       ],
       (val) {
-        /*if (_chapterClicked) {
-          _chapterClicked = false;
-          return;
-        }*/
         int index =
             controller.resourcePlayState.chapterGroupActivatedChapterIndex;
+        if (index == 0 && !controller.resourcePlayState.chapterAsc.value) {
+          index = controller.resourcePlayState.chapterGroupChapterList.length;
+        }
         if (index < 0) {
           index = 0;
         }
@@ -118,15 +117,14 @@ class _ChapterListState extends State<ChapterList> {
             ? "章节(${controller.resourcePlayState.chapterCount})："
             : "章节：",
       ),
-      if (!controller.playerState.isFullscreen.value)
-        IconButton(
-          tooltip: '跳至当前',
-          icon: Icon(Icons.my_location),
-          style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
-          onPressed: () {
-            controller.resourcePlayState.jumpToPlay();
-          },
-        ),
+      IconButton(
+        tooltip: '跳至当前',
+        icon: Icon(Icons.my_location),
+        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
+        onPressed: () {
+          controller.resourcePlayState.jumpToPlay();
+        },
+      ),
     ];
     List<Widget> rights = [
       IconButton(
@@ -149,41 +147,50 @@ class _ChapterListState extends State<ChapterList> {
             controller.netResourceDetailController?.bottomSheetController =
                 controller.netResourceDetailController?.childKey.currentState
                     ?.showBottomSheet(
-                  backgroundColor: Colors.transparent,
+                      backgroundColor: Colors.transparent,
                       (context) => Container(
-                    color: Colors.white,
-                    child: Center(
-                      child: ChapterList(
-                        option: PlaySourceOptionModel(
-                          onClose: () {
-                            controller
-                                .netResourceDetailController
-                                ?.bottomSheetController
-                                ?.close();
-                            _showBottomSheet = false;
-                          },
-                          bottomSheet: true,
-                          isGrid: true,
-                          onDispose: (index) {
-                            _gridObserverController?.jumpTo(
-                              index: index,
-                              isFixedHeight: true,
-                            );
-                            _observerController?.jumpTo(
-                              index: index,
-                              isFixedHeight: true,
-                            );
-                          },
+                        color: Colors.white,
+                        child: Center(
+                          child: ChapterList(
+                            option: PlaySourceOptionModel(
+                              onClose: () {
+                                controller
+                                    .netResourceDetailController
+                                    ?.bottomSheetController
+                                    ?.close();
+                                _showBottomSheet = false;
+                              },
+                              bottomSheet: true,
+                              isGrid: true,
+                              onDispose: (index) {
+                                _gridObserverController?.jumpTo(
+                                  index: index,
+                                  isFixedHeight: true,
+                                );
+                                _observerController?.jumpTo(
+                                  index: index,
+                                  isFixedHeight: true,
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
+                    );
           },
           child: Row(
             children: [
-              Text("${controller.resourcePlayState.chapterCount}集", style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.w500),),
-              Icon(Icons.keyboard_arrow_right_rounded, color: theme.primaryColor,),
+              Text(
+                "${controller.resourcePlayState.chapterCount}集",
+                style: TextStyle(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Icon(
+                Icons.keyboard_arrow_right_rounded,
+                color: theme.primaryColor,
+              ),
             ],
           ),
         ),
@@ -207,17 +214,29 @@ class _ChapterListState extends State<ChapterList> {
                 ),
               ),
       ),
-      child: LayoutBuilder(builder: (context, constraints) {
-        return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: constraints.maxWidth,
-                ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              scrollbars: false,
+              dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: constraints.maxWidth),
                 child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [Row(children: lefts),  Row(children: rights)])));
-      }),
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: lefts),
+                    Row(children: rights),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -230,7 +249,10 @@ class _ChapterListState extends State<ChapterList> {
               ? 0
               : WidgetStyleCommons.safeSpace,
         ),
-        child: option.isGrid && controller.resourcePlayState.maxChapterTitleLen < 8 ? _gridView(context) : _listView(context),
+        child:
+            option.isGrid && controller.resourcePlayState.maxChapterTitleLen < 8
+            ? _gridView(context)
+            : _listView(context),
       ),
     );
   }
@@ -238,7 +260,10 @@ class _ChapterListState extends State<ChapterList> {
   // bottomSheet弹出内容
   Widget _bottomSheetList(BuildContext context) {
     return Expanded(
-      child: option.isGrid && controller.resourcePlayState.maxChapterTitleLen < 8 ? _gridView(context) : _listView(context),
+      child:
+          option.isGrid && controller.resourcePlayState.maxChapterTitleLen < 8
+          ? _gridView(context)
+          : _listView(context),
     );
   }
 
@@ -251,39 +276,46 @@ class _ChapterListState extends State<ChapterList> {
                 .toList();
       int activeIndex =
           controller.resourcePlayState.chapterActivatedIndex.value;
-      return ListViewObserver(
-        controller: _observerController,
-        child: ListView.builder(
-          controller: _scrollController,
-          padding: EdgeInsets.symmetric(
-            horizontal: WidgetStyleCommons.safeSpace,
-            vertical: WidgetStyleCommons.safeSpace,
-          ),
-          itemCount: list.length,
-          itemBuilder: (context, index) {
-            var item = list[index];
-            return Container(
-              padding: EdgeInsets.symmetric(
-                vertical: WidgetStyleCommons.safeSpace / 6,
-              ),
-              // height: WidgetStyleCommons.chapterHeight,
-              child: ChapterWidget(
-                key: ValueKey(
-                  "chapter_${option.bottomSheet}_listView_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
+      return ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: false,
+          dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
+        ),
+        child: ListViewObserver(
+          controller: _observerController,
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: EdgeInsets.symmetric(
+              horizontal: WidgetStyleCommons.safeSpace,
+              vertical: WidgetStyleCommons.safeSpace,
+            ),
+            itemCount: list.length,
+            itemBuilder: (context, index) {
+              var item = list[index];
+              return Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: WidgetStyleCommons.safeSpace / 6,
                 ),
-                chapter: item,
-                activated: item.index == activeIndex,
-                isCard: true,
-                unActivatedTextColor: controller.playerState.isFullscreen.value
-                    ? Colors.white
-                    : Colors.black,
-                onClick: () {
-                  controller.resourcePlayState.chapterActivatedIndex.value =
-                      item.index;
-                },
-              ),
-            );
-          },
+                // height: WidgetStyleCommons.chapterHeight,
+                child: ChapterWidget(
+                  key: ValueKey(
+                    "chapter_${option.bottomSheet}_listView_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
+                  ),
+                  chapter: item,
+                  activated: item.index == activeIndex,
+                  isCard: true,
+                  unActivatedTextColor:
+                      controller.playerState.isFullscreen.value
+                      ? Colors.white
+                      : Colors.black,
+                  onClick: () {
+                    controller.resourcePlayState.chapterActivatedIndex.value =
+                        item.index;
+                  },
+                ),
+              );
+            },
+          ),
         ),
       );
     });
@@ -298,39 +330,45 @@ class _ChapterListState extends State<ChapterList> {
                 .toList();
       int activeIndex =
           controller.resourcePlayState.chapterActivatedIndex.value;
-      return GridViewObserver(
-        controller: _gridObserverController,
-        child: GridView.builder(
-          padding: EdgeInsets.symmetric(
-            horizontal: WidgetStyleCommons.safeSpace,
-            vertical: WidgetStyleCommons.safeSpace,
+      return ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: false,
+          dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
+        ),
+        child: GridViewObserver(
+          controller: _gridObserverController,
+          child: GridView.builder(
+            padding: EdgeInsets.symmetric(
+              horizontal: WidgetStyleCommons.safeSpace,
+              vertical: WidgetStyleCommons.safeSpace,
+            ),
+            controller: _scrollController,
+            itemCount: list.length,
+            gridDelegate: SliverGridDelegateWithExtentAndRatio(
+              crossAxisSpacing: WidgetStyleCommons.safeSpace,
+              mainAxisSpacing: WidgetStyleCommons.safeSpace,
+              maxCrossAxisExtent: WidgetStyleCommons.chapterGridMaxWidth,
+              childAspectRatio: WidgetStyleCommons.chapterGridRatio,
+            ),
+            itemBuilder: (context, index) {
+              var item = list[index];
+              return ChapterWidget(
+                key: ValueKey(
+                  "chapter_${option.bottomSheet}_gridView_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
+                ),
+                chapter: item,
+                activated: item.index == activeIndex,
+                isCard: true,
+                unActivatedTextColor: controller.playerState.isFullscreen.value
+                    ? Colors.white
+                    : Colors.black,
+                onClick: () {
+                  controller.resourcePlayState.chapterActivatedIndex.value =
+                      item.index;
+                },
+              );
+            },
           ),
-          controller: _scrollController,
-          itemCount: list.length,
-          gridDelegate: SliverGridDelegateWithExtentAndRatio(
-            crossAxisSpacing: WidgetStyleCommons.safeSpace,
-            mainAxisSpacing: WidgetStyleCommons.safeSpace,
-            maxCrossAxisExtent: WidgetStyleCommons.chapterGridMaxWidth,
-            childAspectRatio: WidgetStyleCommons.chapterGridRatio,
-          ),
-          itemBuilder: (context, index) {
-            var item = list[index];
-            return ChapterWidget(
-              key: ValueKey(
-                "chapter_${option.bottomSheet}_gridView_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
-              ),
-              chapter: item,
-              activated: item.index == activeIndex,
-              isCard: true,
-              unActivatedTextColor: controller.playerState.isFullscreen.value
-                  ? Colors.white
-                  : Colors.black,
-              onClick: () {
-                controller.resourcePlayState.chapterActivatedIndex.value =
-                    item.index;
-              },
-            );
-          },
         ),
       );
     });
@@ -344,6 +382,7 @@ class _ChapterListState extends State<ChapterList> {
       height: WidgetStyleCommons.chapterHeight,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: false,
           dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
         ),
         child: Obx(() {

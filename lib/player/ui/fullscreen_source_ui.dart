@@ -9,15 +9,15 @@ import '../widgets/chapter/chapter_list.dart';
 import '../widgets/resource_source/source_api.dart';
 import '../widgets/resource_source/source_group.dart';
 
-class FullscreenChapterListUI extends GetView<PlayerController> {
-  const FullscreenChapterListUI({super.key, this.bottomSheet = false});
+class FullscreenSourceUI extends GetView<PlayerController> {
+  const FullscreenSourceUI({super.key, this.bottomSheet = false});
   final bool bottomSheet;
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return bottomSheet
-        ? ChapterList(option: PlaySourceOptionModel(isGrid: true))
+        ? _list()
         : Container(
             width: PlayerCommons.chapterUIDefaultWidth.clamp(
               screenWidth * 0.3,
@@ -26,7 +26,20 @@ class FullscreenChapterListUI extends GetView<PlayerController> {
             height: double.infinity,
             color: PlayerCommons.playerUIBackgroundColor,
             padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
-            child: ChapterList(option: PlaySourceOptionModel(isGrid: true)),
+            child: _list(),
           );
+  }
+
+  Widget _list() {
+    return Column(
+      children: [
+        SourceApi(option: PlaySourceOptionModel(singleHorizontalScroll: true)),
+        Expanded(
+          child: SourceGroup(
+            option: PlaySourceOptionModel(isGrid: true),
+          ),
+        ),
+      ],
+    );
   }
 }

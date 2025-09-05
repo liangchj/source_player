@@ -20,6 +20,9 @@ class CurrentConfigs {
   // 通用的过滤条件
   static Map<String, FilterCriteriaListModel> commonFilterMap = {};
 
+
+  static double statusBarHeight = 0.0;
+
   static updateCurrentApi(ApiConfigModel? api) {
     CurrentConfigs.currentApi = api;
     // GStorage.setting.put("${SettingBoxKey.cachePrev}-${SettingBoxKey.currentApiKey}", {CurrentConfigs.currentApi?.apiBaseModel.enName: CurrentConfigs.currentApi?.toJson()});

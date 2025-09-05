@@ -309,6 +309,7 @@ class _SourceGroupState extends State<SourceGroup> {
       height: WidgetStyleCommons.playSourceHeight,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: false,
           dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
         ),
         child: Obx(() {

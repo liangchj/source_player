@@ -89,6 +89,7 @@ class FullscreenPlayerPage extends StatelessWidget {
           backgroundColor: Colors.black,
           body: LayoutBuilder(
             builder: (context, constraints) {
+              controller.fullScreenWidthChange(constraints.maxWidth);
               final availableWidth =
                   constraints.maxWidth -
                   WidgetStyleCommons.safeSpace * 2; // 减去左右边距

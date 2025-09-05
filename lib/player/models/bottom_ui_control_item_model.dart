@@ -28,6 +28,7 @@ enum ControlType {
   danmaku, // 弹幕开关
   sendDanmaku, // 发送弹幕
   danmakuSetting, // 弹幕设置
+  source,    // 来源
   chapter,    // 章节选择
   speed,      // 倍数播放
   exitOrEntryFullscreen,      // 全屏/退出全屏

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:source_player/utils/permission_utils.dart';
 
+import '../cache/current_configs.dart';
 import '../commons/public_commons.dart';
 import '../pages/media_library_home_page.dart';
 import '../pages/net_resource_home_page.dart';
@@ -36,6 +37,8 @@ class HomeController extends GetxController
 
   @override
   void onInit() {
+    // CurrentConfigs.statusBarHeight = Get.statusBarHeight;
+    CurrentConfigs.statusBarHeight = MediaQuery.of(Get.context!).padding.top;
     tabPageList = [
       const NetResourceHomePage(),
       const MediaLibraryHomePage(),

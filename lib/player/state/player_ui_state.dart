@@ -8,6 +8,7 @@ import '../models/player_overlay_ui_model.dart';
 import '../ui/brightness_volume_ui.dart';
 import '../ui/center_play_progress_ui.dart';
 import '../ui/fullscreen_chapter_list_ui.dart';
+import '../ui/fullscreen_source_ui.dart';
 import '../ui/player_bottom_ui.dart';
 import '../ui/player_lock_ui.dart';
 import '../ui/player_screenshot_ui.dart';
@@ -33,6 +34,7 @@ class PlayerUIState {
       PlayerUIKeyEnum.leftBottomHitUI.name: leftBottomHitUI,
       PlayerUIKeyEnum.restartUI.name: restartUI,
       PlayerUIKeyEnum.danmakuSettingUI.name: danmakuSettingUI,
+      PlayerUIKeyEnum.sourceUI.name: sourceUI,
     });
   }
   Map<String, PlayerOverlayUIModel> overlayUIMap = {};
@@ -73,6 +75,7 @@ class PlayerUIState {
     PlayerUIKeyEnum.settingUI.name,
     PlayerUIKeyEnum.speedSettingUI.name,
     PlayerUIKeyEnum.chapterListUI.name,
+    PlayerUIKeyEnum.sourceUI.name,
   ];
 
   final RxDouble bottomUIHeight = 0.0.obs;
@@ -197,6 +200,18 @@ class PlayerUIState {
   var chapterListUI = PlayerOverlayUIModel(
     key: PlayerUIKeyEnum.chapterListUI.name,
     child: const FullscreenChapterListUI(bottomSheet: false),
+    useAnimationController: true,
+    tween: Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: const Offset(0.0, 0.0),
+    ),
+    widgetCallback: (uiModel) =>
+        PlayerUITransition.playerUISlideTransition(uiModel),
+  );
+
+  var sourceUI = PlayerOverlayUIModel(
+    key: PlayerUIKeyEnum.sourceUI.name,
+    child: const FullscreenSourceUI(bottomSheet: false),
     useAnimationController: true,
     tween: Tween<Offset>(
       begin: const Offset(1.0, 0.0),

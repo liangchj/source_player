@@ -121,7 +121,9 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
               Center(
                 child: Obx(
                   () => controller.playerState.isBuffering.value
-                      ? CircularProgressIndicator(color: Theme.of(context).primaryColor)
+                      ? CircularProgressIndicator(
+                          color: Theme.of(context).primaryColor,
+                        )
                       : Container(),
                 ),
               ),
@@ -179,6 +181,19 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                   ),
                 ),
               ),
+
+              // 右边资源来源（全屏情况显示）
+              Positioned(
+                top: 0,
+                right: 0,
+                bottom: 0,
+                child: Obx(
+                  () => controller.uiState.sourceUI.widgetCallback(
+                    controller.uiState.sourceUI,
+                  ),
+                ),
+              ),
+
               // 右边章节列表（全屏情况显示）
               Positioned(
                 top: 0,

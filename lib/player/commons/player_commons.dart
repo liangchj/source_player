@@ -110,7 +110,7 @@ class PlayerCommons {
   // 播放速度默认宽度
   static const double speedSettingUIDefaultWidth = 150.0;
 
-  static const double chapterUIDefaultWidth = 300.0;
+  static const double chapterUIDefaultWidth = 400.0;
 
   static const double settingUIDefaultWidth = 300.0;
   static const double danmakuSettingUIDefaultWidth = 300.0;

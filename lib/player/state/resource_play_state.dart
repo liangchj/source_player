@@ -272,7 +272,7 @@ class ResourcePlayState {
 
   // 当前激活的章节中对应激活的章节下标（本组下标，不是全章节下标）
   int get chapterGroupActivatedChapterIndex {
-    if (chapterActivatedIndex.value <= 0) {
+    if (chapterActivatedIndex.value < 0) {
       return -1;
     }
     var chapterIndex = resourcePlayingState.value.chapterIndex;

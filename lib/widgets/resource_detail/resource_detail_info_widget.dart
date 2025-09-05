@@ -92,7 +92,7 @@ class _ResourceDetailInfoWidgetState extends State<ResourceDetailInfoWidget> wit
           )),
           IconButton(
             onPressed: () {
-              widget.controller.closeBottomSheet();
+              Get.closeAllBottomSheets();
             },
             icon: const Icon(Icons.close_rounded),
           ),

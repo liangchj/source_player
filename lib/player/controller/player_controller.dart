@@ -9,6 +9,7 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
 import 'package:source_player/player/iplayer.dart';
 import 'package:source_player/player/state/player_ui_state.dart';
+import 'package:source_player/player/ui/fullscreen_source_ui.dart';
 import 'package:source_player/utils/logger_utils.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -84,9 +85,7 @@ class PlayerController extends GetxController {
 
   _initUI() {
     uiState.restartUI.ui.value = Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: WidgetStyleCommons.safeSpace,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
       child: Align(
         alignment: Alignment.bottomLeft,
         child: Obx(() {
@@ -102,9 +101,7 @@ class PlayerController extends GetxController {
       ),
     );
     uiState.leftBottomHitUI.ui.value = Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: WidgetStyleCommons.safeSpace,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: WidgetStyleCommons.safeSpace),
       child: Align(
         alignment: Alignment.topLeft,
         child: Obx(
@@ -123,15 +120,30 @@ class PlayerController extends GetxController {
     );
 
     uiState.settingsUIMap["resourceChapterList"] = [
+      if (resourcePlayState.activatedChapterList.length > 1)
+        InkWell(
+          onTap: () {
+            hideCanControlUI();
+            BottomSheetDialogUtils.openBottomSheet(
+              FullscreenSourceUI(bottomSheet: true),
+              closeBtnShow: false,
+              backgroundColor: playerState.isFullscreen.value
+                  ? PlayerCommons.playerUIBackgroundColor
+                  : Colors.white,
+            );
+          },
+          child: Text("资源列表"),
+        ),
       InkWell(
         onTap: () {
-          // BottomSheetDialogUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
-        },
-        child: Text("资源列表"),
-      ),
-      InkWell(
-        onTap: () {
-          BottomSheetDialogUtils.openBottomSheet(FullscreenChapterListUI(bottomSheet: true));
+          hideCanControlUI();
+          BottomSheetDialogUtils.openBottomSheet(
+            FullscreenChapterListUI(bottomSheet: true),
+            closeBtnShow: false,
+            backgroundColor: playerState.isFullscreen.value
+                ? PlayerCommons.playerUIBackgroundColor
+                : Colors.white,
+          );
         },
         child: Text("章节列表"),
       ),
@@ -209,11 +221,13 @@ class PlayerController extends GetxController {
           if (playerState.isFullscreen.value) {
             onlyShowUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]);
           } else {
-            BottomSheetDialogUtils.openBottomSheet(PlayerSpeedUI(bottomSheet: true));
+            BottomSheetDialogUtils.openBottomSheet(
+              PlayerSpeedUI(bottomSheet: true),
+            );
           }
         },
         child: Text("播放倍数"),
-      )
+      ),
     ];
   }
 
@@ -284,6 +298,23 @@ class PlayerController extends GetxController {
         priority: 4,
         visible: true,
         child: Expanded(child: Container()),
+      ),
+      PlayerBottomUIItemModel(
+        type: ControlType.source,
+        fixedWidth: PlayerCommons.bottomBtnSize,
+        priority: 5,
+        child: Obx(
+              () => !onlyFullscreen && resourcePlayState.createApiWidget
+              ? IconButton(
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+            color: WidgetStyleCommons.iconColor,
+            onPressed: () => {
+              onlyShowUIByKeyList([PlayerUIKeyEnum.sourceUI.name]),
+            },
+            icon: Icon(Icons.source_rounded),
+          )
+              : Container(),
+        ),
       ),
       PlayerBottomUIItemModel(
         type: ControlType.chapter,
@@ -397,7 +428,6 @@ class PlayerController extends GetxController {
     ever(playerState.positionDuration, (value) {
       myDanmakuController.sendDanmakuByPosition(value);
     });
-
 
     myDanmakuController.initEver();
   }
@@ -562,6 +592,14 @@ class PlayerController extends GetxController {
       );
       startHideTimer();
     }
+  }
+
+  // 隐藏可操作UI
+  void hideCanControlUI() {
+    hideUIByKeyList([
+      ...uiState.touchBackgroundShowUIKeyList,
+      ...uiState.interceptRouteUIKeyList,
+    ]);
   }
 
   /// 是否有UI显示（除了特殊的UI）
@@ -879,5 +917,13 @@ class PlayerController extends GetxController {
   void nextPlay() {
     resourcePlayState.chapterActivatedIndex.value =
         resourcePlayState.chapterActivatedIndex.value + 1;
+  }
+
+  void fullScreenWidthChange(double maxWidth) {
+    if (maxWidth > PlayerCommons.chapterUIDefaultWidth) {
+      if (!uiState.chapterListUI.visible.value) {
+        hideUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]);
+      }
+    }
   }
 }

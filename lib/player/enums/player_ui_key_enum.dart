@@ -3,6 +3,7 @@ enum PlayerUIKeyEnum {
   bottomUI(),
   speedSettingUI(),
   chapterListUI(),
+  sourceUI(),
   lockCtrUI(),
   screenshotCtrUI(),
   centerPlayPauseUI(),

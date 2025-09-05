@@ -5,8 +5,11 @@ import 'package:get/get.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:source_player/player/controller/player_controller.dart';
 
+import '../../../cache/current_configs.dart';
 import '../../../commons/widget_style_commons.dart';
+import '../../../getx_controller/net_resource_detail_controller.dart';
 import '../../../utils/auto_compute_sliver_grid_count.dart';
+import '../../../utils/bottom_sheet_dialog_utils.dart';
 import '../../../widgets/clickable_button_widget.dart';
 import '../../models/play_source_option_model.dart';
 
@@ -117,7 +120,42 @@ class _SourceApiState extends State<SourceApi> {
           (option.singleHorizontalScroll || option.isSelect))
         InkWell(
           onTap: () {
-            controller.netResourceDetailController?.bottomSheetController =
+            /*BottomSheetDialogUtils.openBottomSheet(
+              LayoutBuilder(builder: (context, constraints) {
+                var size = MediaQuery.of(context).size;
+                double playerHeight = size.width * (9 / 16.0);
+                var netResourceDetailController = Get.find<NetResourceDetailController>();
+                return SizedBox(
+                  width: size.width,
+                  height: size.height - (playerHeight - netResourceDetailController.extendedNestedScrollViewOffset.value) - CurrentConfigs.statusBarHeight - kToolbarHeight + WidgetStyleCommons.safeSpace / 2,
+                  child: SourceApi(
+                    option: PlaySourceOptionModel(
+                      onClose: () {
+                        controller
+                            .netResourceDetailController
+                            ?.bottomSheetController
+                            ?.close();
+                      },
+                      bottomSheet: true,
+                      isGrid: true,
+                      onDispose: (index) {
+                        _gridObserverController?.jumpTo(
+                          index: index,
+                          isFixedHeight: true,
+                        );
+                        _observerController?.jumpTo(
+                          index: index,
+                          isFixedHeight: true,
+                        );
+                      },
+                    ),
+                  ),
+                );
+              }),
+              isScrollControlled: true,
+            );*/
+
+            /*controller.netResourceDetailController?.bottomSheetController =
                 controller.netResourceDetailController?.childKey.currentState
                     ?.showBottomSheet(
                       backgroundColor: Colors.transparent,
@@ -148,7 +186,7 @@ class _SourceApiState extends State<SourceApi> {
                           ),
                         ),
                       ),
-                    );
+                    );*/
           },
           child: Row(
             children: [
@@ -303,6 +341,7 @@ class _SourceApiState extends State<SourceApi> {
       height: WidgetStyleCommons.playSourceHeight,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: false,
           dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
         ),
         child: Obx(() {

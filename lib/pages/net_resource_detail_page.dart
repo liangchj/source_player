@@ -7,12 +7,14 @@ import 'package:source_player/player/ui/player_top_ui.dart';
 import 'package:source_player/utils/logger_utils.dart';
 import 'package:source_player/widgets/resource_detail/resource_detail_info_widget.dart';
 
+import '../cache/current_configs.dart';
 import '../commons/widget_style_commons.dart';
 import '../getx_controller/net_resource_detail_controller.dart';
 import '../player/models/play_source_option_model.dart';
 import '../player/widgets/chapter/chapter_list.dart';
 import '../player/widgets/resource_source/source_api.dart';
 import '../player/widgets/resource_source/source_group.dart';
+import '../utils/bottom_sheet_dialog_utils.dart';
 import '../widgets/loading_widget.dart' show LoadingWidget;
 
 /// 网络资源详情页面
@@ -216,7 +218,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
             Expanded(
               child: TabBarView(
                 controller: controller.tabController,
-                children: [_createDetailView(), _createCommentView()],
+                children: [_createDetailView(context), _createCommentView()],
               ),
             ),
           ],
@@ -231,10 +233,10 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   }
 
   // 创建详情
-  Widget _createDetailView() {
+  Widget _createDetailView(BuildContext context) {
     return ListView(
       children: [
-        _createResourceDetailInfo(),
+        _createResourceDetailInfo(context),
         // 创建资源播放控件按钮
         _createResourceControlBtn(),
 
@@ -257,6 +259,17 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                   option: PlaySourceOptionModel(singleHorizontalScroll: true),
                 ),
         ),
+
+        Container(
+          width: double.infinity,
+          height: 300,
+          color: Colors.amberAccent,
+        ),
+        Container(
+          width: double.infinity,
+          height: 300,
+          color: Colors.blueGrey,
+        ),
       ],
     );
   }
@@ -271,7 +284,7 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   }
 
   /// 资源信息
-  _createResourceDetailInfo() {
+  _createResourceDetailInfo(BuildContext context) {
     return Obx(() {
       if (controller.videoModel.value == null) {
         return const Center(child: Text("获取资源为空"));
@@ -299,18 +312,21 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                   ),
                   InkWell(
                     onTap: () {
-                      controller.bottomSheetController = controller
-                          .childKey
-                          .currentState
-                          ?.showBottomSheet(
-                            backgroundColor: Colors.transparent,
-                            (context) => Container(
-                              color: Colors.white,
-                              child: ResourceDetailInfoWidget(
-                                controller: controller,
-                              ),
+                      BottomSheetDialogUtils.openBottomSheet(
+                        LayoutBuilder(builder: (context, constraints) {
+                          var size = MediaQuery.of(context).size;
+                          double playerHeight = size.width * _playerAspectRatio;
+                          print("CurrentConfigs.statusBarHeight: ${CurrentConfigs.statusBarHeight}");
+                          return SizedBox(
+                            width: size.width,
+                            height: size.height - (playerHeight - controller.extendedNestedScrollViewOffset.value) - CurrentConfigs.statusBarHeight - kToolbarHeight + WidgetStyleCommons.safeSpace / 2,
+                            child: ResourceDetailInfoWidget(
+                              controller: controller,
                             ),
                           );
+                        }),
+                        isScrollControlled: true,
+                      );
                     },
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,

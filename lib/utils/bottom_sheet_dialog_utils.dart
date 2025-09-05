@@ -1,38 +1,52 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class BottomSheetDialogUtils {
-  static void openBottomSheet(Widget widget, {bool closeBtnShow = true, Color backgroundColor = Colors.white, bool closeOtherBottomSheet = true}) {
+  static void openBottomSheet(
+    Widget widget, {
+    bool closeBtnShow = true,
+    Color backgroundColor = Colors.white,
+    bool closeOtherBottomSheet = true,
+    bool isScrollControlled = false,
+    bool isDismissible = true,
+    RouteSettings? settings,
+  }) {
     if (closeOtherBottomSheet) {
       closeBottomSheet();
     }
-    Widget bottomsheet = closeBtnShow ?
-        Stack(
-      children: [
-        Padding(padding: const EdgeInsets.only(bottom: 50.0), child: widget),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: Container(
-            color: backgroundColor,
-            child: Column(
-              children: [
-                Container(height: 6, color: Colors.grey.withValues(alpha: 0.1)),
-                TextButton(
-                  onPressed: () {
-                    //关闭对话框
-                    closeBottomSheet();
-                  },
-                  child: Text("取消",),
+    Widget bottomsheet = closeBtnShow
+        ? Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 50.0),
+                child: widget,
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  color: backgroundColor,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 6,
+                        color: Colors.grey.withValues(alpha: 0.1),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          //关闭对话框
+                          closeBottomSheet();
+                        },
+                        child: Text("取消"),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    ) : widget;
+              ),
+            ],
+          )
+        : widget;
     Get.bottomSheet(
       bottomsheet,
       backgroundColor: backgroundColor,
@@ -43,9 +57,11 @@ class BottomSheetDialogUtils {
         ),
       ),
       useRootNavigator: true,
+      isScrollControlled: isScrollControlled,
+      isDismissible: isDismissible,
+      settings: settings,
     );
   }
-
 
   static void closeBottomSheet() {
     bool open = Get.isBottomSheetOpen ?? false;
