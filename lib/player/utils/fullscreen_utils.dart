@@ -20,6 +20,9 @@ class FullscreenUtils {
     }
     if (playerState.isFullscreen.value || exit) {
       exitFullscreen();
+      if (playerState.isFullscreen.value && !controller.onlyFullscreen && playing) {
+        controller.player.value!.play();
+      }
     } else {
       enterFullscreen(context ?? Get.context!);
       if (playing) {
@@ -36,42 +39,46 @@ class FullscreenUtils {
   void enterFullscreen(BuildContext context) {
     // 处理只有全屏的特殊情况
     if (controller.onlyFullscreen) {
-      _enterFullscreenForLocalVideo();
+      enterFullscreenForLocalVideo();
       return;
     }
 
-    final RenderBox renderBox =
+    /*final RenderBox renderBox =
         playerState.verticalPlayerWidgetKey.currentContext?.findRenderObject()
             as RenderBox;
 
     final position = renderBox.localToGlobal(Offset.zero);
-    final size = renderBox.size;
+    final size = renderBox.size;*/
     // 3. 使用自定义路由跳转（无闪屏，带动画）
-    Navigator.push(
+    /*Navigator.push(
       context,
       PlayerFullscreenRoute(
         fullscreenPage: FullscreenPlayerPage(), // 全屏页面
         position: position,
         size: size,
       ),
-    );
-    _lockLandscapeOrientation();
+    );*/
+    lockLandscapeOrientation();
   }
 
   // 本地视频全屏处理
-  void _enterFullscreenForLocalVideo() {
+  void enterFullscreenForLocalVideo() {
     // 直接跳转到全屏页面（无需位置计算）
     Get.to(
-      () => FullscreenPlayerPage(),
+      () => Scaffold(
+        body: PlayerView(
+          controller:  controller,
+          player: controller.player.value!,
+        ),
+      ),
       transition: Transition.fade,
       duration: const Duration(milliseconds: 300),
     );
-
     // 锁定横屏
-    _lockLandscapeOrientation();
+    lockLandscapeOrientation();
   }
 
-  void _lockLandscapeOrientation() {
+  void lockLandscapeOrientation() {
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.immersiveSticky,
       overlays: [],
@@ -89,13 +96,13 @@ class FullscreenUtils {
         controller.player.value?.onDisposePlayer();
         controller.dispose();
       }
+      Navigator.of(Get.context!).pop();
     }
-    Navigator.of(Get.context!).pop();
-    _unlockOrientation();
+    unlockOrientation();
   }
 
   // 恢复竖屏
-  void _unlockOrientation() {
+  void unlockOrientation() {
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],

@@ -303,17 +303,13 @@ class PlayerController extends GetxController {
         type: ControlType.source,
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 5,
-        child: Obx(
-              () => !onlyFullscreen && resourcePlayState.createApiWidget
-              ? IconButton(
-            padding: const EdgeInsets.symmetric(horizontal: 0),
-            color: WidgetStyleCommons.iconColor,
-            onPressed: () => {
-              onlyShowUIByKeyList([PlayerUIKeyEnum.sourceUI.name]),
-            },
-            icon: Icon(Icons.source_rounded),
-          )
-              : Container(),
+        child: IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          color: WidgetStyleCommons.iconColor,
+          onPressed: () => {
+            onlyShowUIByKeyList([PlayerUIKeyEnum.sourceUI.name]),
+          },
+          icon: Icon(Icons.source_rounded),
         ),
       ),
       PlayerBottomUIItemModel(
@@ -369,6 +365,7 @@ class PlayerController extends GetxController {
   }
 
   _initEver() {
+
     ever(player, (player) {
       player?.onInitPlayer();
     });
@@ -567,7 +564,7 @@ class PlayerController extends GetxController {
     }
 
     playerState.isFullscreen(true);
-    fullscreenUtils.enterFullscreen(Get.context!);
+    fullscreenUtils.enterFullscreenForLocalVideo();
   }
 
   /// ui控制部分
@@ -694,6 +691,9 @@ class PlayerController extends GetxController {
   }
 
   void _createUIAnimate(PlayerOverlayUIModel uiOverlay) {
+    if (uiState.playerUIState == null ) {
+      return;
+    }
     // 当前UI是否需要动画控制器（有效ui直接使用属性动画）
     if (uiOverlay.useAnimationController) {
       // 先销毁已存在的控制器（如果有的话）
@@ -925,5 +925,22 @@ class PlayerController extends GetxController {
         hideUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]);
       }
     }
+  }
+
+  canPop() {
+    if (!onlyFullscreen && !playerState.isFullscreen.value) {
+      return true;
+    }
+    bool flag = true;
+    for (var element in uiState.overlayUIMap.values) {
+      if (!element.visible.value || !uiState.interceptRouteUIKeyList.contains(element.key)) {
+        continue;
+      }
+      if (element.visible.value) {
+        flag = false;
+        break;
+      }
+    }
+    return flag;
   }
 }

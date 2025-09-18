@@ -52,18 +52,50 @@ class _PlayerViewState extends State<PlayerView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      key: _playerController.playerState.verticalPlayerWidgetKey,
-      child: Obx(
-        () => _playerController.playerState.isFullscreen.value
-            ? Container()
-            : Container(child: _playerController.playerState.playerView.value),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop,  result) {
+        if (didPop) {
+          _playerController.fullscreenUtils.unlockOrientation();
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        // key: _playerController.playerState.playerWidgetKey,
+        color: Colors.amber,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            _playerController.fullScreenWidthChange(constraints.maxWidth);
+            final availableWidth =
+                constraints.maxWidth -
+                    WidgetStyleCommons.safeSpace * 2; // 减去左右边距
+            final sortControls =
+            _playerController.fullscreenBottomUIItemList
+                .where((item) => item.type != ControlType.none)
+                .toList()
+              ..sort((a, b) => a.priority.compareTo(b.priority));
+            double currentWidth = 0.0;
+            for (final control in sortControls) {
+              final needWidth = currentWidth + control.fixedWidth;
+              if (needWidth <= availableWidth) {
+                control.visible(true);
+                currentWidth = needWidth;
+              } else {
+                control.visible(false);
+              }
+            }
+            return Obx(
+                  () => _playerController.playerState.playerView.value ?? Container(),
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class FullscreenPlayerPage extends StatelessWidget {
+/*class FullscreenPlayerPage extends StatelessWidget {
   final PlayerController controller = Get.find<PlayerController>();
 
   FullscreenPlayerPage({super.key});
@@ -117,4 +149,4 @@ class FullscreenPlayerPage extends StatelessWidget {
       ),
     );
   }
-}
+}*/

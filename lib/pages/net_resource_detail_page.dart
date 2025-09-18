@@ -37,6 +37,8 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   final double _playerAspectRatio = 9 / 16.0;
   final double _minPlayerHeight = 60;
 
+  bool get isFullscreen => controller.playerController.value?.playerState.isFullscreen.value ?? false;
+
   @override
   void initState() {
     LoggerUtils.logger.d("entry initState");
@@ -73,38 +75,41 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   @override
   Widget build(BuildContext context) {
     LoggerUtils.logger.d("渲染");
-    return PopScope(
-      canPop: controller.canPopScope(),
-      child: Obx(
-        () => Scaffold(
-          appBar:
-              controller.loadingState.value.loading ||
-                  !controller.loadingState.value.loadedSuc ||
-                  controller.videoModel.value == null
-              ? AppBar(leading: BackButton())
-              : null,
-          body: controller.loadingState.value.loading
-              ? const Center(
-                  child: SizedBox(
-                    height: 500,
-                    child: LoadingWidget(textWidget: Text("资源加载中...")),
-                  ),
-                )
-              : !controller.loadingState.value.loadedSuc
-              ? Center(
-                  child: Text(
-                    "资源加载失败: ${controller.loadingState.value.errorMsg}",
-                  ),
-                )
-              : controller.videoModel.value == null
-              ? const Center(child: Text("获取资源为空"))
-              : SafeArea(top: true, child: _createDetailScrollView()),
-        ),
+    bool fullscreen = isFullscreen || MediaQuery.orientationOf(context) == Orientation.landscape;
+    return Obx(
+      () => Scaffold(
+        appBar:
+            controller.loadingState.value.loading ||
+                !controller.loadingState.value.loadedSuc ||
+                controller.videoModel.value == null
+            ? AppBar(leading: BackButton())
+            : null,
+        body: controller.loadingState.value.loading
+            ? const Center(
+                child: SizedBox(
+                  height: 500,
+                  child: LoadingWidget(textWidget: Text("资源加载中...")),
+                ),
+              )
+            : !controller.loadingState.value.loadedSuc
+            ? Center(
+                child: Text(
+                  "资源加载失败: ${controller.loadingState.value.errorMsg}",
+                ),
+              )
+            : controller.videoModel.value == null
+            ? const Center(child: Text("获取资源为空"))
+            // : _createDetailScrollView(),
+            : SafeArea(top: !fullscreen, left: false, right: false, bottom:  false, child: _createDetailScrollView()),
       ),
     );
   }
 
   Widget _createDetailScrollView() {
+    var size = MediaQuery.of(context).size;
+    var screenWidth = size.width;
+    final double screenHeight = size.height;
+    print("app屏幕大小：$size");
     final double statusBarHeight = MediaQuery.of(context).padding.top;
     final double pinnedHeaderHeight =
         //statusBar height
@@ -121,14 +126,16 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
         parent: ClampingScrollPhysics(),
       ),*/
       headerSliverBuilder: (BuildContext c, bool f) {
-        double height = MediaQuery.of(context).size.width * _playerAspectRatio;
+        double height = screenWidth * _playerAspectRatio;
+        bool fullscreen = isFullscreen || MediaQuery.orientationOf(context) == Orientation.landscape;
+        double expandedHeight = fullscreen ? screenHeight :
+        height;
         return [
-          Obx(() {
-            return SliverAppBar(
+            SliverAppBar(
               automaticallyImplyLeading: false,
-              expandedHeight: height,
-              collapsedHeight:
-                  controller
+              expandedHeight: expandedHeight,
+              collapsedHeight: fullscreen ? expandedHeight :
+              controller
                           .playerController
                           .value
                           ?.playerState
@@ -142,57 +149,40 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
               flexibleSpace: Stack(
                 children: [
                   Positioned.fill(child: _createPlayer()),
-                  Positioned.fill(
-                    child: Obx(
-                      () =>
-                          controller.playerController.value != null &&
-                              !controller
-                                  .playerController
-                                  .value!
-                                  .playerState
-                                  .isPlaying
-                                  .value &&
-                              height -
-                                      controller
-                                          .extendedNestedScrollViewOffset
-                                          .value <=
-                                  pinnedHeaderHeight
-                          ? Container(
-                              color: Colors.black,
-                              height: double.infinity,
-                            )
-                          : Container(),
-                    ),
-                  ),
                   Positioned(
                     left: 0,
                     top: 0,
                     right: 0,
                     child: Obx(
-                      () =>
-                          controller.playerController.value != null &&
-                              !controller
-                                  .playerController
-                                  .value!
-                                  .playerState
-                                  .isPlaying
-                                  .value &&
-                              controller.extendedNestedScrollViewOffset.value >
-                                  pinnedHeaderHeight
+                          () =>
+                      controller.playerController.value != null &&
+                          !controller
+                              .playerController
+                              .value!
+                              .playerState
+                              .isPlaying
+                              .value &&
+                          controller.extendedNestedScrollViewOffset.value >
+                              pinnedHeaderHeight
                           ? Container(
-                              color: Colors.black,
-                              child: PlayerTopUI(pauseScroll: true),
-                            )
+                        color: Colors.black,
+                        child: PlayerTopUI(pauseScroll: true),
+                      )
                           : Container(),
                     ),
                   ),
                 ],
               ),
-            );
-          }),
+            ),
         ];
       },
       pinnedHeaderSliverHeightBuilder: () {
+        /*if (isFullscreen || MediaQuery.orientationOf(context) == Orientation.landscape) {
+          return MediaQuery
+              .sizeOf(context)
+              .height;
+        }
+*/
         var offset = controller.nestedScrollController?.offset;
         // 检查是否正在播放
         final isPlaying =
@@ -280,7 +270,24 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
 
   /// 创建播放器
   _createPlayer() {
-    return Obx(() => controller.playerWidget.value ?? Container());
+    return PopScope(
+      canPop: controller.playerController.value == null ? true : controller.playerController.value?.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          controller.playerController.value?.fullscreenUtils.unlockOrientation();
+          return;
+        }
+        if (controller.playerController.value == null) {
+          return;
+        }
+        if (controller.playerController.value!.onlyFullscreen || controller.playerController.value!.playerState.isFullscreen.value) {
+          controller.playerController.value!.hideUIByKeyList(controller.playerController.value!.uiState.interceptRouteUIKeyList);
+        }
+      },
+      child: SizedBox(width: double.infinity, height: double.infinity,
+        child: controller.playerWidget.value ?? Container(),
+      ),
+    );
   }
 
   /// 资源信息

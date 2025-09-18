@@ -5,8 +5,6 @@ import '../enums/player_fit_enum.dart';
 import '../models/player_aspect_ratio_model.dart';
 
 class PlayerState {
-  // 添加 GlobalKey 用于获取指定 widget
-  final verticalPlayerWidgetKey = GlobalKey();
 
   final playerWidgetKey = GlobalKey();
 
