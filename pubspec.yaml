@@ -42,10 +42,11 @@ dependencies:
   connectivity_plus: ^6.1.4
   cached_network_image: ^3.4.1
 #  flutter_dynamic_api:
-#    path: ../github_pro/flutter_dynamic_api
+#    path: ../flutter_dynamic_api
   flutter_dynamic_api:
     git:
       url: https://github.com/liangchj/flutter_dynamic_api.git
+      ref: main
   flutter_spinkit: ^5.2.1
   intl: ^0.20.2
   infinite_scroll_pagination: ^5.1.0
@@ -63,7 +64,13 @@ dependencies:
   wakelock_plus: ^1.3.2
   photo_manager: ^3.7.1
   permission_handler: ^12.0.1
-  canvas_danmaku: ^0.2.7
+#  canvas_danmaku: ^0.2.7
+#  canvas_danmaku:
+#    git:
+#      url: https://github.com/liangchj/canvas_danmaku.git
+  canvas_danmaku:
+    path: ../canvas_danmaku
+
   xml: ^6.6.1
   dynamic_color: ^1.8.1
 
@@ -71,6 +78,7 @@ dependencies:
   path_provider: ^2.1.5
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  flutter_fullscreen: ^1.2.0
 
 
 dev_dependencies:
@@ -83,8 +91,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-#  build_runner: ^2.4.13
-#  hive_generator: ^2.0.1
+  build_runner: ^2.4.13
+  hive_generator: ^2.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -103,7 +111,7 @@ flutter:
     - assets/images/
     - assets/video/test.mp4
     - assets/icons/
-#    - assets/danmaku/
+    - assets/danmaku/
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

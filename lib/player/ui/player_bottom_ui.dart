@@ -36,7 +36,7 @@ class PlayerBottomUI extends GetView<PlayerController> {
 
   Widget _buildBottomUI() {
     return Obx(() {
-      return controller.playerState.isFullscreen.value
+      return controller.playerState.isFullscreen.value && MediaQuery.orientationOf(Get.context!) == Orientation.landscape
           ? Obx(
               () => Column(
                 children: [

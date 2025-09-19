@@ -63,6 +63,8 @@ class PlayerController extends GetxController {
 
   late MyDanmakuController myDanmakuController;
 
+  final RxBool interceptPop = false.obs;
+
   @override
   void onInit() {
     resourcePlayState = ResourcePlayState();
@@ -365,7 +367,6 @@ class PlayerController extends GetxController {
   }
 
   _initEver() {
-
     ever(player, (player) {
       player?.onInitPlayer();
     });
@@ -425,6 +426,13 @@ class PlayerController extends GetxController {
     ever(playerState.positionDuration, (value) {
       myDanmakuController.sendDanmakuByPosition(value);
     });
+
+    everAll([
+      uiState.settingUI.visible,
+      uiState.speedSettingUI.visible,
+      uiState.sourceUI.visible,
+      uiState.chapterListUI.visible,
+    ], (value) => interceptPop.value = value);
 
     myDanmakuController.initEver();
   }
@@ -691,7 +699,7 @@ class PlayerController extends GetxController {
   }
 
   void _createUIAnimate(PlayerOverlayUIModel uiOverlay) {
-    if (uiState.playerUIState == null ) {
+    if (uiState.playerUIState == null) {
       return;
     }
     // 当前UI是否需要动画控制器（有效ui直接使用属性动画）
@@ -925,22 +933,5 @@ class PlayerController extends GetxController {
         hideUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]);
       }
     }
-  }
-
-  canPop() {
-    if (!onlyFullscreen && !playerState.isFullscreen.value) {
-      return true;
-    }
-    bool flag = true;
-    for (var element in uiState.overlayUIMap.values) {
-      if (!element.visible.value || !uiState.interceptRouteUIKeyList.contains(element.key)) {
-        continue;
-      }
-      if (element.visible.value) {
-        flag = false;
-        break;
-      }
-    }
-    return flag;
   }
 }

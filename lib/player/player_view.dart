@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:source_player/player/iplayer.dart';
@@ -46,107 +47,64 @@ class _PlayerViewState extends State<PlayerView> {
 
   @override
   void dispose() {
-    _playerController.dispose();
+    // _playerController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop,  result) {
+      key: _playerController.playerState.playerWidgetKey,
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
+          FullScreen.setFullScreen(false);
           _playerController.fullscreenUtils.unlockOrientation();
+          return;
+        }
+        if (_playerController.interceptPop.value) {
+          _playerController.hideUIByKeyList(
+            _playerController.uiState.interceptRouteUIKeyList,
+          );
+        } else {
+          FullScreen.setFullScreen(false);
+          _playerController.fullscreenUtils.unlockOrientation();
+          Navigator.pop(context);
         }
       },
-      child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        // key: _playerController.playerState.playerWidgetKey,
-        color: Colors.amber,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            _playerController.fullScreenWidthChange(constraints.maxWidth);
-            final availableWidth =
-                constraints.maxWidth -
-                    WidgetStyleCommons.safeSpace * 2; // 减去左右边距
-            final sortControls =
-            _playerController.fullscreenBottomUIItemList
-                .where((item) => item.type != ControlType.none)
-                .toList()
-              ..sort((a, b) => a.priority.compareTo(b.priority));
-            double currentWidth = 0.0;
-            for (final control in sortControls) {
-              final needWidth = currentWidth + control.fixedWidth;
-              if (needWidth <= availableWidth) {
-                control.visible(true);
-                currentWidth = needWidth;
-              } else {
-                control.visible(false);
-              }
+      child: _playerWidget(),
+    );
+  }
+
+  Widget _playerWidget() {
+    return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          _playerController.fullScreenWidthChange(constraints.maxWidth);
+          final availableWidth =
+              constraints.maxWidth - WidgetStyleCommons.safeSpace * 2; // 减去左右边距
+          final sortControls =
+              _playerController.fullscreenBottomUIItemList
+                  .where((item) => item.type != ControlType.none)
+                  .toList()
+                ..sort((a, b) => a.priority.compareTo(b.priority));
+          double currentWidth = 0.0;
+          for (final control in sortControls) {
+            final needWidth = currentWidth + control.fixedWidth;
+            if (needWidth <= availableWidth) {
+              control.visible(true);
+              currentWidth = needWidth;
+            } else {
+              control.visible(false);
             }
-            return Obx(
-                  () => _playerController.playerState.playerView.value ?? Container(),
-            );
-          },
-        ),
+          }
+          return Obx(
+            () => _playerController.playerState.playerView.value ?? Container(),
+          );
+        },
       ),
     );
   }
 }
-
-/*class FullscreenPlayerPage extends StatelessWidget {
-  final PlayerController controller = Get.find<PlayerController>();
-
-  FullscreenPlayerPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BackButtonListener(
-      onBackButtonPressed: () {
-        // 执行退出全屏逻辑
-        controller.fullscreenUtils.toggleFullscreen();
-        return Future.value(true); // 表示已经处理了返回事件
-      },
-      child: PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, result) {
-          // 只有当没有真正 pop 时才执行自定义逻辑
-          if (!didPop) {
-            // 执行退出全屏逻辑
-            controller.fullscreenUtils.toggleFullscreen();
-          }
-        },
-        child: Scaffold(
-          backgroundColor: Colors.black,
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              controller.fullScreenWidthChange(constraints.maxWidth);
-              final availableWidth =
-                  constraints.maxWidth -
-                  WidgetStyleCommons.safeSpace * 2; // 减去左右边距
-              final sortControls =
-                  controller.fullscreenBottomUIItemList
-                      .where((item) => item.type != ControlType.none)
-                      .toList()
-                    ..sort((a, b) => a.priority.compareTo(b.priority));
-              double currentWidth = 0.0;
-              for (final control in sortControls) {
-                final needWidth = currentWidth + control.fixedWidth;
-                if (needWidth <= availableWidth) {
-                  control.visible(true);
-                  currentWidth = needWidth;
-                } else {
-                  control.visible(false);
-                }
-              }
-              return Obx(
-                () => controller.playerState.playerView.value ?? Container(),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}*/

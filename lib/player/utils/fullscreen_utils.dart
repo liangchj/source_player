@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/controller/player_controller.dart';
 
@@ -20,7 +21,9 @@ class FullscreenUtils {
     }
     if (playerState.isFullscreen.value || exit) {
       exitFullscreen();
-      if (playerState.isFullscreen.value && !controller.onlyFullscreen && playing) {
+      if (playerState.isFullscreen.value &&
+          !controller.onlyFullscreen &&
+          playing) {
         controller.player.value!.play();
       }
     } else {
@@ -37,12 +40,13 @@ class FullscreenUtils {
   }
 
   void enterFullscreen(BuildContext context) {
+
     // 处理只有全屏的特殊情况
     if (controller.onlyFullscreen) {
       enterFullscreenForLocalVideo();
       return;
     }
-
+    FullScreen.setFullScreen(true);
     /*final RenderBox renderBox =
         playerState.verticalPlayerWidgetKey.currentContext?.findRenderObject()
             as RenderBox;
@@ -63,11 +67,12 @@ class FullscreenUtils {
 
   // 本地视频全屏处理
   void enterFullscreenForLocalVideo() {
+    FullScreen.setFullScreen(true);
     // 直接跳转到全屏页面（无需位置计算）
     Get.to(
       () => Scaffold(
         body: PlayerView(
-          controller:  controller,
+          controller: controller,
           player: controller.player.value!,
         ),
       ),
@@ -90,6 +95,7 @@ class FullscreenUtils {
   }
 
   void exitFullscreen() {
+    FullScreen.setFullScreen(false);
     if (!playerState.isFullscreen.value || controller.onlyFullscreen) {
       if (controller.onlyFullscreen) {
         controller.pause();

@@ -37,7 +37,9 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   final double _playerAspectRatio = 9 / 16.0;
   final double _minPlayerHeight = 60;
 
-  bool get isFullscreen => controller.playerController.value?.playerState.isFullscreen.value ?? false;
+  bool get isFullscreen =>
+      controller.playerController.value?.playerState.isFullscreen.value ??
+      false;
 
   @override
   void initState() {
@@ -75,7 +77,9 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
   @override
   Widget build(BuildContext context) {
     LoggerUtils.logger.d("渲染");
-    bool fullscreen = isFullscreen || MediaQuery.orientationOf(context) == Orientation.landscape;
+    bool fullscreen =
+        isFullscreen ||
+        MediaQuery.orientationOf(context) == Orientation.landscape;
     return Obx(
       () => Scaffold(
         appBar:
@@ -100,7 +104,13 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
             : controller.videoModel.value == null
             ? const Center(child: Text("获取资源为空"))
             // : _createDetailScrollView(),
-            : SafeArea(top: !fullscreen, left: false, right: false, bottom:  false, child: _createDetailScrollView()),
+            : SafeArea(
+                top: !fullscreen,
+                left: false,
+                right: false,
+                bottom: false,
+                child: _createDetailScrollView(),
+              ),
       ),
     );
   }
@@ -127,53 +137,55 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
       ),*/
       headerSliverBuilder: (BuildContext c, bool f) {
         double height = screenWidth * _playerAspectRatio;
-        bool fullscreen = isFullscreen || MediaQuery.orientationOf(context) == Orientation.landscape;
-        double expandedHeight = fullscreen ? screenHeight :
-        height;
+        bool fullscreen =
+            isFullscreen ||
+            MediaQuery.orientationOf(context) == Orientation.landscape;
+        double expandedHeight = fullscreen ? screenHeight : height;
         return [
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              expandedHeight: expandedHeight,
-              collapsedHeight: fullscreen ? expandedHeight :
-              controller
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            expandedHeight: expandedHeight,
+            collapsedHeight: fullscreen
+                ? expandedHeight
+                : controller
                           .playerController
                           .value
                           ?.playerState
                           .isPlaying
                           .value ??
                       false
-                  ? height
-                  : _minPlayerHeight,
-              floating: false,
-              pinned: true,
-              flexibleSpace: Stack(
-                children: [
-                  Positioned.fill(child: _createPlayer()),
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    right: 0,
-                    child: Obx(
-                          () =>
-                      controller.playerController.value != null &&
-                          !controller
-                              .playerController
-                              .value!
-                              .playerState
-                              .isPlaying
-                              .value &&
-                          controller.extendedNestedScrollViewOffset.value >
-                              pinnedHeaderHeight
-                          ? Container(
-                        color: Colors.black,
-                        child: PlayerTopUI(pauseScroll: true),
-                      )
-                          : Container(),
-                    ),
+                ? height
+                : _minPlayerHeight,
+            floating: false,
+            pinned: true,
+            flexibleSpace: Stack(
+              children: [
+                Positioned.fill(child: _createPlayer()),
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  right: 0,
+                  child: Obx(
+                    () =>
+                        controller.playerController.value != null &&
+                            !controller
+                                .playerController
+                                .value!
+                                .playerState
+                                .isPlaying
+                                .value &&
+                            controller.extendedNestedScrollViewOffset.value >
+                                pinnedHeaderHeight
+                        ? Container(
+                            color: Colors.black,
+                            child: PlayerTopUI(pauseScroll: true),
+                          )
+                        : Container(),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
         ];
       },
       pinnedHeaderSliverHeightBuilder: () {
@@ -250,16 +262,12 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                 ),
         ),
 
-        Container(
+        /*Container(
           width: double.infinity,
           height: 300,
           color: Colors.amberAccent,
         ),
-        Container(
-          width: double.infinity,
-          height: 300,
-          color: Colors.blueGrey,
-        ),
+        Container(width: double.infinity, height: 300, color: Colors.blueGrey),*/
       ],
     );
   }
@@ -270,23 +278,10 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
 
   /// 创建播放器
   _createPlayer() {
-    return PopScope(
-      canPop: controller.playerController.value == null ? true : controller.playerController.value?.canPop(),
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          controller.playerController.value?.fullscreenUtils.unlockOrientation();
-          return;
-        }
-        if (controller.playerController.value == null) {
-          return;
-        }
-        if (controller.playerController.value!.onlyFullscreen || controller.playerController.value!.playerState.isFullscreen.value) {
-          controller.playerController.value!.hideUIByKeyList(controller.playerController.value!.uiState.interceptRouteUIKeyList);
-        }
-      },
-      child: SizedBox(width: double.infinity, height: double.infinity,
-        child: controller.playerWidget.value ?? Container(),
-      ),
+    return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: controller.playerWidget.value ?? Container(),
     );
   }
 
@@ -320,18 +315,31 @@ class _NetResourceDetailPageState extends State<NetResourceDetailPage>
                   InkWell(
                     onTap: () {
                       BottomSheetDialogUtils.openBottomSheet(
-                        LayoutBuilder(builder: (context, constraints) {
-                          var size = MediaQuery.of(context).size;
-                          double playerHeight = size.width * _playerAspectRatio;
-                          print("CurrentConfigs.statusBarHeight: ${CurrentConfigs.statusBarHeight}");
-                          return SizedBox(
-                            width: size.width,
-                            height: size.height - (playerHeight - controller.extendedNestedScrollViewOffset.value) - CurrentConfigs.statusBarHeight - kToolbarHeight + WidgetStyleCommons.safeSpace / 2,
-                            child: ResourceDetailInfoWidget(
-                              controller: controller,
-                            ),
-                          );
-                        }),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            var size = MediaQuery.of(context).size;
+                            double playerHeight =
+                                size.width * _playerAspectRatio;
+                            print(
+                              "CurrentConfigs.statusBarHeight: ${CurrentConfigs.statusBarHeight}",
+                            );
+                            return SizedBox(
+                              width: size.width,
+                              height:
+                                  size.height -
+                                  (playerHeight -
+                                      controller
+                                          .extendedNestedScrollViewOffset
+                                          .value) -
+                                  CurrentConfigs.statusBarHeight -
+                                  kToolbarHeight +
+                                  WidgetStyleCommons.safeSpace / 2,
+                              child: ResourceDetailInfoWidget(
+                                controller: controller,
+                              ),
+                            );
+                          },
+                        ),
                         isScrollControlled: true,
                       );
                     },
