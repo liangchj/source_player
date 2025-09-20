@@ -1,11 +1,20 @@
-
 import 'package:flutter/material.dart';
 import 'package:source_player/models/resource_chapter_model.dart';
 
 import '../../../commons/widget_style_commons.dart';
 
 class ChapterWidget extends StatelessWidget {
-  const ChapterWidget({super.key, required this.chapter, required this.activated, this.isCard = false, this.onClick, this.left, this.right, this.unActivatedTextColor,});
+  const ChapterWidget({
+    super.key,
+    required this.chapter,
+    required this.activated,
+    this.isCard = false,
+    this.onClick,
+    this.left,
+    this.right,
+    this.unActivatedTextColor,
+    this.textAlign,
+  });
   final ResourceChapterModel chapter;
   final bool activated;
   final bool isCard;
@@ -13,7 +22,7 @@ class ChapterWidget extends StatelessWidget {
   final Widget? left;
   final Widget? right;
   final Color? unActivatedTextColor;
-
+  final TextAlign? textAlign;
 
   @override
   Widget build(BuildContext context) {
@@ -22,27 +31,30 @@ class ChapterWidget extends StatelessWidget {
     if (activated) {
       shape = RoundedRectangleBorder(
         //边框颜色
-          side: BorderSide(
-            color: WidgetStyleCommons.primaryColor,
-            width: WidgetStyleCommons.chapterBorderWidth,
-          ),
-          //边框圆角
-          borderRadius: BorderRadius.all(
-            Radius.circular(WidgetStyleCommons.chapterBorderRadius),
-          ));
+        side: BorderSide(
+          color: WidgetStyleCommons.primaryColor,
+          width: WidgetStyleCommons.chapterBorderWidth,
+        ),
+        //边框圆角
+        borderRadius: BorderRadius.all(
+          Radius.circular(WidgetStyleCommons.chapterBorderRadius),
+        ),
+      );
       textFontColor = WidgetStyleCommons.chapterTextActivatedColor;
     } else {
       shape = RoundedRectangleBorder(
         //边框颜色
-          side: BorderSide(
-            color: WidgetStyleCommons.chapterBackgroundColor,
-            width: WidgetStyleCommons.chapterBorderWidth,
-          ),
-          //边框圆角
-          borderRadius: BorderRadius.all(
-            Radius.circular(WidgetStyleCommons.chapterBorderRadius),
-          ));
-      textFontColor = unActivatedTextColor ?? WidgetStyleCommons.chapterTextColor;
+        side: BorderSide(
+          color: WidgetStyleCommons.chapterBackgroundColor,
+          width: WidgetStyleCommons.chapterBorderWidth,
+        ),
+        //边框圆角
+        borderRadius: BorderRadius.all(
+          Radius.circular(WidgetStyleCommons.chapterBorderRadius),
+        ),
+      );
+      textFontColor =
+          unActivatedTextColor ?? WidgetStyleCommons.chapterTextColor;
     }
     return MaterialButton(
       //边框样式
@@ -59,7 +71,7 @@ class ChapterWidget extends StatelessWidget {
                 chapter.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+                textAlign: textAlign ?? TextAlign.center,
                 style: TextStyle(color: textFontColor),
               ),
             ),
@@ -69,5 +81,4 @@ class ChapterWidget extends StatelessWidget {
       ),
     );
   }
-
 }

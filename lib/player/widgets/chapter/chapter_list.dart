@@ -302,6 +302,7 @@ class _ChapterListState extends State<ChapterList> {
                     "chapter_${option.bottomSheet}_listView_${controller.resourcePlayState.apiActivatedIndex.value}-${controller.resourcePlayState.apiGroupActivatedIndex.value}-${controller.resourcePlayState.chapterGroupActivatedIndex.value}-${item.index}",
                   ),
                   chapter: item,
+                  textAlign: TextAlign.left,
                   activated: item.index == activeIndex,
                   isCard: true,
                   unActivatedTextColor:

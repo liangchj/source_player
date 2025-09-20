@@ -90,7 +90,7 @@ class NetApiDefaultKeyCommon {
         // 动态参数
         "dynamicParams": {
           ...maccmsListDynamicRequestParams,
-          "year": {
+          /*"year": {
             "requestKey": "y",
             "dataSource": "filterCriteria",
             "filterCriteria": {
@@ -119,7 +119,7 @@ class NetApiDefaultKeyCommon {
                 }
               ]
             }
-          }
+          }*/
         }
       },
       "responseParams": {

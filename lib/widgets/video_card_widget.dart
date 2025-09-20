@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:source_player/models/video_model.dart';
@@ -73,11 +74,28 @@ class VideoCardWidget extends StatelessWidget {
   }
 
   Widget _buildCoverWidget() {
-    return const Image(
+   /* return const Image(
         height: double.infinity,
         fit: BoxFit.fitHeight,
-        image: AssetImage("assets/images/1.jpg"));
-    if (videoModel.coverUrl == null || videoModel.coverUrl!.isEmpty) {
+        image: AssetImage("assets/images/1.jpg"));*/
+    return CachedNetworkImage(
+      imageUrl: videoModel.coverUrl ?? "",
+      imageBuilder: (context, imageProvider) => Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.cover,
+              colorFilter:
+              ColorFilter.mode(Colors.red, BlendMode.colorBurn)),
+        ),
+      ),
+      placeholder: (context, url) => Center(
+        child: const CircularProgressIndicator(),
+      ),
+      errorWidget: (context, url, error) => Center(child: Icon(Icons.error)),
+    );
+
+    /*if (videoModel.coverUrl == null || videoModel.coverUrl!.isEmpty) {
       return const Image(
           height: double.infinity,
           fit: BoxFit.fitHeight,
@@ -107,6 +125,6 @@ class VideoCardWidget extends StatelessWidget {
           fit: BoxFit.cover,
         );
       },
-    );
+    );*/
   }
 }

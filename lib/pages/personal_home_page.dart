@@ -7,6 +7,7 @@ import 'package:xml/xml.dart';
 import '../models/media_file_model.dart';
 import '../models/resource_chapter_model.dart';
 import '../player/controller/player_controller.dart';
+import '../player/utils/player_utils.dart';
 import '../utils/logger_utils.dart';
 
 class PersonalHomePage extends StatefulWidget {
@@ -26,7 +27,6 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
           TextButton(
             onPressed: () {
               Get.delete<PlayerController>();
-              PlayerController controller = Get.put(PlayerController());
               List<ResourceChapterModel> chapterList = [
                 ResourceChapterModel(
                   name: '1',
@@ -37,7 +37,12 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                   ),
                 )
               ];
-              controller.openLocalVideo(chapterList: chapterList);
+              PlayerUtils.openLocalVideo(
+                chapterList: chapterList,
+                playerControllerCallback: (controller) {
+                  // playerController = controller;
+                },
+              );
             },
             child: Text("测试播放视频"),
           ),

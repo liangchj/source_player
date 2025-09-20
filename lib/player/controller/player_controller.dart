@@ -305,14 +305,20 @@ class PlayerController extends GetxController {
         type: ControlType.source,
         fixedWidth: PlayerCommons.bottomBtnSize,
         priority: 5,
-        child: IconButton(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          color: WidgetStyleCommons.iconColor,
-          onPressed: () => {
-            onlyShowUIByKeyList([PlayerUIKeyEnum.sourceUI.name]),
-          },
-          icon: Icon(Icons.source_rounded),
-        ),
+        child: Obx(() {
+          if (resourcePlayState.playSourceCount <= 1 &&
+              resourcePlayState.sourceGroupCount <= 1) {
+            return Container();
+          }
+          return IconButton(
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+            color: WidgetStyleCommons.iconColor,
+            onPressed: () => {
+              onlyShowUIByKeyList([PlayerUIKeyEnum.sourceUI.name]),
+            },
+            icon: Icon(Icons.source_rounded),
+          );
+        }),
       ),
       PlayerBottomUIItemModel(
         type: ControlType.chapter,
@@ -547,33 +553,6 @@ class PlayerController extends GetxController {
   }
 
   Future<void> afterSeekTo() async {}
-
-  // 本地播放
-  void openLocalVideo({
-    IPlayer? player,
-    VideoModel? videoModel,
-    List<ResourceChapterModel>? chapterList,
-    ResourcePlayStateModel? playStateModel,
-  }) {
-    onlyFullscreen = true;
-    if (player == null) {
-      MediaKit.ensureInitialized();
-    }
-    // playerState.autoPlay = false;
-    playerState.autoPlay = true;
-    this.player(player ?? MediaKitPlayer());
-    resourcePlayState.playStateModel = playStateModel;
-
-    if (videoModel != null) {
-      resourcePlayState.videoModel.value = videoModel;
-    }
-    if (chapterList != null) {
-      resourcePlayState.chapterList.value = chapterList;
-    }
-
-    playerState.isFullscreen(true);
-    fullscreenUtils.enterFullscreenForLocalVideo();
-  }
 
   /// ui控制部分
 

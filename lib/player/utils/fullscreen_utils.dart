@@ -14,7 +14,7 @@ class FullscreenUtils {
 
   PlayerState get playerState => controller.playerState;
 
-  void toggleFullscreen({BuildContext? context, bool exit = false}) {
+  void toggleFullscreen({bool exit = false}) {
     bool playing = controller.player.value?.playing ?? false;
     if (controller.player.value != null && playing) {
       controller.player.value!.pause();
@@ -27,59 +27,21 @@ class FullscreenUtils {
         controller.player.value!.play();
       }
     } else {
-      enterFullscreen(context ?? Get.context!);
+      enterFullscreen();
       if (playing) {
         controller.player.value!.play();
       }
     }
-    if (exit) {
+    /*if (exit) {
       playerState.isFullscreen(false);
     } else {
       playerState.isFullscreen.toggle();
-    }
+    }*/
   }
 
-  void enterFullscreen(BuildContext context) {
-
-    // 处理只有全屏的特殊情况
-    if (controller.onlyFullscreen) {
-      enterFullscreenForLocalVideo();
-      return;
-    }
+  void enterFullscreen() {
     FullScreen.setFullScreen(true);
-    /*final RenderBox renderBox =
-        playerState.verticalPlayerWidgetKey.currentContext?.findRenderObject()
-            as RenderBox;
-
-    final position = renderBox.localToGlobal(Offset.zero);
-    final size = renderBox.size;*/
-    // 3. 使用自定义路由跳转（无闪屏，带动画）
-    /*Navigator.push(
-      context,
-      PlayerFullscreenRoute(
-        fullscreenPage: FullscreenPlayerPage(), // 全屏页面
-        position: position,
-        size: size,
-      ),
-    );*/
-    lockLandscapeOrientation();
-  }
-
-  // 本地视频全屏处理
-  void enterFullscreenForLocalVideo() {
-    FullScreen.setFullScreen(true);
-    // 直接跳转到全屏页面（无需位置计算）
-    Get.to(
-      () => Scaffold(
-        body: PlayerView(
-          controller: controller,
-          player: controller.player.value!,
-        ),
-      ),
-      transition: Transition.fade,
-      duration: const Duration(milliseconds: 300),
-    );
-    // 锁定横屏
+    playerState.isFullscreen(true);
     lockLandscapeOrientation();
   }
 
@@ -100,7 +62,6 @@ class FullscreenUtils {
       if (controller.onlyFullscreen) {
         controller.pause();
         controller.player.value?.onDisposePlayer();
-        controller.dispose();
       }
       Navigator.of(Get.context!).pop();
     }

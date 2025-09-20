@@ -47,7 +47,7 @@ class _PlayerViewState extends State<PlayerView> {
 
   @override
   void dispose() {
-    // _playerController.dispose();
+    _playerController.dispose();
     super.dispose();
   }
 

@@ -130,6 +130,13 @@ class ResourcePlayState {
     return videoModel.value!.playSourceList;
   }
 
+  int get playSourceCount {
+    if (playSourceList == null) {
+      return 0;
+    }
+    return playSourceList!.length;
+  }
+
   bool get createApiWidget {
     return !(playSourceList == null ||
         playSourceList!.isEmpty ||
@@ -150,6 +157,8 @@ class ResourcePlayState {
     }
     return activatedApi!.playSourceGroupList;
   }
+
+  int get sourceGroupCount => sourceGroupList.length;
 
   // 激活的播放源组
   PlaySourceGroupModel? get activatedSourceGroup {

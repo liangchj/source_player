@@ -9,6 +9,7 @@ import '../../models/loading_state_model.dart';
 import '../../models/media_file_model.dart';
 import '../../models/resource_chapter_model.dart';
 import '../../player/controller/player_controller.dart';
+import '../../player/utils/player_utils.dart';
 
 class MediaListController extends GetxController {
   DirectoryModel? folder;
@@ -173,10 +174,7 @@ class MediaListController extends GetxController {
       }
     }
 
-    Get.delete<PlayerController>();
-    // 获取播放器控制器并播放视频
-    PlayerController controller = Get.put(PlayerController());
-    controller.openLocalVideo(
+    PlayerUtils.openLocalVideo(
       chapterList: chapterList,
       playStateModel: ResourcePlayStateModel(
         apiIndex: 0,
@@ -184,6 +182,7 @@ class MediaListController extends GetxController {
         chapterGroupIndex: 0,
         chapterIndex: index,
       ),
+      playerControllerCallback: (controller) {},
     );
   }
 }
