@@ -5,14 +5,14 @@ import 'package:source_player/models/video_model.dart';
 
 import '../pages/net_resource_detail_page.dart';
 
-
 class VideoCardWidget extends StatelessWidget {
-  const VideoCardWidget(
-      {super.key,
-      required this.videoModel,
-      this.scoreWidget,
-      this.cardNameWidget,
-      this.otherWidget});
+  const VideoCardWidget({
+    super.key,
+    required this.videoModel,
+    this.scoreWidget,
+    this.cardNameWidget,
+    this.otherWidget,
+  });
   final VideoModel videoModel;
 
   /// 分数widget
@@ -28,31 +28,32 @@ class VideoCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Get.to((() => NetResourceDetailPage(
-          resourceId: videoModel.id,
-        )));
+        Get.to((() => NetResourceDetailPage(resourceId: videoModel.id)));
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           // 图片信息
-          Expanded(child: Stack(
-            children: [
-              _buildCoverWidget(),
-              if (videoModel.score != null) createScoreWidget(),
-            ],
-          )),
+          Expanded(
+            child: Stack(
+              children: [
+                _buildCoverWidget(),
+                if (videoModel.score != null) createScoreWidget(),
+              ],
+            ),
+          ),
 
           //名称
           cardNameWidget ??
               Container(
-                  margin: const EdgeInsets.only(top: 4.0),
-                  child: Text(
-                    videoModel.name,
-                    textAlign: TextAlign.start,
-                    overflow: TextOverflow.ellipsis,
-                  )),
-          otherWidget ?? Container()
+                margin: const EdgeInsets.only(top: 4.0),
+                child: Text(
+                  videoModel.name,
+                  textAlign: TextAlign.start,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          otherWidget ?? Container(),
         ],
       ),
     );
@@ -63,18 +64,18 @@ class VideoCardWidget extends StatelessWidget {
         Align(
           alignment: Alignment.topRight,
           child: Container(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
-              color: Colors.green,
-              child: Text(
-                "${videoModel.score}",
-                style: const TextStyle(color: Colors.white),
-              )),
+            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
+            color: Colors.green,
+            child: Text(
+              "${videoModel.score}",
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
         );
   }
 
   Widget _buildCoverWidget() {
-   /* return const Image(
+    /* return const Image(
         height: double.infinity,
         fit: BoxFit.fitHeight,
         image: AssetImage("assets/images/1.jpg"));*/
@@ -82,16 +83,11 @@ class VideoCardWidget extends StatelessWidget {
       imageUrl: videoModel.coverUrl ?? "",
       imageBuilder: (context, imageProvider) => Container(
         decoration: BoxDecoration(
-          image: DecorationImage(
-              image: imageProvider,
-              fit: BoxFit.cover,
-              colorFilter:
-              ColorFilter.mode(Colors.red, BlendMode.colorBurn)),
+          image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
         ),
       ),
-      placeholder: (context, url) => Center(
-        child: const CircularProgressIndicator(),
-      ),
+      placeholder: (context, url) =>
+          Center(child: const CircularProgressIndicator()),
       errorWidget: (context, url, error) => Center(child: Icon(Icons.error)),
     );
 

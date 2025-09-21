@@ -65,6 +65,7 @@ class FullscreenUtils {
       }
       Navigator.of(Get.context!).pop();
     }
+    playerState.isFullscreen(false);
     unlockOrientation();
   }
 
