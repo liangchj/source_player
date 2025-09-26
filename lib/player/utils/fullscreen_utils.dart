@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:get/get.dart';
 import 'package:source_player/player/controller/player_controller.dart';
-
-import '../player_view.dart';
 import '../state/player_state.dart';
 
 class FullscreenUtils {
@@ -20,10 +18,9 @@ class FullscreenUtils {
       controller.player.value!.pause();
     }
     if (playerState.isFullscreen.value || exit) {
+      bool fullscreen = playerState.isFullscreen.value;
       exitFullscreen();
-      if (playerState.isFullscreen.value &&
-          !controller.onlyFullscreen &&
-          playing) {
+      if (fullscreen && !controller.onlyFullscreen && playing) {
         controller.player.value!.play();
       }
     } else {
