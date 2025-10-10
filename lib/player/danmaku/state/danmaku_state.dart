@@ -6,30 +6,16 @@ import '../models/danmaku_alpha_ratio_model.dart';
 import '../models/danmaku_area_model.dart';
 import '../models/danmaku_filter_type_model.dart';
 import '../models/danmaku_font_size_model.dart';
-import '../models/danmaku_item_model.dart';
-import '../models/danmaku_peed_model.dart';
+import '../models/danmaku_speed_model.dart';
 
 class DanmakuState {
   // 弹幕组件
   final Rx<Widget?> danmakuView = Rx<Widget?>(null);
 
-  double prevSendSecond = -1.0;
-
   // 弹幕文件路径
-  final Rx<Map<String, bool>?> danmakuFilePathMap = Rx<Map<String, bool>?>(null);
+  final RxString danmakuFilePath = "".obs;
 
-  bool get allPathReady {
-    if (danmakuFilePathMap.value == null || danmakuFilePathMap.value!.isEmpty) {
-      return true;
-    }
-    return danmakuFilePathMap.value!.values.every((element) => element);
-  }
-
-  // 弹幕列表
-  final Rx<Map<double, List<DanmakuItemModel>>> danmakuMap = Rx<Map<double, List<DanmakuItemModel>>>({});
-
-  // 弹幕文件读取去重
-  final RxBool readFileDeduplication = true.obs;
+  final RxBool danmakuFileParse = false.obs;
 
   // 错误信息
   final Rx<String> errorMsg = "".obs;
@@ -41,7 +27,6 @@ class DanmakuState {
 
   // 是否启动弹幕
   final RxBool isVisible = true.obs;
-
 
   // 时间调整
   final RxDouble adjustTime = 0.0.obs;
@@ -122,7 +107,4 @@ class DanmakuState {
       closeImageIcon: IconCommons.danmakuColorClose,
     ),
   ];
-
-
-
 }

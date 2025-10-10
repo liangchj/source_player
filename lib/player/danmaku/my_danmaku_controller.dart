@@ -1,109 +1,53 @@
 import 'package:canvas_danmaku/canvas_danmaku.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:source_player/models/resource_chapter_model.dart';
 
 import '../../commons/logger_tag_commons.dart';
 import '../../utils/logger_utils.dart';
 import '../controller/player_controller.dart';
-import '../enums/player_ui_key_enum.dart';
-import '../exception/read_file_exception.dart';
-import 'models/danmaku_item_model.dart';
-import 'parse/bili_danmaku_parse.dart';
 import 'state/danmaku_state.dart';
 
-class MyDanmakuController {
+class MyDanmakuController extends GetxController {
   final PlayerController playerController;
-  final DanmakuState state;
 
-  MyDanmakuController(this.playerController, this.state);
+  MyDanmakuController(this.playerController) {
+    state = playerController.danmakuState;
+  }
 
   DanmakuController? danmakuController;
 
+  late DanmakuState state;
+
   bool get videoIsPlaying => playerController.playerState.isPlaying.value;
 
-  initEver() {
-    everAll(
-      [
-        state.danmakuAlphaRatio,
-        state.danmakuArea,
-        state.danmakuFontSize,
-        state.danmakuSpeed,
-      ],
-      (value) {
-        if (danmakuController == null) {
-          return;
-        }
-        DanmakuOption option = danmakuController!.option.copyWith(
-          opacity: state.danmakuAlphaRatio.value.ratio / 100.0,
-          area: state
-              .danmakuArea
-              .value
-              .danmakuAreaItemList[state.danmakuArea.value.areaIndex]
-              .area,
-          fontSize: state.danmakuFontSize.value.fontSize,
-          duration: state.danmakuSpeed.value.speed,
-        );
-        danmakuController!.updateOption(option);
-      },
-    );
-  }
+  BaseDanmakuParser? parser;
 
-  // 读取弹幕文件
-  Future<void> readDanmakuListByFilePath({bool readAll = true}) async {
-    LoggerUtils.logger.d("${LoggerTagCommons.danmakuLog}，进入读取弹幕文件内容");
-    if (!videoIsPlaying || !state.isVisible.value) {
-      return;
-    }
-    if (state.danmakuFilePathMap.value == null ||
-        state.danmakuFilePathMap.value!.isEmpty) {
-      return;
-    }
-    List<String> parseErrorList = [];
-    Map<double, List<DanmakuItemModel>> danmakuMap = readAll
-        ? {}
-        : state.danmakuMap.value;
-    for (var entry in state.danmakuFilePathMap.value!.entries) {
-      if (!readAll && entry.value) {
-        continue;
-      }
-      try {
-        var map = await compute(
-          BiliDanmakuParse().parseDanmakuByXml,
-          BiliDanmakuParseOptions(xmlPath: entry.key, fromAssets: false),
-        );
-        if (map.isNotEmpty) {
-          if (readAll || danmakuMap.isEmpty) {
-            danmakuMap.addAll(map);
-          } else {
-            for (var en in map.entries) {
-              var list = danmakuMap[en.key] ?? [];
-              list.addAll(en.value);
-              danmakuMap[en.key] = list;
-            }
+  initEver() {
+    ever(state.danmakuFilePath, (value) {
+      if (value.isNotEmpty) {
+        if (danmakuController != null) {
+          parseDanmakuFile(value);
+        } else {
+          if (playerController.danmakuState.isVisible.value) {
+            initDanmaku();
           }
         }
-      } on ReadFileException catch (e) {
-        parseErrorList.add(e.message);
-        LoggerUtils.logger.d(
-          "${LoggerTagCommons.danmakuLog}，弹幕文件解析失败：${entry.key}，错误信息：$e",
-        );
-      } on Exception catch (e) {
-        parseErrorList.add(e.toString());
-        LoggerUtils.logger.d(
-          "${LoggerTagCommons.danmakuLog}，弹幕文件解析失败：${entry.key}，错误信息：$e",
-        );
       }
-      state.danmakuFilePathMap.value![entry.key] = true;
-    }
-    state.danmakuMap.value = danmakuMap;
-    if (parseErrorList.isNotEmpty) {
-      playerController.uiState.bottomLeftMsg.value = parseErrorList.join(', ');
-      playerController.onlyShowUIByKeyList([
-        PlayerUIKeyEnum.leftBottomHitUI.name,
-        PlayerUIKeyEnum.restartUI.name,
-      ], ignoreLimit: true);
-    }
+    });
+  }
+
+  void parseDanmakuFile(String path) {
+    state.danmakuFileParse.value = false;
+    parser ??= BiliDanmakuParser(options: BiliDanmakuParseOptions(parentTag: "i",
+      contentTag: "d",
+      attrName: "p",
+      splitChar: ",", fromAssets: true));
+    danmakuController?.parseDanmaku(parser!, path);
+    parser!.stateController.stream.listen((event) {
+      if (event.status == ParserStatus.completed) {
+        state.danmakuFileParse.value = true;
+        startDanmaku();
+      }
+    });
   }
 
   Future<void> initDanmaku() {
@@ -112,6 +56,10 @@ class MyDanmakuController {
         DanmakuScreen(
           createdController: (DanmakuController e) {
             danmakuController = e;
+            if (!state.danmakuFileParse.value &&
+                state.danmakuFilePath.value.isNotEmpty) {
+              parseDanmakuFile(state.danmakuFilePath.value);
+            }
           },
           option: (danmakuController?.option ?? DanmakuOption()).copyWith(
             opacity: state.danmakuAlphaRatio.value.ratio / 100.0,
@@ -134,27 +82,31 @@ class MyDanmakuController {
     if (!videoIsPlaying || !state.isVisible.value) {
       return;
     }
-    await initDanmaku();
-    if (!state.allPathReady) {
-      await readDanmakuListByFilePath(readAll: false);
-    }
-    if (danmakuController != null) {
-      danmakuController!.resume();
+    if (danmakuController == null) {
+      await initDanmaku();
+      danmakuController?.start(
+        playerController.playerState.positionDuration.value.inMilliseconds,
+      );
+    } else {
+      danmakuController?.start(
+        playerController.playerState.positionDuration.value.inMilliseconds,
+      );
     }
   }
 
   Future<void> resumeDanmaku() async {
-    if (!videoIsPlaying || !state.isVisible.value) {
+    if (!videoIsPlaying ||
+        !state.isVisible.value ||
+        danmakuController == null) {
       return;
     }
-    if (danmakuController == null ||
-        !danmakuController!.running ||
-        !state.allPathReady ||
-        state.danmakuMap.value.isEmpty) {
-      await startDanmaku();
-      return;
+    if (danmakuController!.started()) {
+      danmakuController?.resume();
+    } else {
+      danmakuController?.start(
+        playerController.playerState.positionDuration.value.inMilliseconds,
+      );
     }
-    danmakuController!.resume();
   }
 
   // 暂停弹幕
@@ -201,69 +153,17 @@ class MyDanmakuController {
     }
   }
 
-  // 发送弹幕
-  void sendDanmakuByPosition(Duration value) {
-    if (danmakuController == null ||
-        !videoIsPlaying ||
-        playerController.playerState.isSeeking.value ||
-        !state.isVisible.value ||
-        state.danmakuMap.value.isEmpty) {
+  void restDanmaku() {
+    if (danmakuController == null) {
       return;
     }
-    var inSeconds = value.inSeconds;
-    var inMilliseconds = value.inMilliseconds;
-    // 添加时间合理性检查
-    var currentPosition = playerController.playerState.positionDuration.value;
-    if (currentPosition.inMilliseconds != inMilliseconds) {
-      // 时间不匹配，可能是过时的事件
-      return;
+    try {
+      danmakuController!.reset();
+    } catch (e) {
+      state.errorMsg("重置弹幕失败：$e");
+      LoggerUtils.logger.d(
+        "${LoggerTagCommons.danmakuLog}restDanmaku，重置弹幕失败：$e",
+      );
     }
-    var balance = inMilliseconds - (inSeconds * 1000);
-    double time = inSeconds + (balance >= 500 ? 0.0 : 0.5);
-
-    if (state.prevSendSecond == time) {
-      return;
-    }
-    var list = state.danmakuMap.value[time] ?? [];
-    if (list.isEmpty) {
-      return;
-    }
-    list.sort((a, b) => b.time.compareTo(a.time));
-    for (var item in list) {
-      sendDanmaku(item);
-    }
-  }
-
-  void sendDanmaku(DanmakuItemModel item) {
-    if (danmakuController == null ||
-        !videoIsPlaying ||
-        playerController.playerState.isSeeking.value ||
-        !state.isVisible.value) {
-      return;
-    }
-    danmakuController!.addDanmaku(
-      DanmakuContentItem(item.text, color: item.color, type: item.type),
-    );
-  }
-
-  void beforeChangePlayUrl() {
-    stopDanmaku();
-    state.prevSendSecond = -1;
-    state.danmakuFilePathMap.value = {};
-    state.danmakuMap.value = {};
-  }
-
-  void afterChangePlayUrl(ResourceChapterModel? activatedChapter) {
-    String danmakuFilePath = "";
-    if (activatedChapter != null && activatedChapter.mediaFileModel != null) {
-      danmakuFilePath = activatedChapter.mediaFileModel!.danmakuPath ?? "";
-    }
-
-    stopDanmaku();
-    state.prevSendSecond = -1;
-    state.danmakuFilePathMap.value = danmakuFilePath.isEmpty
-        ? {}
-        : {danmakuFilePath: false};
-    state.danmakuMap.value = {};
   }
 }

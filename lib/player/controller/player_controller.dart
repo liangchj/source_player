@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
-import 'package:media_kit/media_kit.dart' hide PlayerState;
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:source_player/commons/widget_style_commons.dart';
+import 'package:source_player/player/danmaku/my_danmaku_controller.dart';
 import 'package:source_player/player/iplayer.dart';
 import 'package:source_player/player/state/player_ui_state.dart';
 import 'package:source_player/player/ui/fullscreen_source_ui.dart';
@@ -15,17 +15,12 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
-import '../../models/resource_chapter_model.dart';
-import '../../models/video_model.dart';
 import '../../utils/bottom_sheet_dialog_utils.dart';
 import '../commons/player_commons.dart';
-import '../danmaku/my_danmaku_controller.dart';
 import '../danmaku/state/danmaku_state.dart';
 import '../enums/player_ui_key_enum.dart';
-import '../media_kit_player.dart';
 import '../models/bottom_ui_control_item_model.dart';
 import '../models/player_overlay_ui_model.dart';
-import '../models/resource_play_state_model.dart';
 import '../state/player_state.dart';
 import '../state/resource_play_state.dart';
 import '../ui/danmaku_setting_ui.dart';
@@ -60,7 +55,6 @@ class PlayerController extends GetxController {
   bool _initialized = false;
 
   late DanmakuState danmakuState;
-
   late MyDanmakuController myDanmakuController;
 
   final RxBool interceptPop = false.obs;
@@ -72,14 +66,10 @@ class PlayerController extends GetxController {
     uiState = PlayerUIState();
     fullscreenUtils = FullscreenUtils(this);
     danmakuState = DanmakuState();
-    myDanmakuController = MyDanmakuController(this, danmakuState);
+    myDanmakuController = MyDanmakuController(this);
     _initEver();
 
     _initBottomControlItemList();
-    // changeVideoUrl(autoPlay: playerState.autoPlay);
-    /*danmakuState.danmakuFilePathMap.value = {
-      "/storage/emulated/0/1/1.xml": false,
-    };*/
     _initUI();
     super.onInit();
     _initialized = true;
@@ -396,14 +386,13 @@ class PlayerController extends GetxController {
     });
 
     ever(resourcePlayState.resourcePlayingState, (val) async {
-      myDanmakuController.beforeChangePlayUrl();
+      myDanmakuController.restDanmaku();
       await changeVideoUrl(
         autoPlay: _initialized ? playerState.autoPlay : true,
       );
       playerState.isPlaying.value = false;
-      myDanmakuController.afterChangePlayUrl(
-        resourcePlayState.activatedChapter,
-      );
+      danmakuState.danmakuFilePath.value =
+          resourcePlayState.activatedChapter?.mediaFileModel?.danmakuPath ?? "";
     });
 
     ever(playerState.isPlaying, (value) {
@@ -418,20 +407,16 @@ class PlayerController extends GetxController {
       }
     });
 
-    resourcePlayState.initEver();
-
     ever(danmakuState.isVisible, (value) {
       if (value) {
-        myDanmakuController.resumeDanmaku();
+        myDanmakuController.startDanmaku();
       } else {
         myDanmakuController.pauseDanmaku();
         myDanmakuController.clearDanmaku();
       }
     });
 
-    ever(playerState.positionDuration, (value) {
-      myDanmakuController.sendDanmakuByPosition(value);
-    });
+    resourcePlayState.initEver();
 
     everAll([
       uiState.settingUI.visible,
@@ -548,9 +533,7 @@ class PlayerController extends GetxController {
     playerState.isSeeking(false);
   }
 
-  Future<void> beforeSeekTo() async {
-    myDanmakuController.clearDanmaku();
-  }
+  Future<void> beforeSeekTo() async {}
 
   Future<void> afterSeekTo() async {}
 
@@ -684,11 +667,11 @@ class PlayerController extends GetxController {
     // 当前UI是否需要动画控制器（有效ui直接使用属性动画）
     if (uiOverlay.useAnimationController) {
       // 先销毁已存在的控制器（如果有的话）
-      /*if (uiOverlay.animateController != null) {
+      if (uiOverlay.animateController != null) {
         try {
           uiOverlay.animateController?.dispose();
         } catch (_) {}
-      }*/
+      }
       uiOverlay.animateController = AnimationController(
         duration:
             uiOverlay.animationDuration ??
