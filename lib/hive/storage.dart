@@ -56,10 +56,12 @@ class SettingBoxKey {
       colorSeedKey = "theme_color_seed",
       themeModeKey = "theme_mode",
           /// api缓存key，app中手动添加部分
-      customAddApiKey =
+          customAddApiKey =
           "custom_add_api",
           /// 当前配置选择的api
           currentApiKey =
-          "activated_api",
-      playDirectoryList = "play_directory_list";
+          "activated_api112",
+      playDirectoryList = "play_directory_list",
+      playSpeed = "playSpeed",
+      danmakuSettings = "danmaku_settings";
 }

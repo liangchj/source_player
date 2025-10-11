@@ -15,6 +15,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
+import '../../hive/storage.dart';
 import '../../utils/bottom_sheet_dialog_utils.dart';
 import '../commons/player_commons.dart';
 import '../danmaku/state/danmaku_state.dart';
@@ -59,10 +60,24 @@ class PlayerController extends GetxController {
 
   final RxBool interceptPop = false.obs;
 
+  Timer? _historyRecordTimer;
+
+  Duration startPlayDuration = Duration.zero;
+
+  static const int HISTORY_RECORD_INTERVAL = 15; // 15秒记录一次
+  static const int MIN_PLAY_TIME_FOR_HISTORY = 5; // 至少播放5秒才记录
+
   @override
   void onInit() {
     resourcePlayState = ResourcePlayState();
     playerState = PlayerState();
+
+    double? playSpeed = GStorage.setting.get(
+      "${SettingBoxKey.cachePrev}-${SettingBoxKey.playSpeed}",
+    );
+    if (playSpeed != null) {
+      playerState.playSpeed.value = playSpeed;
+    }
     uiState = PlayerUIState();
     fullscreenUtils = FullscreenUtils(this);
     danmakuState = DanmakuState();
@@ -387,6 +402,16 @@ class PlayerController extends GetxController {
 
     ever(resourcePlayState.resourcePlayingState, (val) async {
       myDanmakuController.restDanmaku();
+
+      // 视频切换前记录上一个视频的历史
+      _recordPlayHistory();
+      // 停止当前定时器
+      _stopHistoryRecordTimer();
+      // 清空上一个视频播放起始位置
+      startPlayDuration = Duration.zero;
+      // 从缓存中读取新视频开始播放位置
+      // 新视频开始播放时会自动启动定时器
+
       await changeVideoUrl(
         autoPlay: _initialized ? playerState.autoPlay : true,
       );
@@ -397,23 +422,28 @@ class PlayerController extends GetxController {
 
     ever(playerState.isPlaying, (value) {
       if (value) {
+        // 开始播放时启动定时器
+        _startHistoryRecordTimer();
+
         // 播放时保持屏幕唤醒
         WakelockPlus.enable();
         myDanmakuController.resumeDanmaku();
       } else {
+        // 暂停时停止定时器并立即记录一次
+        _stopHistoryRecordTimer();
+        _recordPlayHistory();
+
         // 暂停时关闭保持屏幕唤醒
         WakelockPlus.disable();
         myDanmakuController.pauseDanmaku();
       }
     });
 
-    ever(danmakuState.isVisible, (value) {
-      if (value) {
-        myDanmakuController.startDanmaku();
-      } else {
-        myDanmakuController.pauseDanmaku();
-        myDanmakuController.clearDanmaku();
-      }
+    ever(playerState.playSpeed, (value) {
+      GStorage.setting.put(
+        "${SettingBoxKey.cachePrev}-${SettingBoxKey.playSpeed}",
+        value,
+      );
     });
 
     resourcePlayState.initEver();
@@ -425,11 +455,20 @@ class PlayerController extends GetxController {
       uiState.chapterListUI.visible,
     ], (value) => interceptPop.value = value);
 
+    ever(uiState.danmakuSettingUI.visible, (value) {
+      danmakuState.uiShowAdjustTime.value = danmakuState.adjustTime.value;
+    });
+
     myDanmakuController.initEver();
   }
 
   @override
   void onClose() {
+    // 应用退出前记录一次播放历史
+    _recordPlayHistory();
+    // 停止定时器
+    _stopHistoryRecordTimer();
+
     hideTimer?.cancel();
     _progressTimer?.cancel();
     _volumeTimer?.cancel();
@@ -439,6 +478,55 @@ class PlayerController extends GetxController {
     // 销毁所有动画控制器
     uiState.disposeAllAnimationControllers();
     super.onClose();
+  }
+
+  void _startHistoryRecordTimer() {
+    _stopHistoryRecordTimer(); // 先停止已有的定时器
+    _historyRecordTimer = Timer.periodic(
+      Duration(seconds: HISTORY_RECORD_INTERVAL),
+          (timer) {
+        _recordPlayHistory();
+      },
+    );
+  }
+
+  void _stopHistoryRecordTimer() {
+    _historyRecordTimer?.cancel();
+    _historyRecordTimer = null;
+  }
+
+  // 记录播放历史
+  void _recordPlayHistory() {
+    // 检查是否满足最小播放时间要求
+    if (playerState.positionDuration.value.inSeconds - startPlayDuration.inSeconds < MIN_PLAY_TIME_FOR_HISTORY) {
+      return;
+    }
+
+    // 检查播放器是否已初始化且没有错误
+    if (!playerState.isInitialized.value || playerState.errorMsg.isNotEmpty) {
+      return;
+    }
+
+    // 记录播放历史到数据库或本地存储
+    // 这里需要根据你的具体数据结构来实现
+    _savePlayHistoryToStorage();
+  }
+
+// 保存播放历史到存储
+  void _savePlayHistoryToStorage() {
+    // 根据当前播放的视频信息和播放位置保存历史记录
+    // 示例实现：
+    /*
+  final history = PlayHistoryModel(
+    videoId: resourcePlayState.activatedChapter?.id,
+    position: playerState.positionDuration.value,
+    duration: playerState.duration.value,
+    lastPlayed: DateTime.now(),
+  );
+
+  // 保存到Hive或其他存储中
+  GStorage.playHistory.put(history.videoId, history);
+  */
   }
 
   // 清除定时器

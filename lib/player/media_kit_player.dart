@@ -121,7 +121,7 @@ class MediaKitPlayer extends IPlayer {
     });
 
     stream.duration.distinct().listen((value) {
-      if (value.compareTo(Duration.zero) != 0) {
+      if (value.compareTo(Duration.zero) > 0) {
         _playerController.playerState.isInitialized(true);
       }
       _playerController.playerState.duration(value);
@@ -131,6 +131,8 @@ class MediaKitPlayer extends IPlayer {
       _playerController.playerState.isPlaying(value);
       if (value) {
         _playerController.playerState.errorMsg(null);
+        _playerController.playerState.isInitialized(true);
+        _playerController.playerState.isFinished(false);
       }
     });
 
