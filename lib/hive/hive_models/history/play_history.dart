@@ -8,7 +8,7 @@ class PlayHistory {
   final VideoResource resource;
 
   @HiveField(1)
-  final Map<int, EpisodeInfo> episodeInfo = {};
+  final Map<int, EpisodeInfo> episodeInfo;
 
   @HiveField(2)
   int lastPlayEpisode;
@@ -16,7 +16,7 @@ class PlayHistory {
   @HiveField(3)
   DateTime lastPlayTime;
 
-  PlayHistory(this.resource, this.lastPlayEpisode, this.lastPlayTime);
+  PlayHistory(this.resource, this.episodeInfo, this.lastPlayEpisode, this.lastPlayTime);
 }
 
 @HiveType(typeId: 2)

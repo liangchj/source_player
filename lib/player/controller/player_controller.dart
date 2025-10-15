@@ -15,6 +15,8 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
+import '../../hive/hive_models/history/play_history.dart';
+import '../../hive/hive_models/resource/video_resource.dart';
 import '../../hive/storage.dart';
 import '../../utils/bottom_sheet_dialog_utils.dart';
 import '../commons/player_commons.dart';
@@ -410,6 +412,43 @@ class PlayerController extends GetxController {
       // 清空上一个视频播放起始位置
       startPlayDuration = Duration.zero;
       // 从缓存中读取新视频开始播放位置
+      int historyPosition = 0;
+      if (resourcePlayState.videoModel.value == null) {
+        if (resourcePlayState.activatedChapter != null &&
+            resourcePlayState.activatedChapter!.playUrl!.isNotEmpty) {
+          var playHistory = GStorage.histories.get(
+            resourcePlayState.activatedChapter!.playUrl!,
+          );
+          if (playHistory != null) {
+            var episodeInfo =
+                playHistory.episodeInfo[playHistory.lastPlayEpisode];
+
+            historyPosition = episodeInfo?.positionInMilli ?? 0;
+          }
+        }
+      } else {
+        var playHistory = GStorage.histories.get(
+          "${resourcePlayState.playingApi?.api?.apiBaseModel.enName ?? ""}_${resourcePlayState.videoModel.value!.id}",
+        );
+        if (playHistory != null) {
+          var episodeInfo =
+              resourcePlayState.resourcePlayingState.value.chapterIndex - 1 <
+                  playHistory.episodeInfo.length
+              ? playHistory.episodeInfo[resourcePlayState
+                        .resourcePlayingState
+                        .value
+                        .chapterIndex -
+                    1]
+              : null;
+          historyPosition = episodeInfo?.positionInMilli ?? 0;
+        }
+      }
+      resourcePlayState.activatedChapter?.historyDuration = Duration(
+        milliseconds: historyPosition,
+      );
+      resourcePlayState.activatedChapter?.start = Duration(
+        milliseconds: historyPosition,
+      );
       // 新视频开始播放时会自动启动定时器
 
       await changeVideoUrl(
@@ -484,7 +523,7 @@ class PlayerController extends GetxController {
     _stopHistoryRecordTimer(); // 先停止已有的定时器
     _historyRecordTimer = Timer.periodic(
       Duration(seconds: HISTORY_RECORD_INTERVAL),
-          (timer) {
+      (timer) {
         _recordPlayHistory();
       },
     );
@@ -498,7 +537,9 @@ class PlayerController extends GetxController {
   // 记录播放历史
   void _recordPlayHistory() {
     // 检查是否满足最小播放时间要求
-    if (playerState.positionDuration.value.inSeconds - startPlayDuration.inSeconds < MIN_PLAY_TIME_FOR_HISTORY) {
+    if (playerState.positionDuration.value.inSeconds -
+            startPlayDuration.inSeconds <
+        MIN_PLAY_TIME_FOR_HISTORY) {
       return;
     }
 
@@ -512,21 +553,87 @@ class PlayerController extends GetxController {
     _savePlayHistoryToStorage();
   }
 
-// 保存播放历史到存储
+  // 保存播放历史到存储
   void _savePlayHistoryToStorage() {
     // 根据当前播放的视频信息和播放位置保存历史记录
     // 示例实现：
     /*
-  final history = PlayHistoryModel(
-    videoId: resourcePlayState.activatedChapter?.id,
-    position: playerState.positionDuration.value,
-    duration: playerState.duration.value,
-    lastPlayed: DateTime.now(),
-  );
+    final history = PlayHistoryModel(
+      videoId: resourcePlayState.activatedChapter?.id,
+      position: playerState.positionDuration.value,
+      duration: playerState.duration.value,
+      lastPlayed: DateTime.now(),
+    );
 
-  // 保存到Hive或其他存储中
-  GStorage.playHistory.put(history.videoId, history);
-  */
+    // 保存到Hive或其他存储中
+    GStorage.playHistory.put(history.videoId, history);
+    */
+    resourcePlayState.activatedChapter?.historyDuration =
+        playerState.positionDuration.value;
+
+    VideoResource videoResource = VideoResource(
+      apiKey: resourcePlayState.playingApi?.api?.apiBaseModel.enName ?? "",
+      spiGroupEnName: resourcePlayState.playingSourceGroup?.enName ?? "",
+      resourceId: resourcePlayState.videoModel.value?.id ?? "",
+      resourceEnName: resourcePlayState.videoModel.value?.enName ?? "",
+      resourceName: resourcePlayState.videoModel.value?.name ?? "",
+      resourceUrl: "",
+      coverUrl: resourcePlayState.videoModel.value?.coverUrl ?? "",
+    );
+
+    if (resourcePlayState.videoModel.value == null) {
+      GStorage.histories.put(
+        resourcePlayState.activatedChapter!.playUrl,
+        PlayHistory(
+          videoResource,
+          {
+            0: EpisodeInfo(
+              0,
+              resourcePlayState.activatedChapter!.name,
+              resourcePlayState.activatedChapter!.playUrl ?? "",
+              "",
+              resourcePlayState
+                      .activatedChapter!
+                      .mediaFileModel
+                      ?.assetEntity
+                      ?.duration ??
+                  0,
+              resourcePlayState
+                      .activatedChapter!
+                      .historyDuration
+                      ?.inMilliseconds ??
+                  0,
+            ),
+          },
+          0,
+          DateTime.now(),
+        ),
+      );
+    } else {
+      Map<int, EpisodeInfo> episodeInfo = {};
+      for (var item in resourcePlayState.activatedChapterList) {
+        episodeInfo[item.index] = EpisodeInfo(
+          item.index,
+          item.name,
+          item.playUrl ?? "",
+          resourcePlayState.videoModel.value?.coverUrl ?? "",
+          item.mediaFileModel?.assetEntity?.duration ?? 0,
+          item.historyDuration?.inMilliseconds ?? 0,
+        );
+      }
+
+      PlayHistory playHistory = PlayHistory(
+        videoResource,
+        episodeInfo,
+        resourcePlayState.resourcePlayingState.value.chapterIndex,
+        DateTime.now(),
+      );
+
+      GStorage.histories.put(
+        "${resourcePlayState.playingApi?.api?.apiBaseModel.enName ?? ""}_${resourcePlayState.videoModel.value!.id}",
+        playHistory,
+      );
+    }
   }
 
   // 清除定时器

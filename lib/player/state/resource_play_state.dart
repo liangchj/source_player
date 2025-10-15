@@ -143,6 +143,12 @@ class ResourcePlayState {
         (playSourceList!.length == 1 && playSourceList!.first.api == null));
   }
 
+  // 当前播放的播放源
+  PlaySourceModel? get playingApi {
+    return playSourceList == null || playSourceList!.isEmpty || resourcePlayingState.value.apiIndex == -1
+        ? null
+        : playSourceList![resourcePlayingState.value.apiIndex];
+  }
   // 激活的播放源
   PlaySourceModel? get activatedApi {
     return playSourceList == null || playSourceList!.isEmpty
@@ -159,6 +165,18 @@ class ResourcePlayState {
   }
 
   int get sourceGroupCount => sourceGroupList.length;
+
+  // 当前播放的播放源组
+  PlaySourceGroupModel? get playingSourceGroup {
+    if (sourceGroupList.isEmpty) {
+      return null;
+    }
+    var index = resourcePlayingState.value.apiGroupIndex;
+    if (index < 0) {
+      index = 0;
+    }
+    return sourceGroupList[index];
+  }
 
   // 激活的播放源组
   PlaySourceGroupModel? get activatedSourceGroup {
@@ -238,6 +256,7 @@ class ResourcePlayState {
     return activatedChapterGroup!.chapterList;
   }
 
+  // 激活的章节列表
   List<ResourceChapterModel> get activatedChapterList {
     if (playSourceList == null || playSourceList!.isEmpty) {
       return chapterList.value ?? [];

@@ -120,42 +120,7 @@ class _SourceApiState extends State<SourceApi> {
           (option.singleHorizontalScroll || option.isSelect))
         InkWell(
           onTap: () {
-            /*BottomSheetDialogUtils.openBottomSheet(
-              LayoutBuilder(builder: (context, constraints) {
-                var size = MediaQuery.of(context).size;
-                double playerHeight = size.width * (9 / 16.0);
-                var netResourceDetailController = Get.find<NetResourceDetailController>();
-                return SizedBox(
-                  width: size.width,
-                  height: size.height - (playerHeight - netResourceDetailController.extendedNestedScrollViewOffset.value) - CurrentConfigs.statusBarHeight - kToolbarHeight + WidgetStyleCommons.safeSpace / 2,
-                  child: SourceApi(
-                    option: PlaySourceOptionModel(
-                      onClose: () {
-                        controller
-                            .netResourceDetailController
-                            ?.bottomSheetController
-                            ?.close();
-                      },
-                      bottomSheet: true,
-                      isGrid: true,
-                      onDispose: (index) {
-                        _gridObserverController?.jumpTo(
-                          index: index,
-                          isFixedHeight: true,
-                        );
-                        _observerController?.jumpTo(
-                          index: index,
-                          isFixedHeight: true,
-                        );
-                      },
-                    ),
-                  ),
-                );
-              }),
-              isScrollControlled: true,
-            );*/
-
-            /*controller.netResourceDetailController?.bottomSheetController =
+            controller.netResourceDetailController?.bottomSheetController =
                 controller.netResourceDetailController?.childKey.currentState
                     ?.showBottomSheet(
                       backgroundColor: Colors.transparent,
@@ -186,7 +151,7 @@ class _SourceApiState extends State<SourceApi> {
                           ),
                         ),
                       ),
-                    );*/
+                    );
           },
           child: Row(
             children: [

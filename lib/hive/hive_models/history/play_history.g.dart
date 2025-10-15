@@ -18,6 +18,7 @@ class PlayHistoryAdapter extends TypeAdapter<PlayHistory> {
     };
     return PlayHistory(
       fields[0] as VideoResource,
+      fields[1] as Map<int, EpisodeInfo>,
       fields[2] as int,
       fields[3] as DateTime,
     );
