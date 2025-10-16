@@ -571,21 +571,14 @@ class PlayerController extends GetxController {
     resourcePlayState.activatedChapter?.historyDuration =
         playerState.positionDuration.value;
 
-    VideoResource videoResource = VideoResource(
-      apiKey: resourcePlayState.playingApi?.api?.apiBaseModel.enName ?? "",
-      spiGroupEnName: resourcePlayState.playingSourceGroup?.enName ?? "",
-      resourceId: resourcePlayState.videoModel.value?.id ?? "",
-      resourceEnName: resourcePlayState.videoModel.value?.enName ?? "",
-      resourceName: resourcePlayState.videoModel.value?.name ?? "",
-      resourceUrl: "",
-      coverUrl: resourcePlayState.videoModel.value?.coverUrl ?? "",
-    );
-
     if (resourcePlayState.videoModel.value == null) {
       GStorage.histories.put(
         resourcePlayState.activatedChapter!.playUrl,
         PlayHistory(
-          videoResource,
+          VideoResource(
+            resourceUrl: resourcePlayState.activatedChapter!.playUrl ?? "",
+            coverUrl: "",
+          ),
           {
             0: EpisodeInfo(
               0,
@@ -623,7 +616,15 @@ class PlayerController extends GetxController {
       }
 
       PlayHistory playHistory = PlayHistory(
-        videoResource,
+        VideoResource(
+          apiKey: resourcePlayState.playingApi?.api?.apiBaseModel.enName ?? "",
+          spiGroupEnName: resourcePlayState.playingSourceGroup?.enName ?? "",
+          resourceId: resourcePlayState.videoModel.value?.id ?? "",
+          resourceEnName: resourcePlayState.videoModel.value?.enName ?? "",
+          resourceName: resourcePlayState.videoModel.value?.name ?? "",
+          resourceUrl: "",
+          coverUrl: resourcePlayState.videoModel.value?.coverUrl ?? "",
+        ),
         episodeInfo,
         resourcePlayState.resourcePlayingState.value.chapterIndex,
         DateTime.now(),

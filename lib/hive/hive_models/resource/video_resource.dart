@@ -4,19 +4,19 @@ part 'video_resource.g.dart';
 @HiveType(typeId: 0)
 class VideoResource {
   @HiveField(0)
-  String apiKey;
+  String? apiKey;
 
   @HiveField(1)
-  String spiGroupEnName;
+  String? spiGroupEnName;
 
   @HiveField(2)
-  String resourceId;
+  String? resourceId;
 
   @HiveField(3)
-  String resourceEnName;
+  String? resourceEnName;
 
   @HiveField(4)
-  String resourceName;
+  String? resourceName;
 
   @HiveField(5)
   String resourceUrl;
@@ -26,11 +26,11 @@ class VideoResource {
   String? coverUrl;
 
   VideoResource({
-    required this.apiKey,
-    required this.spiGroupEnName,
-    required this.resourceId,
-    required this.resourceEnName,
-    required this.resourceName,
+    this.apiKey,
+    this.spiGroupEnName,
+    this.resourceId,
+    this.resourceEnName,
+    this.resourceName,
     required this.resourceUrl,
     this.coverUrl,
   });

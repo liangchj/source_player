@@ -86,6 +86,7 @@ class PlayerState {
 
 
 
+
   String playUrl = "asset://assets/video/test.mp4";
 
 
