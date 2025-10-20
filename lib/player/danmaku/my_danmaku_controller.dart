@@ -260,13 +260,13 @@ class MyDanmakuController {
         fromAssets: true,
       ),
     );*/
-    danmakuController?.parseDanmaku(parser!, path);
     parser!.stateController.stream.listen((event) {
       if (event.status == ParserStatus.completed) {
         state.danmakuFileParse.value = true;
         startDanmaku();
       }
     });
+    danmakuController!.parseDanmaku(parser!, path);
   }
 
   Future<void> initDanmaku() {

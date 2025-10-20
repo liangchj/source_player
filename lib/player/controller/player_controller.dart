@@ -16,6 +16,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../commons/icon_commons.dart';
 import '../../getx_controller/net_resource_detail_controller.dart';
 import '../../hive/hive_models/history/play_history.dart';
+import '../../hive/hive_models/resource/episodeInfo.dart';
 import '../../hive/hive_models/resource/video_resource.dart';
 import '../../hive/storage.dart';
 import '../../utils/bottom_sheet_dialog_utils.dart';
@@ -399,10 +400,14 @@ class PlayerController extends GetxController {
       if (value) {
         playerState.isPlaying.value = false;
         playerState.isBuffering.value = false;
+        if (resourcePlayState.haveNext) {
+          nextPlay();
+        }
       }
     });
 
     ever(resourcePlayState.resourcePlayingState, (val) async {
+      danmakuState.danmakuFilePath.value = "";
       myDanmakuController.restDanmaku();
 
       // 视频切换前记录上一个视频的历史
@@ -449,7 +454,6 @@ class PlayerController extends GetxController {
       resourcePlayState.activatedChapter?.start = Duration(
         milliseconds: historyPosition,
       );
-      // 新视频开始播放时会自动启动定时器
 
       await changeVideoUrl(
         autoPlay: _initialized ? playerState.autoPlay : true,
@@ -549,25 +553,12 @@ class PlayerController extends GetxController {
     }
 
     // 记录播放历史到数据库或本地存储
-    // 这里需要根据你的具体数据结构来实现
     _savePlayHistoryToStorage();
   }
 
   // 保存播放历史到存储
   void _savePlayHistoryToStorage() {
     // 根据当前播放的视频信息和播放位置保存历史记录
-    // 示例实现：
-    /*
-    final history = PlayHistoryModel(
-      videoId: resourcePlayState.activatedChapter?.id,
-      position: playerState.positionDuration.value,
-      duration: playerState.duration.value,
-      lastPlayed: DateTime.now(),
-    );
-
-    // 保存到Hive或其他存储中
-    GStorage.playHistory.put(history.videoId, history);
-    */
     resourcePlayState.activatedChapter?.historyDuration =
         playerState.positionDuration.value;
 

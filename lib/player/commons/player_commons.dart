@@ -81,9 +81,9 @@ class PlayerCommons {
   // 高度
   static const double progressBarHeight = 4.0;
   // 滑块圆角
-  static const double progressBarThumbRadius = 8.0;
+  static const double progressBarThumbRadius = 12.0;
   // 滑块内部圆角
-  static const double progressBarThumbInnerRadius = 3.0;
+  static const double progressBarThumbInnerRadius = 6.0;
   // 滑块外部颜色
   static Color progressBarThumbOverlayColor =
   Colors.redAccent.withValues(alpha: 0.24);

@@ -180,6 +180,7 @@ class MediaKitPlayer extends IPlayer {
         if (!httpHeaders.containsKey("user-agent")) {
           httpHeaders["user-agent"] = DioUtils.getRandomUA();
         }
+        // media_kit 1.2.1版本初始化时设置的start有问题，无法正常设置起始播放时间
         await _videoController.player.open(
           Media(
             _playerController.resourcePlayState.activatedChapter!.playUrl!,

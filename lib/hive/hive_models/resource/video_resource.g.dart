@@ -17,11 +17,11 @@ class VideoResourceAdapter extends TypeAdapter<VideoResource> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return VideoResource(
-      apiKey: fields[0] as String,
-      spiGroupEnName: fields[1] as String,
-      resourceId: fields[2] as String,
-      resourceEnName: fields[3] as String,
-      resourceName: fields[4] as String,
+      apiKey: fields[0] as String?,
+      spiGroupEnName: fields[1] as String?,
+      resourceId: fields[2] as String?,
+      resourceEnName: fields[3] as String?,
+      resourceName: fields[4] as String?,
       resourceUrl: fields[5] as String,
       coverUrl: fields[6] as String?,
     );
