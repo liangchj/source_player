@@ -95,8 +95,7 @@ class PlayerTopUI extends GetView<PlayerController> {
     controller.hideUIByKeyList(controller.uiState.overlayUIMap.keys.toList());
     var size = MediaQuery.of(context).size;
     if (controller.playerState.isFullscreen.value &&
-        size.width < size.height &&
-        size.width > 300) {
+        size.width > size.height) {
       controller.onlyShowUIByKeyList([PlayerUIKeyEnum.settingUI.name]);
       return;
     }

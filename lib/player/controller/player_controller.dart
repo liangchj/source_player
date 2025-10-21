@@ -134,26 +134,36 @@ class PlayerController extends GetxController {
         InkWell(
           onTap: () {
             hideCanControlUI();
-            BottomSheetDialogUtils.openBottomSheet(
-              FullscreenSourceUI(bottomSheet: true),
-              closeBtnShow: false,
-              backgroundColor: playerState.isFullscreen.value
-                  ? PlayerCommons.playerUIBackgroundColor
-                  : Colors.white,
-            );
+            BottomSheetDialogUtils.closeBottomSheet();
+            if (Get.size.width < Get.size.height) {
+              BottomSheetDialogUtils.openBottomSheet(
+                FullscreenSourceUI(bottomSheet: true),
+                closeBtnShow: false,
+                backgroundColor: playerState.isFullscreen.value
+                    ? PlayerCommons.playerUIBackgroundColor
+                    : Colors.white,
+              );
+            } else {
+              onlyShowUIByKeyList([PlayerUIKeyEnum.sourceUI.name]);
+            }
           },
           child: Text("资源列表"),
         ),
       InkWell(
         onTap: () {
           hideCanControlUI();
-          BottomSheetDialogUtils.openBottomSheet(
-            FullscreenChapterListUI(bottomSheet: true),
-            closeBtnShow: false,
-            backgroundColor: playerState.isFullscreen.value
-                ? PlayerCommons.playerUIBackgroundColor
-                : Colors.white,
-          );
+          BottomSheetDialogUtils.closeBottomSheet();
+          if (Get.size.width < Get.size.height) {
+            BottomSheetDialogUtils.openBottomSheet(
+              FullscreenChapterListUI(bottomSheet: true),
+              closeBtnShow: false,
+              backgroundColor: playerState.isFullscreen.value
+                  ? PlayerCommons.playerUIBackgroundColor
+                  : Colors.white,
+            );
+          } else {
+            onlyShowUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]);
+          }
         },
         child: Text("章节列表"),
       ),
@@ -185,23 +195,27 @@ class PlayerController extends GetxController {
           LoggerUtils.logger.d("弹幕设置");
           hideUIByKeyList([PlayerUIKeyEnum.settingUI.name]);
           BottomSheetDialogUtils.closeBottomSheet();
-          BottomSheetDialogUtils.openBottomSheet(
-            DefaultTextStyle(
-              style: TextStyle(
-                color: playerState.isFullscreen.value
-                    ? Colors.white
-                    : Colors.black,
+          if (Get.size.width < Get.size.height) {
+            BottomSheetDialogUtils.openBottomSheet(
+              DefaultTextStyle(
+                style: TextStyle(
+                  color: playerState.isFullscreen.value
+                      ? Colors.white
+                      : Colors.black,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
+                  child: DanmakuSettingUI(bottomSheet: true),
+                ),
               ),
-              child: Padding(
-                padding: EdgeInsets.all(WidgetStyleCommons.safeSpace),
-                child: DanmakuSettingUI(bottomSheet: true),
-              ),
-            ),
-            closeBtnShow: !playerState.isFullscreen.value,
-            backgroundColor: playerState.isFullscreen.value
-                ? PlayerCommons.playerUIBackgroundColor
-                : Colors.white,
-          );
+              closeBtnShow: !playerState.isFullscreen.value,
+              backgroundColor: playerState.isFullscreen.value
+                  ? PlayerCommons.playerUIBackgroundColor
+                  : Colors.white,
+            );
+          } else {
+            onlyShowUIByKeyList([PlayerUIKeyEnum.danmakuSettingUI.name]);
+          }
         },
         child: Text("弹幕设置"),
       ),
@@ -227,12 +241,13 @@ class PlayerController extends GetxController {
     uiState.settingsUIMap["speedList"] = [
       InkWell(
         onTap: () {
-          Get.closeAllBottomSheets();
+          // Get.closeAllBottomSheets();
+          BottomSheetDialogUtils.closeBottomSheet();
           if (playerState.isFullscreen.value) {
             onlyShowUIByKeyList([PlayerUIKeyEnum.speedSettingUI.name]);
           } else {
             BottomSheetDialogUtils.openBottomSheet(
-              PlayerSpeedUI(bottomSheet: true),
+              PlayerSpeedUI(bottomSheet: Get.size.width < Get.size.height),
             );
           }
         },
