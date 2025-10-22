@@ -224,7 +224,7 @@ class MyDanmakuController {
         ),
       );
 
-      _settings["danmakuSpeed"] = value;
+      _settings["danmakuSpeed"] = speed;
       _saveSettings();
     });
 

@@ -730,6 +730,7 @@ class PlayerController extends GetxController {
     playerState.positionDuration(position);
     playerState.isSeeking(true);
     playerState.positionDuration(position); // 立即更新UI位置
+    myDanmakuController.seekToDanmaku(position.inMilliseconds);
     await player.value?.seekTo(position);
     playerState.beforeSeekToIsPlaying = false;
     playerState.isSeeking(false);

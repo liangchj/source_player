@@ -13,9 +13,12 @@ class BackgroundEventUI extends GetView<PlayerController> {
       behavior: HitTestBehavior.opaque,
       onTap: () => controller.toggleBackground(),
       onHorizontalDragStart: (DragStartDetails details) {
-        LoggerUtils.logger.d(
-            "滑动屏幕 开始拖动 横向: $details, ${details.globalPosition}, ${details.localPosition}, ${context.size}");
-        controller.playProgressOnHorizontalDragStart();
+        if (!controller.uiState.uiLocked.value) {
+          LoggerUtils.logger.d(
+              "滑动屏幕 开始拖动 横向: $details, ${details
+                  .globalPosition}, ${details.localPosition}, ${context.size}");
+          controller.playProgressOnHorizontalDragStart();
+        }
       },
       onHorizontalDragUpdate: (DragUpdateDetails details) {
         if (!controller.uiState.uiLocked.value) {
