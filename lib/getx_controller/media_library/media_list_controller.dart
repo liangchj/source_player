@@ -20,7 +20,7 @@ class MediaListController extends GetxController {
 
   var loadingState = LoadingStateModel().obs;
 
-  late PagingController<int, MediaFileModel> pagingController;
+  late PagingController<int, Rx<MediaFileModel>> pagingController;
 
   @override
   void onInit() {
@@ -42,8 +42,8 @@ class MediaListController extends GetxController {
         ),
       );
     }
-    pagingController = PagingController<int, MediaFileModel>(
-      getNextPageKey: (PagingState<int, MediaFileModel> state) {
+    pagingController = PagingController<int, Rx<MediaFileModel>>(
+      getNextPageKey: (PagingState<int, Rx<MediaFileModel>> state) {
         if (!state.hasNextPage || state.lastPageIsEmpty) return null;
         return state.nextIntPageKey;
       },
@@ -95,11 +95,11 @@ class MediaListController extends GetxController {
     );
   }
 
-  Future<List<MediaFileModel>> _fetchVideosInFolder(
+  Future<List<Rx<MediaFileModel>>> _fetchVideosInFolder(
     int page, {
     int limit = 20,
   }) async {
-    List<MediaFileModel> mediaFileList = [];
+    List<Rx<MediaFileModel>> mediaFileList = [];
     if (folder == null || folder!.assetPathEntity == null) {
       return mediaFileList;
     }
@@ -128,7 +128,7 @@ class MediaListController extends GetxController {
           danmakuPath: danmakuPath,
           subtitlePath: subtitlePath,
           file: file,
-        ),
+        ).obs,
       );
     }
     return mediaFileList;
@@ -143,7 +143,8 @@ class MediaListController extends GetxController {
     List<ResourceChapterModel> chapterList = [];
     int i = 0;
     for (var list in pages) {
-      for (var item in list) {
+      for (var videoItem in list) {
+        MediaFileModel item = videoItem.value;
         if (activatedItem == item) {
           index = i;
         }

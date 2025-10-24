@@ -23,7 +23,7 @@ class SearchDanmakuSubtitleController extends GetxController {
 
   @override
   void onInit() {
-    mediaFile(Get.arguments as MediaFileModel?);
+    mediaFile = Get.arguments as Rx<MediaFileModel>;
     super.onInit();
     textEditingController = TextEditingController();
   }

@@ -64,7 +64,7 @@ class SearchDanmakuSubtitlePage
         child: Column(
           children: [
             MediaItemWidget(
-              fileModel: controller.mediaFile.value,
+              fileModel: controller.mediaFile,
               trailingWidget: Padding(
                 padding: EdgeInsets.only(right: WidgetStyleCommons.safeSpace),
                 child: Obx(() {

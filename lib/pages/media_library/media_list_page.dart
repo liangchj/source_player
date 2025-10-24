@@ -45,7 +45,7 @@ class MediaListPage extends GetView<MediaListController> {
   }
 
   CustomScrollView _customScrollView(
-    PagingState<int, MediaFileModel> state,
+    PagingState<int, Rx<MediaFileModel>> state,
     NextPageCallback fetchNextPage,
   ) {
     return CustomScrollView(
@@ -59,7 +59,7 @@ class MediaListPage extends GetView<MediaListController> {
             ),
           ),*/
 
-        PagedSliverList<int, MediaFileModel>.separated(
+        PagedSliverList<int, Rx<MediaFileModel>>.separated(
           state: state,
           fetchNextPage: fetchNextPage,
           itemExtent: 48,
@@ -67,7 +67,7 @@ class MediaListPage extends GetView<MediaListController> {
             animateTransitions: true,
             itemBuilder: (context, item, index) => MediaItemWidget(
               fileModel: item,
-              onTap: () => controller.playVideo(item),
+              onTap: () => controller.playVideo(item.value),
             ),
             // _mediaListTile(item),
             firstPageErrorIndicatorBuilder: (context) => CustomFirstPageError(

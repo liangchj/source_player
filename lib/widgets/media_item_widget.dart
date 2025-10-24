@@ -22,7 +22,7 @@ class MediaItemWidget extends StatelessWidget {
     this.onTap,
   });
 
-  final MediaFileModel fileModel;
+  final Rx<MediaFileModel> fileModel;
   final Widget? leadingWidget;
   final Widget? subtitleWidget;
   final Widget? trailingWidget;
@@ -32,7 +32,7 @@ class MediaItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => onTap?.call(),
-      child: ListTile(
+      child: Obx(() => ListTile(
         horizontalTitleGap: WidgetStyleCommons.safeSpace / 2,
         contentPadding: EdgeInsets.only(
           left: WidgetStyleCommons.safeSpace,
@@ -42,12 +42,12 @@ class MediaItemWidget extends StatelessWidget {
         title: _buildTitle(),
         subtitle: _buildSubtitle(),
         trailing: trailingWidget ?? _buildRightOperateIcon(),
-      ),
+      )),
     );
   }
 
   _buildLeadingWidget() {
-    var duration = fileModel.assetEntity?.duration;
+    var duration = fileModel.value.assetEntity?.duration;
     return leadingWidget ??
         SizedBox(
           width: 80,
@@ -71,7 +71,7 @@ class MediaItemWidget extends StatelessWidget {
                         ),
                 ),
               ),
-              if (fileModel.playHistoryDuration != null && duration != null)
+              if (fileModel.value.playHistoryDuration != null && duration != null)
                 Positioned(
                   left: 0,
                   right: 0,
@@ -82,7 +82,7 @@ class MediaItemWidget extends StatelessWidget {
                       backgroundColor: Theme.of(Get.context!).primaryColor,
                       valueColor: AlwaysStoppedAnimation(Colors.blue),
                       value:
-                          fileModel.playHistoryDuration!.inSeconds / duration,
+                          fileModel.value.playHistoryDuration!.inSeconds / duration,
                     ),
                   ),
                 ),
@@ -104,12 +104,12 @@ class MediaItemWidget extends StatelessWidget {
   // 构建视频缩略图
   Future<Widget> _buildVideoThumbnail() async {
     Uint8List? thumbnail;
-    if (fileModel.thumbnailUint8List != null) {
-      thumbnail = fileModel.thumbnailUint8List!;
-    } else if (fileModel.assetEntity != null) {
-      thumbnail = await fileModel.assetEntity!.thumbnailData;
-    } else if (fileModel.file != null) {
-      thumbnail = await fileModel.file!.readAsBytes();
+    if (fileModel.value.thumbnailUint8List != null) {
+      thumbnail = fileModel.value.thumbnailUint8List!;
+    } else if (fileModel.value.assetEntity != null) {
+      thumbnail = await fileModel.value.assetEntity!.thumbnailData;
+    } else if (fileModel.value.file != null) {
+      thumbnail = await fileModel.value.file!.readAsBytes();
     }
     return thumbnail == null
         ? const Icon(Icons.video_library)
@@ -118,7 +118,7 @@ class MediaItemWidget extends StatelessWidget {
 
   _buildTitle() {
     return Text(
-      fileModel.fileName,
+      fileModel.value.fileName,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );
@@ -131,7 +131,7 @@ class MediaItemWidget extends StatelessWidget {
 
     /// 弹幕和字幕信息
     List<Widget> subtitleList = [];
-    if (fileModel.danmakuPath != null && fileModel.danmakuPath!.isNotEmpty) {
+    if (fileModel.value.danmakuPath != null && fileModel.value.danmakuPath!.isNotEmpty) {
       subtitleList.add(
         const CircleAvatar(
           backgroundColor: Colors.blue,
@@ -140,7 +140,7 @@ class MediaItemWidget extends StatelessWidget {
         ),
       );
     }
-    if (fileModel.subtitlePath != null && fileModel.subtitlePath!.isNotEmpty) {
+    if (fileModel.value.subtitlePath != null && fileModel.value.subtitlePath!.isNotEmpty) {
       subtitleList.add(
         const CircleAvatar(
           backgroundColor: Colors.blue,
@@ -155,8 +155,8 @@ class MediaItemWidget extends StatelessWidget {
     subtitleList.add(Spacer());
 
     var modTime =
-        fileModel.assetEntity?.modifiedDateTime ??
-        fileModel.file?.lastModifiedSync();
+        fileModel.value.assetEntity?.modifiedDateTime ??
+        fileModel.value.file?.lastModifiedSync();
     if (modTime != null) {
       subtitleList.add(Text(DateTimeUtils.ymdhmsFormatter.format(modTime)));
     }
@@ -206,7 +206,7 @@ class MediaItemWidget extends StatelessWidget {
                 right: 16,
                 bottom: 0,
               ),
-              child: Text(fileModel.fileName, textAlign: TextAlign.left),
+              child: Text(fileModel.value.fileName, textAlign: TextAlign.left),
             ),
             ListView(
               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
@@ -260,7 +260,7 @@ class MediaItemWidget extends StatelessWidget {
         //关闭对话框
       },
     );
-    if (fileModel.fileSourceType == MediaFileSourceType.playListFile) {
+    if (fileModel.value.fileSourceType == MediaFileSourceType.playListFile) {
       return [
         playWidget,
         subtitlesWidget,
@@ -278,7 +278,7 @@ class MediaItemWidget extends StatelessWidget {
             Get.defaultDialog(
               title: "移除视频",
               radius: 6,
-              content: Text("您确定想要从播放列表中移除“${fileModel.fileName}”？"),
+              content: Text("您确定想要从播放列表中移除“${fileModel.value.fileName}”？"),
               actions: [
                 TextButton(
                   child: const Text("取消"),
@@ -348,7 +348,7 @@ class MediaItemWidget extends StatelessWidget {
 
   /// 重命名
   void _renameFile() {
-    String oldName = fileModel.fileName;
+    String oldName = fileModel.value.fileName;
     //关闭对话框
     bool isBottomSheetOpen = Get.isBottomSheetOpen ?? false;
     var isDialogOpen = Get.isDialogOpen ?? false;
@@ -383,14 +383,14 @@ class MediaItemWidget extends StatelessWidget {
             var newName = nameController.text;
             LoggerUtils.logger.d("确认变更，${nameController.text}");
             if (newName != oldName) {
-              File file = fileModel.file!;
+              File file = fileModel.value.file!;
               try {
-                String dir = fileModel.file!.parent.path;
+                String dir = fileModel.value.file!.parent.path;
                 LoggerUtils.logger.d(
-                  "重命名,$dir${Platform.pathSeparator}$newName${fileModel.suffix.isEmpty ? '' : '.${fileModel.suffix}'}}",
+                  "重命名,$dir${Platform.pathSeparator}$newName${fileModel.value.suffix.isEmpty ? '' : '.${fileModel.value.suffix}'}}",
                 );
                 File renameSync = file.renameSync(
-                  "$dir${Platform.pathSeparator}$newName${fileModel.suffix.isEmpty ? '' : '.${fileModel.suffix}'}",
+                  "$dir${Platform.pathSeparator}$newName${fileModel.value.suffix.isEmpty ? '' : '.${fileModel.value.suffix}'}",
                 );
                 LoggerUtils.logger.d(
                   "重命名成功,$renameSync,${renameSync.path},${FileSystemEntity.isFileSync(renameSync.path)}",
